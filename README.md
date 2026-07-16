@@ -1,8 +1,8 @@
-# Space Museum
+# Space Center
 
-An interactive 3D museum of astrophysics, built as a walkable planet in the browser. No game engine, no build step — just Three.js, vanilla ES modules, and a fair amount of general relativity.
+An interactive 3D center of astrophysics, built as a walkable planet in the browser. No game engine, no build step — just Three.js, vanilla ES modules, and a fair amount of general relativity.
 
-**[→ Visit the museum](https://your-url.netlify.app)**
+**[→ Visit the Center](https://your-url.netlify.app)**
 
 ---
 
@@ -40,7 +40,7 @@ The planet-facing part of the site (`/`) is built around a few core modules:
 - `interactables.js` — a small proximity/registration system for exhibits. Adding exhibit №6 means adding one `register()` call, nothing else.
 - Each exhibit under `/exhibits/*` is its own self-contained Three.js scene with its own shader.
 
-A non-WebGL / reduced-motion fallback lives at `/classic/` — a static, fully navigable 2D version of the museum.
+A non-WebGL / reduced-motion fallback lives at `/classic/` — a static, fully navigable 2D version of the space center.
 
 ## Running locally
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta property="og:title" content="NS–BH Merger: Gravitational Lensing — Space Museum">
+    <meta property="og:title" content="NS–BH Merger: Gravitational Lensing — Space Center">
     <meta property="og:description" content="Watch a neutron star distort and vanish as it crosses a black hole's shadow — full Schwarzschild geodesic ray marching.">
     <meta property="og:image" content="https://rad-kelpie-15e90c.netlify.app/assets/images/og-merger-lens.jpg">
     <meta property="og:type" content="website">
@@ -393,7 +393,7 @@
         <a href="/">
             <span class="byline-name">Gylling</span>
             <span class="byline-sep">·</span>
-            <span class="byline-label">Space Museum</span>
+            <span class="byline-label">Space Center</span>
         </a>
     </div>
 
@@ -509,22 +509,22 @@
 
             <div class="fact-block">
                 <span class="fact-number">Same event</span>
-                <p class="fact-desc">This is the same neutron star and black hole as Exhibit 001 — same masses, same Peters-formula orbital decay, same merger. The difference is how the light reaching your eye is computed. Here, every pixel traces a photon path through the Schwarzschild metric, bending around the black hole according to Einstein's field equations. In Exhibit 001, the lensing was a screen-space approximation. Here it is numerically integrated geometry.</p>
+                <p class="fact-desc">Same neutron star and black hole as exhibit 001 — same masses, same Peters-formula decay, same merger. What's different is how the light gets computed. Here every pixel traces an actual photon path through the Schwarzschild metric. In exhibit 001 the lensing was a screen-space approximation; here it's real integrated geometry.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">Per pixel</span>
-                <p class="fact-desc">The rendering runs a loop up to 300 times for every pixel on screen, each iteration applying the geodesic acceleration equation: the photon's path curves toward the black hole in proportion to its angular momentum and inversely proportional to the fifth power of its distance. The starfield you see distorted is built from NASA's Deep Star Maps 2020 — 1.7 billion stars from the Hipparcos-2, Tycho-2, and Gaia DR2 catalogs, projected onto a sphere.</p>
+                <p class="fact-desc">Every pixel runs up to 300 iterations of the geodesic equation — the photon bends toward the black hole based on its angular momentum and how close it gets, to the fifth power. The distorted starfield behind it all is real: NASA's Deep Star Maps 2020, 1.7 billion stars from Hipparcos-2, Tycho-2, and Gaia DR2, projected onto a sphere.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">The shadow</span>
-                <p class="fact-desc">The black disk is not the event horizon — it is larger. Any photon whose path brings it within a critical impact parameter b_crit = √27 × M cannot escape. This analytical condition is checked before the numerical integration even begins, giving a mathematically exact shadow boundary. The bright arc just outside is the photon ring: light that nearly orbited the black hole before escaping toward your eye, carrying a compressed image of the entire sky.</p>
+                <p class="fact-desc">The black disk isn't the event horizon — it's bigger. Any photon that gets within b_crit = √27 × M never escapes, and that gets checked with actual math before the ray marching even starts, so the shadow's edge is mathematically exact, not eyeballed. The bright arc around it is the photon ring: light that nearly made a full orbit before escaping toward you, carrying a squished image of the entire sky.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">Disappearance</span>
-                <p class="fact-desc">When the neutron star passes behind the black hole's shadow, it vanishes — not because it was hidden, but because the ray marcher finds no photon path from your eye to its surface that avoids the shadow boundary. When it reappears on the other side, its light has traveled a slightly longer path around the black hole. In a real system at these distances, the gravitational lensing would also produce a faint Einstein ring when the neutron star is exactly behind the black hole — a compressed image of the star bent all the way around.</p>
+                <p class="fact-desc">When the neutron star crosses behind the shadow, it vanishes — not because it's hidden, but because there's genuinely no path for light to reach your eye from its surface without crossing the shadow boundary. When it reappears, its light took a slightly longer route around the black hole to get there. At these distances, a real system would also flash a faint Einstein ring right as the star lines up exactly behind the black hole.</p>
             </div>
 
         </div>
@@ -542,7 +542,7 @@
                 <span class="tech-divider">·</span>
                 <span class="tech-item">NASA Deep Star Maps 2020</span>
             </div>
-            <a class="back-link" href="/">← Back to museum</a>
+            <a class="back-link" href="/">← Back to Space Center</a>
         </div>
 
     </div>
