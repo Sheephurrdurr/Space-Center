@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="Schwarzschild Black Hole — Space Center">
+    <meta property="og:description" content="A 5 solar mass black hole, rendered via real-time ray marching through curved spacetime.">
+    <meta property="og:image" content="https://din-url.com/assets/images/og-blackhole.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Schwarzschild Black Hole — Space Center</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="/shared/base.css" rel="stylesheet">
+    <link href="/exhibits/blackhole/style.css" rel="stylesheet">
+
+        <script type="importmap">
+        {
+            "imports": {
+                "three": "/vendor/three/three.module.js",
+                "three/addons/": "/vendor/three/jsm/"
+            }
+        }
+        </script>
+</head>
+<body>
+
+<section class="hero">
+    <canvas id="c"></canvas>
+
+    <!-- Byline -->
+    <div class="byline">
+        <a href="/">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Museum</span>
+        </a>
+    </div>
+
+    <!-- Mode label -->
+    <div class="mode-label" id="modeLabel">Orbiting</div>
+
+    <!-- Math panel -->
+    <div class="math-panel hidden" id="mathPanel">
+        <div class="math-header">
+            <span class="math-eyebrow">Schwarzschild, 1916</span>
+            <div class="math-title">The geometry of a non-rotating black hole</div>
+            <button class="math-close" aria-label="Luk panel">×</button>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Shadow radius</div>
+            <div class="math-formula">r_shadow = √27 × M</div>
+            <div class="math-result">
+                <span class="math-live" id="shadowReadout">26.0</span>
+                <span class="math-unit">toy-units</span>
+            </div>
+            <div class="math-note">Larger than the event horizon (Rs = 10). Light that passes within this radius cannot escape, because its path curves back inward.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Photon sphere</div>
+            <div class="math-formula">r_photon = 1.5 × Rs</div>
+            <div class="math-result">
+                <span class="math-live">15.0</span>
+                <span class="math-unit">toy-units</span>
+            </div>
+            <div class="math-note">The radius at which light orbits the black hole. The bright ring you see is caused by photons that nearly orbit, that are bent ~360° and escape toward the camera, carrying an image of the entire sky compressed into a thin arc.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Camera distance</div>
+            <div class="math-result">
+                <span class="math-live" id="camDistReadout">—</span>
+                <span class="math-unit">× Rs</span>
+            </div>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Camera elevation</div>
+            <div class="math-result">
+                <span class="math-live" id="camPhiReadout">—</span>
+                <span class="math-unit">degrees</span>
+            </div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Geodesic equation (G = c = 1)</div>
+            <div class="math-formula">accel = −1.5 × Rs × |h|² / r⁵ × r̂</div>
+            <div class="math-note">h = r × v is the specific angular momentum of the photon, conserved along the geodesic. This equation, integrated numerically per pixel, produces all the lensing before you.</div>
+        </div>
+
+        <a href="/what.html" style="text-decoration:none; margin-top: 4px;">
+            <button class="ctrl-btn" style="width:100%; justify-content:center;">
+                Full explanation →
+            </button>
+        </a>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+        <div class="readouts">
+            <div class="readout">
+                <span class="readout-label">Shadow</span>
+                <span class="readout-value">√27 × M</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">Distance</span>
+                <span class="readout-value" id="distReadout">—</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">Elevation</span>
+                <span class="readout-value" id="elevReadout">—</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="ctrl-btn" id="mathBtn">
+                <span>∑</span> Math
+            </button>
+            <button class="ctrl-btn active" id="orbitBtn">
+                <span>⟳</span> Orbit
+            </button>
+            <button class="ctrl-btn" id="diveBtn">
+                <span>↓</span> Dive in
+            </button>
+            <button class="ctrl-btn" id="freelookBtn">
+                <span>⊕</span> Explore
+            </button>
+        </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="scroll-hint">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- Context section -->
+<section class="context">
+    <div class="context-inner">
+
+        <div class="context-header">
+            <span class="context-eyebrow">What you're looking at</span>
+            <h2 class="context-title">A black hole that bends<br>the light of roughly 1.7 billion stars.</h2>
+        </div>
+
+        <div class="context-body">
+            <div class="fact-block">
+                <span class="fact-number">√27 × M</span>
+                <p class="fact-desc">The event horizon has radius Rs = 2M. But the shadow has radius √27 × M ≈ 2.6 Rs. Light that passes between those two radii is eventually pulled inward, even though it never crosses the horizon itself. What you see as "black" is the region from which no photon path leads to your eye.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">1 equation</span>
+                <p class="fact-desc">Every pixel on screen traces a photon backward from your eye through curved spacetime. The deflection is governed by a single equation derived from Schwarzschild's 1916 solution to Einstein's field equations: the acceleration is proportional to the square of the photon's angular momentum, divided by the fifth power of its distance. Integrated numerically 300 times per pixel, per frame, this one equation produces the entire lensing effect.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">The ring</span>
+                <p class="fact-desc">The bright ring outside the shadow emerges from the physics... and a bit of mess with the shader (working on it). Photons that pass near the photon sphere (1.5 × Rs) are bent by almost 360° before escaping. They carry a compressed image of the entire sky, smeared into an arc. This is the same photon ring that the Event Horizon Telescope photographed in M87* in 2019 and Sagittarius A* in 2022, which were the first direct images of black hole shadows ever taken.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">G = c = 1</span>
+                <p class="fact-desc">The simulation uses geometric units where the gravitational constant G and speed of light c are both 1. This is standard practice in theoretical physics, because it serves to eliminates constants from the equations and reveals the underlying geometry. The "toy-units" of distance in the simulation map to real kilometers via the Schwarzschild radius: Rs = 2GM/c², so a 5-solar-mass black hole has Rs ≈ 14.8 km.</p>
+            </div>
+        </div>
+
+        <div class="context-footer">
+            <div class="tech-stack">
+                <span class="tech-label">Built with</span>
+                <span class="tech-item">Three.js</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">GLSL ray marching</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">Schwarzschild geodesics</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">NASA Deep Star Maps 2020</span>
+            </div>
+            <a class="back-link" href="/">← Back to museum</a>
+        </div>
+
+    </div>
+</section>
+<script type="module" src="/exhibits/blackhole/main.js"></script>
+</body>
+</html>

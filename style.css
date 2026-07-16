@@ -1,0 +1,345 @@
+/* ==========================================================
+   Space Museum — 3D forside
+   HUD-laget over canvas. Samme typografiske identitet som
+   resten af museet: Cormorant til titler, Grotesk til UI.
+   ========================================================== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #07070f;
+    color: #d8d5e6;
+    touch-action: none;
+}
+
+#loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: #07070f;
+    transition: opacity 0.8s ease;
+}
+#loader.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+.loader-byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #8b84ab;
+}
+.loader-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: #ece9f5;
+}
+.loader-title em { font-style: italic; color: #b0a8d4; }
+
+#scene {
+    position: fixed;
+    inset: 0;
+    display: block;
+}
+
+/* --- Titel, øverst venstre ------------------------------- */
+.hud-header {
+    position: fixed;
+    top: 2.2rem;
+    left: 2.6rem;
+    pointer-events: none;
+    user-select: none;
+}
+
+.hud-byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #8b84ab;
+}
+
+.hud-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.05;
+    margin-top: 0.4rem;
+    color: #ece9f5;
+}
+
+.hud-title em {
+    font-style: italic;
+    color: #b0a8d4;
+}
+
+/* --- Kontrol-hint, nederst i midten ------------------------ */
+.hud-hint {
+    position: fixed;
+    bottom: 2.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    color: #a49dc2;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 1.8s ease;
+}
+
+.hud-hint.fade { opacity: 0; }
+
+.hint-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.18em 0.5em;
+    border: 1px solid rgba(164, 157, 194, 0.35);
+    border-radius: 4px;
+    color: #d8d5e6;
+}
+
+.hint-sep {
+    margin: 0 0.7em;
+    opacity: 0.4;
+}
+
+/* --- Exhibit-placard, højre side ---------------------------- */
+/* Samme sprog som museets kort: nummer i mono, titel i serif.   */
+.placard {
+    position: fixed;
+    right: 2.6rem;
+    top: 50%;
+    transform: translateY(-50%) translateX(1.2rem);
+    width: min(21rem, 40vw);
+    padding: 1.6rem 1.8rem;
+    background: rgba(10, 9, 20, 0.72);
+    border: 1px solid rgba(139, 132, 171, 0.25);
+    border-radius: 6px;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.placard.visible {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+    pointer-events: auto;
+}
+
+.placard .placard-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+    font-size: 0.66rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: #5fd3c4;
+}
+
+.placard .placard-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.7rem;
+    line-height: 1.1;
+    margin: 0.5rem 0 0.7rem;
+    color: #ece9f5;
+}
+
+.placard .placard-desc {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: #a49dc2;
+    margin-bottom: 1.1rem;
+}
+
+.placard .placard-action {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: #d8d5e6;
+}
+
+/* --- Nav-menu, øverst højre ------------------------------- */
+.nav-toggle {
+    position: fixed;
+    top: 2.2rem;
+    right: 2.6rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.1rem;
+    color: #d8d5e6;
+    background: rgba(10, 9, 20, 0.72);
+    border: 1px solid rgba(139, 132, 171, 0.25);
+    border-radius: 6px;
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.nav-toggle:hover {
+    border-color: rgba(95, 211, 196, 0.6);
+}
+
+.nav-menu {
+    position: fixed;
+    top: 5.4rem;
+    right: 2.6rem;
+    width: 17rem;
+    padding: 0.6rem;
+    background: rgba(10, 9, 20, 0.82);
+    border: 1px solid rgba(139, 132, 171, 0.25);
+    border-radius: 6px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 10;
+}
+
+.nav-menu.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.nav-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.nav-entry:hover {
+    background: rgba(95, 211, 196, 0.08);
+}
+
+.nav-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #5fd3c4;
+    white-space: nowrap;
+}
+
+.nav-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: 0.88rem;
+    color: #d8d5e6;
+}
+
+.nav-disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* --- Virtuel joystick (touch) ------------------------------- */
+.joy-base {
+    position: fixed;
+    width: 110px;
+    height: 110px;
+    margin: -55px 0 0 -55px; /* centrér på touch-punktet */
+    border: 1.5px solid rgba(164, 157, 194, 0.4);
+    border-radius: 50%;
+    background: rgba(10, 9, 20, 0.3);
+    display: none;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.joy-base.active { display: block; }
+
+.joy-nub {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    border-radius: 50%;
+    background: rgba(216, 213, 230, 0.55);
+    border: 1px solid rgba(95, 211, 196, 0.5);
+}
+
+/* ==========================================================
+   Mobil: HUD-laget komprimeres. Breakpoint 700px dækker
+   telefoner i portræt og det meste landscape.
+   ========================================================== */
+@media (max-width: 700px) {
+
+    /* Titel: mindre og tættere på hjørnet */
+    .hud-header {
+        top: 1.1rem;
+        left: 1.2rem;
+    }
+    .hud-title {
+        font-size: 1.5rem;
+    }
+    .hud-byline {
+        font-size: 0.55rem;
+        letter-spacing: 0.2em;
+    }
+
+    /* Skjul kun KEYBOARD-hintet; touch-varianten skal vises */
+    .hud-hint:not(.touch) {
+        display: none;
+    }
+
+    /* Placard: fra side-panel til bund-banner. Side-placering
+       kolliderer med højre tommelfinger (hop-zonen). */
+    .placard {
+        right: 0.8rem;
+        left: 0.8rem;
+        top: auto;
+        bottom: 5.5rem;
+        width: auto;
+        transform: translateY(0.8rem);
+        padding: 1rem 1.2rem;
+    }
+    .placard.visible {
+        transform: translateY(0);
+
+    }
+    .placard .placard-title {
+        font-size: 1.25rem;
+    }
+    .placard .placard-desc {
+        font-size: 0.78rem;
+        margin-bottom: 0.6rem;
+    }
+
+    /* Nav: knap og menu rykker ind, menuen fylder bredden */
+    .nav-toggle {
+        top: 1.1rem;
+        right: 1.2rem;
+    }
+    .nav-menu {
+        top: 4.2rem;
+        right: 1.2rem;
+        left: 1.2rem;
+        width: auto;
+    }
+}

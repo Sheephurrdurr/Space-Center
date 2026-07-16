@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What? — Space Museum</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;1,9..40,300&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+    <style>
+        /* Page-specifikke styles — ikke en del af det globale stylesheet */
+        .what-page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 80px 28px 120px;
+        }
+
+        .what-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            text-decoration: none;
+            text-transform: uppercase;
+            margin-bottom: 64px;
+            transition: color 0.2s;
+        }
+
+        .what-back:hover { color: var(--ns-cyan); }
+
+        .what-hero {
+            margin-bottom: 80px;
+        }
+
+        .what-eyebrow {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .what-title {
+            font-family: var(--font-display);
+            font-size: clamp(32px, 5vw, 52px);
+            font-weight: 300;
+            color: var(--text-bright);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .what-subtitle {
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--text-mid);
+            font-weight: 300;
+            max-width: 560px;
+        }
+
+        /* Kapitler */
+        .chapter {
+            margin-bottom: 72px;
+            padding-top: 48px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chapter-number {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .chapter-title {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-bright);
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .chapter p {
+            font-size: 15px;
+            line-height: 1.85;
+            color: var(--text-mid);
+            font-weight: 300;
+            margin-bottom: 18px;
+        }
+
+        .chapter p:last-child { margin-bottom: 0; }
+
+        /* Highlight-boks */
+        .callout {
+            background: rgba(77, 200, 240, 0.05);
+            border-left: 2px solid var(--ns-cyan-dim);
+            border-radius: 0 4px 4px 0;
+            padding: 16px 20px;
+            margin: 24px 0;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: var(--text-mid);
+        }
+
+        /* Formel-blok */
+        .formula-block {
+            background: rgba(13, 20, 32, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin: 24px 0;
+            font-family: var(--font-mono);
+        }
+
+        .formula-main {
+            font-size: 15px;
+            color: var(--text-bright);
+            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .formula-explain {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.7;
+            letter-spacing: 0.03em;
+        }
+
+        .formula-explain span {
+            color: var(--ns-cyan);
+        }
+
+        /* Analogi-kort */
+        .analogy {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 16px;
+            margin: 24px 0;
+            align-items: start;
+        }
+
+        .analogy-icon {
+            font-size: 24px;
+            line-height: 1.6;
+        }
+
+        .analogy-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-mid);
+            font-weight: 300;
+        }
+
+        /* Tal-highlight inline */
+        .num {
+            font-family: var(--font-mono);
+            color: var(--ns-cyan);
+            font-size: 0.95em;
+        }
+
+        em {
+            font-style: italic;
+            color: var(--text-bright);
+        }
+    </style>
+</head>
+<body>
+    <div class="what-page">
+
+        <a class="what-back" href="/">← Back to the simulation</a>
+
+        <div class="what-hero">
+            <span class="what-eyebrow">The physics, somewhat explained</span>
+            <h1 class="what-title">What are you actually looking at?</h1>
+            <p class="what-subtitle">A neutron star and a black hole, locked in a death spiral. Here's what that means, how we know, and why the math driving this simulation is the same math LIGO uses to find these events in real life.</p>
+        </div>
+
+        <!-- ── 1 ── -->
+        <div class="chapter">
+            <div class="chapter-number">01</div>
+            <h2 class="chapter-title">The two objects</h2>
+
+            <p>A <em>neutron star</em> is what's left after a massive star explodes as a supernova. The explosion blows the outer layers away, but the core collapses under its own gravity, so hard that protons and electrons are crushed together into neutrons. What remains is a sphere about <span class="num">24 km</span> across that contains roughly <span class="num">1.4 times the mass of our Sun</span>. If you could take a teaspoon of neutron star material and put it on a table, it would weigh about a billion tons.</p>
+
+            <p>A <em>black hole</em> is what happens when that collapse goes even further. The result is a region of space where gravity is so strong that nothing, not even light, can escape once it crosses the boundary called the <em>event horizon</em>. The black hole in this simulation has <span class="num">5 solar masses</span>, giving it an event horizon about <span class="num">30 km</span> across.</p>
+
+            <div class="callout">
+                <p>This places them in what physicists call the <em>lower mass gap</em>, which is a range between ~2.5 and ~5 solar masses where we rarely observe compact objects. We're not sure if they're "very heavy neutron stars" or "very light black holes." The first confirmed detections of objects in this gap (GW200105 and GW200115) were made by LIGO in 2020.</p>
+            </div>
+        </div>
+
+        <!-- ── 2 ── -->
+        <div class="chapter">
+            <div class="chapter-number">02</div>
+            <h2 class="chapter-title">Why are they spiraling inward?</h2>
+
+            <p>In Newtonian gravity, two objects orbiting each other would do so forever. No energy is lost, nothing changes. But Einstein's general relativity adds something Newton didn't know about: <em>gravitational waves</em>.</p>
+
+            <p>When two massive objects orbit each other, they distort the fabric of spacetime around them. Those distortions ripple outward at the speed of light, carrying energy away from the system. Think of it like two heavy balls spinning on a stretched rubber sheet: the motion creates waves in the sheet, and those waves carry energy away from the balls.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🌊</div>
+                <div class="analogy-text">The ripples you see in the simulation are a visual representation of these gravitational waves propagating outward from the system. Their frequency is exactly twice the orbital frequency — because the gravitational "shape" of the system repeats twice per orbit, once for each mass passing the same point.</div>
+            </div>
+
+            <p>As the system loses energy, the two objects move closer together, which makes them orbit faster, which makes them radiate even more energy, which accelerates the process. This runaway process is the <em>inspiral</em>. It accelerates all the way to merger.</p>
+        </div>
+
+        <!-- ── 3 ── -->
+        <div class="chapter">
+            <div class="chapter-number">03</div>
+            <h2 class="chapter-title">The formula driving the animation</h2>
+
+            <p>In 1964, Peters and Mathews derived an exact expression for how fast a binary system loses energy to gravitational waves. The key result is a formula for how the separation <em>a</em> between the two objects changes over time:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">da/dt = −(64/5) × G³m₁m₂(m₁+m₂) / (c⁵ × a³)</div>
+                <div class="formula-explain">
+                    <span>da/dt</span> — how fast the separation is shrinking (units/second)<br>
+                    <span>G</span> — gravitational constant<br>
+                    <span>m₁, m₂</span> — the masses of the two objects<br>
+                    <span>c</span> — speed of light<br>
+                    <span>a</span> — current separation between the objects
+                </div>
+            </div>
+
+            <p>The critical thing to notice: <span class="num">a</span> appears in the denominator, cubed. This means as the separation shrinks, the rate of shrinking increases — by a lot. That's <span class="num">1/a³</span> and the reason why the animation accelerates toward the end.</p>
+
+            <div class="callout">
+                <p>The simulation uses what physicists call <em>geometric units</em>, where G = c = 1. This simplifies the formula to <span class="num">da/dt = −(64/5) × m₁m₂(m₁+m₂) / a³</span>, which is structurally identical, it just has the constants folded into the unit system. The physics are the same.</p>
+            </div>
+
+            <p>Peters also derived the total time until merger from a given starting separation:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">t_merge = (a⁴ − aₘ⁴) / (4K),&nbsp;&nbsp; K = (64/5) × m₁m₂(m₁+m₂)</div>
+                <div class="formula-explain">
+                    <span>a</span> — starting separation<br>
+                    <span>aₘ</span> — merger radius (≈ 6× the larger object's mass, the innermost stable orbit)<br>
+                    <span>K</span> — a constant that bundles the mass terms together
+                </div>
+            </div>
+
+            <p>Plugging in the values for this system: Neutron star <span class="num">1.4 M☉</span>, black hole <span class="num">5 M☉</span>, starting separation <span class="num">~148 km</span> — gives a merger time of approximately <span class="num">3 milliseconds</span>. The simulation compresses that into 10 seconds, roughly <span class="num">3000×</span> slower than reality.</p>
+        </div>
+
+        <!-- ── 4 ── -->
+        <div class="chapter">
+            <div class="chapter-number">04</div>
+            <h2 class="chapter-title">What happens at the end?</h2>
+
+            <p>When the neutron star crosses inside what's called the <em>innermost stable circular orbit</em> (roughly 6 times the black hole's mass in geometric units), there are no more stable orbits available. It falls inward and is consumed by the black hole in a fraction of a millisecond.</p>
+
+            <p>The newly-formed, slightly-larger black hole doesn't immediately settle into a quiet state. It <em>rings</em>, kinda like the oscilations from a bell after you hit it, and those oscillations radiate a final burst of gravitational waves that decay exponentially. This is called <em>ringdown</em>, and it's the third and final phase of every compact binary merger: inspiral → merger → ringdown.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🔔</div>
+                <div class="analogy-text">The fading ripples after the merger in the simulation represent this ringdown phase. The amplitude decays exponentially, the same mathematical shape as a bell's tone fading to silence. The universe likes exponential stuff.</div>
+            </div>
+
+            <p>LIGO has detected dozens of these events. Each one looks like a chirp in the data: a rising frequency and amplitude during inspiral, a peak at merger, and a rapid exponential decay during ringdown. The Peters formula is what lets physicists predict exactly what that chirp should look like and match it against the noise in the detector.</p>
+        </div>
+
+        <!-- ── 5 ── -->
+        <div class="chapter">
+            <div class="chapter-number">05</div>
+            <h2 class="chapter-title">What's real, and what's artistic?</h2>
+
+            <p>A few deliberate choices were made to make this watchable:</p>
+
+            <p><em>The timescale.</em> The real merger takes ~3 ms. Rendered at actual speed, you'd see nothing. The simulation runs ~3000× slower, but the <em>ratio</em> of early-to-late speed is preserved — the acceleration you see is genuine.</p>
+
+            <p><em>The sizes.</em> A real neutron star is 24 km across. A real black hole event horizon at 5 solar masses is ~30 km. At true scale, with a starting separation of 148 km, both objects would be sub-pixel. The objects are scaled up so you can actually see them, but their <em>relative</em> sizes are approximately correct.</p>
+
+            <p><em>The lensing.</em> The gravitational lensing effect around the black hole is computed in real time using a GLSL fragment shader. It's a post-processing approximation, not full ray tracing, but it captures the qualitative behavior: light bending around the photon sphere, the shadow radius at ~2.6× the Schwarzschild radius, and the distortion of background stars.</p>
+
+            <p><em>The gravitational wave amplitude.</em> The actual strain amplitude of gravitational waves from a system like this is around 10⁻²¹, which is utterly imperceptible. The visual amplitude of the ripple effect is scaled up by several orders of magnitude, while its frequency is kept physically correct.</p>
+        </div>
+
+        <div style="padding-top: 48px; border-top: 1px solid var(--border);">
+            <a class="what-back" href="/">← Back to the simulation</a>
+        </div>
+
+    </div>
+</body>
+</html>

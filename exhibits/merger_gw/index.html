@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="NS–BH Merger: Gravitational Waves — Space Museum">
+    <meta property="og:description" content="A neutron star and black hole spiral together in their final moments, governed by the Peters & Mathews quadrupole formula.">
+    <meta property="og:image" content="https://din-url.com/assets/images/og-merger-gw.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>NSBH Binary Merger</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/exhibits/merger_gw/style.css" rel="stylesheet" />
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module" src="/exhibits/merger_gw/main.js"></script>
+</head>
+<body>
+
+    <!-- ── HERO: fullscreen animation ── -->
+    <section class="hero">
+        <canvas id="solarCanvas"></canvas>
+
+        <!-- Top-left -->
+        <div class="hero-byline">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Museum</span>
+        </div>
+
+           <!-- Math overlay -->
+            <div class="math-panel hidden" id="mathPanel">
+                <div class="math-header">
+                    <span class="math-eyebrow">Peters & Mathews, 1964</span>
+                    <span class="math-title">Gravitational Wave Orbital Decay</span>
+                </div>
+
+                    <div class="math-block">
+                        <div class="math-formula">
+                            <span class="math-sym">da/dt</span>
+                            <span class="math-eq">=</span>
+                            <span class="math-sym">−(64/5)</span>
+                            <span class="math-eq">×</span>
+                            <span class="math-sym">G³m₁m₂(m₁+m₂)</span>
+                            <span class="math-eq">/</span>
+                            <span class="math-sym">c⁵a³</span>
+                        </div>
+                        <div class="math-note">Symbolic — G=c=1 in geometric units</div>
+                    </div>
+
+                    <div class="math-block">
+                        <div class="math-label">With live values:</div>
+                        <div class="math-substituted" id="mathSubstituted">—</div>
+                        <div class="math-result">
+                            <span class="math-label">= </span>
+                            <span class="math-live" id="mathDadt">—</span>
+                            <span class="math-unit"> toy-units/s</span>
+                        </div>
+                    </div>
+
+                <div class="math-block">
+                    <div class="math-label">Time to merger (Peters closed form):</div>
+                    <div class="math-formula">
+                        <span class="math-sym">t</span>
+                        <span class="math-eq">=</span>
+                        <span class="math-sym">(a⁴ − aₘ⁴)</span>
+                        <span class="math-eq">/</span>
+                        <span class="math-sym">4K</span>
+                        <span class="math-note-inline">, K = (64/5)m₁m₂(m₁+m₂)</span>
+                    </div>
+                    <div class="math-result">
+                        <span class="math-label">= </span>
+                        <span class="math-live" id="mathTmerge">—</span>
+                        <span class="math-unit"> ms remaining</span>
+                    </div>
+                </div>
+
+                <div class="math-block">
+                    <div class="math-label">GW frequency (dominant quadrupole mode):</div>
+                    <div class="math-formula">
+                        <span class="math-sym">f_GW</span>
+                        <span class="math-eq">=</span>
+                        <span class="math-sym">2 × f_orbital</span>
+                        <span class="math-eq">=</span>
+                        <span class="math-sym">ω/π</span>
+                    </div>
+
+                    <div class="math-result">
+                        <span class="math-label">= </span>
+                        <span class="math-live" id="mathFgw">—</span>
+                        <span class="math-unit"> Hz</span>
+                    </div>
+
+                    <div class="math-block" style="padding-top: 8px; border-top: 1px solid var(--border);">
+                        <a href="/what.html" class="panel-btn" style="text-decoration: none; align-self: flex-start;">
+                            <span class="btn-icon">What?</span>
+                            
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Instrument panel -->
+        <div class="instrument-panel">
+            <div class="panel-left">
+                <div class="readout-group">
+                    <span class="readout-label">EVENT</span>
+                    <span class="readout-value" id="statusReadout">INSPIRALING</span>
+                </div>
+                <div class="readout-group">
+                    <span class="readout-label">SEPARATION</span>
+                    <span class="readout-value mono" id="sepReadout">—</span>
+                </div>
+                <div class="readout-group">
+                    <span class="readout-label">GW FREQ</span>
+                    <span class="readout-value mono" id="freqReadout">—</span>
+                </div>
+                <div class="readout-group">
+                    <span class="readout-label">TIME COMPRESSION</span>
+                    <span class="readout-value mono">~3000×</span>
+                </div>
+            </div>
+
+         
+
+            <div class="panel-right">
+                <!-- Math toggle knap -->
+                <button class="panel-btn" id="mathBtn">
+                    <span class="btn-icon">∑</span>
+                    <span class="btn-label">Math</span>
+                </button>
+                <button class="panel-btn" id="pauseBtn">
+                    <span class="btn-icon">⏸</span>
+                    <span class="btn-label">Pause</span>
+                </button>
+                <button class="panel-btn hidden" id="restartBtn">
+                    <span class="btn-icon">↺</span>
+                    <span class="btn-label">Replay</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Scroll-indikator -->
+        <div class="scroll-hint">
+            <span>scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- ── KONTEKST ── -->
+    <section class="context">
+        <div class="context-inner">
+
+            <div class="context-header">
+                <span class="context-eyebrow">What you're watching</span>
+                <h2 class="context-title">A neutron star and black hole,<br>in their final moments.</h2>
+            </div>
+
+            <div class="context-body">
+                <div class="fact-block">
+                    <span class="fact-number">~3 ms</span>
+                    <p class="fact-desc">The real duration of this merger. What you see compressed into 10 seconds takes approximately three milliseconds in reality — the final instant of a dance that began over a billion years ago.</p>
+                </div>
+
+                <div class="fact-block">
+                    <span class="fact-number">1.4 + 5 M☉</span>
+                    <p class="fact-desc">The neutron star carries 1.4 solar masses packed into a sphere roughly 24 km across. The black hole is 5 solar masses — its event horizon comparable in size to the neutron star itself. This puts them squarely in the "lower mass gap," a zone astrophysicists are still working to understand.</p>
+                </div>
+
+                <div class="fact-block">
+                    <span class="fact-number">Peters '64</span>
+                    <p class="fact-desc">The orbital decay driving this inspiral is computed using the Peters & Mathews quadrupole formula — the same equation LIGO uses to predict merger timescales. The gravitational wave frequency you see rippling outward is exactly twice the orbital frequency, the dominant quadrupole mode.</p>
+                </div>
+            </div>
+
+            <div class="context-footer">
+                <div class="tech-stack">
+                    <span class="tech-label">Built with</span>
+                    <span class="tech-item">THREE.js</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">GLSL</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">Post-processing render pipeline</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">Newtonian gravitational wave physics</span>
+                </div>
+
+                <div style="display: flex; gap: 16px; align-items: center;">
+                   
+                    <a class="back-link" href="/">← Back to portfolio</a>
+                     <a class="panel-btn" href="/what.html" style="text-decoration: none;">
+                        <span class="btn-label">What's going on here?</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</body>
+</html>

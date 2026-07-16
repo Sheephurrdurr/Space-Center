@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="NS–BH Merger: Gravitational Lensing — Space Museum">
+    <meta property="og:description" content="Watch a neutron star distort and vanish as it crosses a black hole's shadow — full Schwarzschild geodesic ray marching.">
+    <meta property="og:image" content="https://din-url.com/assets/images/og-merger-lens.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>NS–BH Merger: Lensing — Space Center</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="/shared/base.css" rel="stylesheet">
+    <link href="/exhibits/merger_lens/style.css" rel="stylesheet">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+    
+    <style>
+        /* ── Page-specifikke styles ── */
+        .hero {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #solarCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Byline */
+        .hero-byline {
+            position: absolute;
+            top: 24px;
+            left: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .hero-byline a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            transition: color 0.2s;
+        }
+
+        .hero-byline a:hover { color: var(--text-mid); }
+        .byline-name  { color: var(--text-bright); font-weight: 500; }
+        .byline-sep   { color: var(--ns-cyan-dim); }
+
+        /* Math panel */
+        .math-panel {
+            position: absolute;
+            top: 60px;
+            left: 28px;
+            max-width: 520px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            background: rgba(13, 20, 32, 0.88);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 22px 26px;
+            backdrop-filter: blur(12px);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .math-panel.hidden { display: none; }
+
+        .math-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .math-title {
+            font-family: var(--font-ui);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-bright);
+        }
+
+        .math-block { display: flex; flex-direction: column; gap: 8px; }
+
+        .math-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+        }
+
+        .math-formula {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-bright);
+            line-height: 1.6;
+        }
+
+        .math-substituted {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-mid);
+        }
+
+        .math-result {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .math-live {
+            font-family: var(--font-mono);
+            font-size: 20px;
+            color: var(--ns-cyan);
+        }
+
+        .math-unit {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .math-note {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.65;
+        }
+
+        .math-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Instrument panel */
+        .instrument-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 20px 28px;
+            background: linear-gradient(to top, rgba(6,8,15,0.88) 0%, transparent 100%);
+            z-index: 10;
+        }
+
+        .panel-left {
+            display: flex;
+            gap: 32px;
+            align-items: flex-end;
+        }
+
+        .readout-group { display: flex; flex-direction: column; gap: 4px; }
+
+        .readout-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+        }
+
+        .readout-value {
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-bright);
+            letter-spacing: 0.04em;
+        }
+
+        .readout-value.mono {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--ns-cyan);
+        }
+
+        .panel-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .panel-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            background: rgba(13, 20, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-mid);
+            font-family: var(--font-ui);
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .panel-btn:hover {
+            border-color: var(--ns-cyan);
+            color: var(--ns-cyan);
+        }
+
+        .hidden { display: none; }
+
+        /* Scroll hint */
+        .scroll-hint {
+            position: absolute;
+            left: 28px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .scroll-hint span {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            writing-mode: vertical-rl;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--ns-cyan-dim), transparent);
+            animation: scrollPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.2; }
+            50%       { opacity: 0.8; }
+        }
+
+        /* Context section */
+        .context {
+            background: var(--space);
+            border-top: 1px solid var(--border);
+            padding: 100px 0 80px;
+        }
+
+        .context-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        .context-header { margin-bottom: 72px; }
+
+        .context-eyebrow {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--ns-cyan-dim);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .context-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(28px, 4.5vw, 52px);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--text-bright);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .context-body { border-top: 1px solid var(--border); }
+
+        .fact-block {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 32px;
+            padding: 36px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: start;
+        }
+
+        .fact-number {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 300;
+            color: var(--ns-cyan);
+            letter-spacing: -0.02em;
+            padding-top: 3px;
+        }
+
+        .fact-desc {
+            font-size: 15px;
+            line-height: 1.85;
+            color: var(--text-mid);
+            font-weight: 300;
+        }
+
+        .context-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 56px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .tech-stack {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tech-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .tech-item {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-mid);
+        }
+
+        .tech-divider { color: var(--ns-cyan-dim); }
+
+        .back-link {
+            font-family: var(--font-ui);
+            font-size: 13px;
+            color: var(--text-dim);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--ns-cyan); }
+
+        @media (max-width: 600px) {
+            .panel-left { gap: 18px; }
+            .readout-group:nth-child(n+3) { display: none; }
+            .fact-block { grid-template-columns: 1fr; gap: 12px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-line { animation: none; opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <canvas id="solarCanvas"></canvas>
+
+    <!-- Byline -->
+    <div class="hero-byline">
+        <a href="/">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Museum</span>
+        </a>
+    </div>
+
+    <!-- Math panel -->
+    <div class="math-panel hidden" id="mathPanel">
+        <div>
+            <span class="math-eyebrow">Peters & Mathews, 1964</span>
+            <div class="math-title">Gravitational Wave Orbital Decay</div>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Peters formula</div>
+            <div class="math-formula">da/dt = −(64/5) × G³m₁m₂(m₁+m₂) / c⁵a³</div>
+            <div class="math-note">G = c = 1 in geometric units. The rate of inspiral accelerates as a³ shrinks — the closer they get, the faster they fall inward.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">With live values:</div>
+            <div class="math-substituted" id="mathSubstituted">—</div>
+            <div class="math-result">
+                <span class="math-label">= </span>
+                <span class="math-live" id="mathDadt">—</span>
+                <span class="math-unit">toy-units/s</span>
+            </div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Time to merger</div>
+            <div class="math-formula">t = (a⁴ − aₘ⁴) / 4K,  K = (64/5)m₁m₂(m₁+m₂)</div>
+            <div class="math-result">
+                <span class="math-live" id="mathTmerge">—</span>
+                <span class="math-unit">ms remaining</span>
+            </div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">GW frequency (dominant quadrupole)</div>
+            <div class="math-formula">f_GW = 2 × f_orbital = ω/π</div>
+            <div class="math-result">
+                <span class="math-live" id="mathFgw">—</span>
+                <span class="math-unit">Hz</span>
+            </div>
+        </div>
+
+        <div style="padding-top: 8px; border-top: 1px solid var(--border);">
+            <a href="/what.html" style="text-decoration: none;">
+                <button class="panel-btn" style="width: 100%; justify-content: center;">
+                    Full explanation →
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Instrument panel -->
+    <div class="instrument-panel">
+        <div class="panel-left">
+            <div class="readout-group">
+                <span class="readout-label">Event</span>
+                <span class="readout-value" id="statusReadout">INSPIRALING</span>
+            </div>
+            <div class="readout-group">
+                <span class="readout-label">Separation</span>
+                <span class="readout-value mono" id="sepReadout">—</span>
+            </div>
+            <div class="readout-group">
+                <span class="readout-label">GW Freq</span>
+                <span class="readout-value mono" id="freqReadout">—</span>
+            </div>
+            <div class="readout-group">
+                <span class="readout-label">Slow Motion</span>
+                <span class="readout-value mono" id="slowmoReadout">-</span>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <button class="panel-btn" id="mathBtn">
+                <span>∑</span> Math
+            </button>
+            <button class="panel-btn" id="pauseBtn">
+                <span class="btn-icon">⏸</span>
+                <span class="btn-label">Pause</span>
+            </button>
+            <button class="panel-btn hidden" id="restartBtn">
+                <span class="btn-icon">↺</span>
+                <span class="btn-label">Replay</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="scroll-hint">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- ── CONTEXT ── -->
+<section class="context">
+    <div class="context-inner">
+
+        <div class="context-header">
+            <span class="context-eyebrow">Exhibit 003 — The same event, seen differently</span>
+            <h2 class="context-title">What does spacetime look like<br>when you watch it collapse?</h2>
+        </div>
+
+        <div class="context-body">
+
+            <div class="fact-block">
+                <span class="fact-number">Same event</span>
+                <p class="fact-desc">This is the same neutron star and black hole as Exhibit 001 — same masses, same Peters-formula orbital decay, same merger. The difference is how the light reaching your eye is computed. Here, every pixel traces a photon path through the Schwarzschild metric, bending around the black hole according to Einstein's field equations. In Exhibit 001, the lensing was a screen-space approximation. Here it is numerically integrated geometry.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">Per pixel</span>
+                <p class="fact-desc">The rendering runs a loop up to 300 times for every pixel on screen, each iteration applying the geodesic acceleration equation: the photon's path curves toward the black hole in proportion to its angular momentum and inversely proportional to the fifth power of its distance. The starfield you see distorted is built from NASA's Deep Star Maps 2020 — 1.7 billion stars from the Hipparcos-2, Tycho-2, and Gaia DR2 catalogs, projected onto a sphere.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">The shadow</span>
+                <p class="fact-desc">The black disk is not the event horizon — it is larger. Any photon whose path brings it within a critical impact parameter b_crit = √27 × M cannot escape. This analytical condition is checked before the numerical integration even begins, giving a mathematically exact shadow boundary. The bright arc just outside is the photon ring: light that nearly orbited the black hole before escaping toward your eye, carrying a compressed image of the entire sky.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">Disappearance</span>
+                <p class="fact-desc">When the neutron star passes behind the black hole's shadow, it vanishes — not because it was hidden, but because the ray marcher finds no photon path from your eye to its surface that avoids the shadow boundary. When it reappears on the other side, its light has traveled a slightly longer path around the black hole. In a real system at these distances, the gravitational lensing would also produce a faint Einstein ring when the neutron star is exactly behind the black hole — a compressed image of the star bent all the way around.</p>
+            </div>
+
+        </div>
+
+        <div class="context-footer">
+            <div class="tech-stack">
+                <span class="tech-label">Built with</span>
+                <span class="tech-item">Three.js</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">GLSL ray marching</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">Schwarzschild geodesics</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">Peters 1964</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">NASA Deep Star Maps 2020</span>
+            </div>
+            <a class="back-link" href="/">← Back to museum</a>
+        </div>
+
+    </div>
+</section>
+<script type="module" src="/exhibits/merger_lens/main.js"></script>
+
+</body>
+</html>

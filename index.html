@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta property="og:image" content="https://din-url.com/assets/images/og-image.jpg">
+    <title>Space Center — Gylling</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+
+    <script>
+    (function () {
+        try {
+            var c = document.createElement('canvas');
+            var gl = c.getContext('webgl2') || c.getContext('webgl');
+            if (!gl) location.replace('/classic/');
+        } catch (e) {
+            location.replace('/classic/');
+        }
+    })();
+    </script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<div id="loader">
+    <span class="loader-byline">Gylling · Interactive Astrophysics</span>
+    <h1 class="loader-title">Space <em>Center</em></h1>
+</div>
+
+<header class="hud-header">
+    <span class="hud-byline">Gylling · Interactive Astrophysics</span>
+    <h1 class="hud-title">Space <em>Center</em></h1>
+</header>
+
+<div id="hint" class="hud-hint">
+    <span class="hint-key">WASD</span> Move
+    <span class="hint-sep">·</span>
+    <span class="hint-key">Shift</span> Sprint
+    <span class="hint-sep">·</span>
+    <span class="hint-key">Space</span> Jump
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

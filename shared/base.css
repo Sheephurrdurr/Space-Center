@@ -1,0 +1,19 @@
+/* 1) Design-tokens: HELE sitets identitet som variabler */
+:root {
+    --bg: #07070f;
+    --text: #d8d5e6;
+    --text-dim: #a49dc2;
+    --accent: #5fd3c4;
+    --warm: #ffb454;
+    --panel: rgba(10, 9, 20, 0.72);
+    --border: rgba(139, 132, 171, 0.25);
+    --font-display: 'Cormorant Garamond', serif;
+    --font-ui: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* 2) Reset + hygiejne (fra sidst) */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+
+/* 3) Fælles komponenter: placard, spec-rows, hint-keys, hero-mønstret... */

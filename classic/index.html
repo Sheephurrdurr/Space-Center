@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Museum — Gylling</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<main class="museum">
+
+    <header class="museum-header">
+        <span class="museum-byline">Gylling · Interactive Astrophysics</span>
+        <h1 class="museum-name">Space <em>Center</em></h1>
+        <p class="museum-tagline">All exhibits are physically simulated in real time</p>
+    </header>
+
+    <div class="exhibit-grid">
+
+
+         <!-- Udstilling 1: Standalone BH -->
+        <a class="exhibit-card" href="/blackhole/index.html">
+            <div class="card-visual">
+                <div class="visual-bh">
+                    <div class="bh-shadow"></div>
+                </div>
+            </div>
+            <div class="card-placard">
+                <span class="placard-number">Exhibit 001</span>
+                <h2 class="placard-title">Schwarzschild<br>Black Hole</h2>
+                <p class="placard-desc">A 5 solar mass black hole rendered via real-time Schwarzschild ray marching. Each pixel traces a photon path through curved spacetime using the geodesic equation.</p>
+                <div class="placard-specs">
+                    <div class="spec-row">
+                        <span class="spec-key">Method</span>
+                        <span class="spec-val">Ray marching</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Metric</span>
+                        <span class="spec-val">Schwarzschild</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Shadow radius</span>
+                        <span class="spec-val">√27 × M</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Photon sphere</span>
+                        <span class="spec-val">1.5 × Rs</span>
+                    </div>
+                </div>
+            </div>
+            <span class="card-enter">Enter →</span>
+        </a>
+
+        <a class="exhibit-card" href="/Kerr_finalBoss/index.html">
+            <div class="card-visual">
+                <div class="visual-bh">
+                    <div class="bh-shadow"></div>
+                </div>
+            </div>
+            <div class="card-placard">
+                <span class="placard-number">Exhibit 002</span>
+                <h2 class="placard-title">Kerr<br>Black Hole</h2>
+                <p class="placard-desc">A 5 solar mass rotating black hole, rendered by integrating the full Kerr metric — no approximations. Every pixel propagates a photon through curved spacetime with Hamilton's equations. Frame dragging, the displaced D-shaped shadow and a Doppler-beamed accretion disk all emerge from the math.</p>
+                <div class="placard-specs">
+                    <div class="spec-row">
+                        <span class="spec-key">Method</span>
+                        <span class="spec-val">RK4 Hamiltonian geodesics</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Metric</span>
+                        <span class="spec-val">Kerr (Kerr–Schild form)</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Horizon</span>
+                        <span class="spec-val">M(1 + √(1−a²))</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Disk inner edge</span>
+                        <span class="spec-val">ISCO — follows spin</span>
+                    </div>
+                </div>
+            </div>
+            <span class="card-enter">Enter →</span>
+        </a>
+
+        <!-- Udstilling 3: NS/BH Merger -->
+        <a class="exhibit-card" href="/merger_gw/index.html">
+            <div class="card-visual">
+                <div class="visual-merger">
+                    <div class="merger-ns"></div>
+                    <div class="merger-bh"></div>
+                </div>
+            </div>
+            <div class="card-placard">
+                <span class="placard-number">Exhibit 003</span>
+                <h2 class="placard-title">NS–BH Merger: Gravitational Waves</h2>
+                <p class="placard-desc">A 1.4 solar mass neutron star and a 5 solar mass black hole in their final moments. The orbital decay is governed by the Peters & Mathews quadrupole formula.</p>
+                <div class="placard-specs">
+                    <div class="spec-row">
+                        <span class="spec-key">Event type</span>
+                        <span class="spec-val">NSBH Inspiral</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Real duration</span>
+                        <span class="spec-val">~3 ms</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Physics</span>
+                        <span class="spec-val">Peters 1964</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Lensing</span>
+                        <span class="spec-val">GLSL approx.</span>
+                    </div>
+                </div>
+            </div>
+            <span class="card-enter">Enter →</span>
+        </a>
+
+       
+
+         <a class="exhibit-card" href="/merger_lens/index.html">
+            <div class="card-visual">
+                <div class="visual-merger">
+                    <div class="merger-ns"></div>
+                    <div class="merger-bh"></div>
+                </div>
+            </div>
+            <div class="card-placard">
+                <span class="placard-number">Exhibit 004</span>
+                <h2 class="placard-title">NS–BH Merger:<br>Gravitational Lensing</h2>
+                <p class="placard-desc">The same inspiral — seen through the lens of general relativity. Each pixel traces a photon through curved spacetime using the Schwarzschild geodesic equation. Watch the neutron star distort and vanish as it crosses the black hole's shadow.</p>
+                <div class="placard-specs">
+                    <div class="spec-row">
+                        <span class="spec-key">Event type</span>
+                        <span class="spec-val">NSBH Inspiral</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Rendering</span>
+                        <span class="spec-val">Ray marching</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Metric</span>
+                        <span class="spec-val">Schwarzschild</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-key">Starfield</span>
+                        <span class="spec-val">NASA 1.7B stars</span>
+                    </div>
+                </div>
+            </div>
+            <span class="card-enter">Enter →</span>
+        </a>
+    </div>
+
+    <footer class="museum-footer">
+        <div class="footer-line"></div>
+        <span class="footer-text">More exhibits coming</span>
+    </footer>
+
+</main>
+<script type="module" src="main.js"></script>
+
+<script>
+(function () {
+    var gl = null;
+    try {
+        var c = document.createElement('canvas');
+        gl = c.getContext('webgl2') || c.getContext('webgl');
+    } catch (e) { /* gl forbliver null */ }
+
+    if (!gl) {
+        document.body.classList.add('no-webgl');
+        // Gør exhibit-kort til ikke-links: vis indholdet, but very very watered down. *Accessibility*
+        document.querySelectorAll('.exhibit-card').forEach(function (card) {
+            card.removeAttribute('href');
+        });
+    }
+})();
+</script>
+
+</body>
+</html>

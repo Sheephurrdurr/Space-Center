@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="Kerr Rotating Black Hole — Space Museum">
+    <meta property="og:description" content="Kerr metric, RK4 Hamiltonian geodesics. Unhinged math and physics come together to create stunning visuals.">
+    <meta property="og:image" content="https://din-url.com/assets/images/og-image.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Kerr Black Hole — Space Museum</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="/shared/base.css" rel="stylesheet">
+    <link href="/exhibits/Kerr_finalBoss/style.css" rel="stylesheet">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+<section class="hero">
+    <canvas id="c"></canvas>
+
+    <!-- Byline -->
+    <div class="byline">
+        <a href="/">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Museum</span>
+        </a>
+    </div>
+
+    <!-- Mode label -->
+    <div class="mode-label" id="modeLabel">Orbiting</div>
+
+    <!-- Math panel -->
+    <div class="math-panel hidden" id="mathPanel">
+        <div class="math-header">
+            <span class="math-eyebrow">Kerr, 1963</span>
+            <div class="math-title">The geometry of a rotating black hole</div>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Outer horizon</div>
+            <div class="math-formula">r₊ = M(1 + √(1 − a²))</div>
+            <div class="math-result">
+                <span class="math-live" id="horizonReadout">—</span>
+                <span class="math-unit">toy-units · <span id="horizonRsReadout">—</span></span>
+            </div>
+            <div class="math-note">Spin shrinks the horizon. At a = 0 you recover Schwarzschild (r₊ = Rs). At a = 1, which is the extremal limit, the horizon has halved to r₊ = M. Drag the spin slider and watch this number fall.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Disk inner edge — ISCO</div>
+            <div class="math-formula">r_isco: 6M (a=0) → M (a=1)</div>
+            <div class="math-note">Inside the innermost stable circular orbit, gas cannot orbit so it just plunges. The disk's inner edge therefore tracks the ISCO (closest stable orbit), which shrinks dramatically with spin. Drag the spin slider and watch the disk crawl toward the shadow. This is, quite literally, how astronomers measure the spin of real black holes.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Relativistic beaming</div>
+            <div class="math-formula">g = E / [uᵗ(E − Ω·L_z)]</div>
+            <div class="math-note">One side of the disk races toward you at a large fraction of light speed; the other retreats. The factor g combines Doppler beaming and gravitational redshift in a single number, computed from the photon's conserved energy and angular momentum. Intensity scales as g³, which is why one side blazes blue-white while the other smolders red. (Interstellar switched this effect off for aesthetics. This exhibit leaves it on.)</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Ergosphere (equator)</div>
+            <div class="math-formula">r_ergo = 2M = Rs</div>
+            <div class="math-result">
+                <span class="math-live">10.0</span>
+                <span class="math-unit">toy-units — constant, regardless of spin</span>
+            </div>
+            <div class="math-note">Between the horizon and the ergosphere, spacetime rotates faster than light. Everything has to move in here, because space itself does. The light can still escape, but only by moving with the rotation.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Frame dragging</div>
+            <div class="math-formula">ω = 2J / r³</div>
+            <div class="math-note">Space itself rotates with the black hole, like water around a drain. Every photon in the simulation is carried sideways by this flow, that is what smears the stars near the shadow into a swirl.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Camera distance</div>
+            <div class="math-result">
+                <span class="math-live" id="camDistReadout">—</span>
+                <span class="math-unit">× Rs</span>
+            </div>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Camera elevation</div>
+            <div class="math-result">
+                <span class="math-live" id="camPhiReadout">—</span>
+                <span class="math-unit">degrees</span>
+            </div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">No approximations</div>
+            <div class="math-note">Earlier versions of this exhibit used the weak-field Lense-Thirring approximation. This one does not: every pixel integrates the full Kerr metric in Kerr–Schild form, using Hamilton's equations and RK4. What imperfections remain are numerical: finite step counts at a chaotically sensitive boundary.</div>
+        </div>
+
+        <a href="/what.html" style="text-decoration:none; margin-top: 4px;">
+            <button class="ctrl-btn" style="width:100%; justify-content:center;">
+                Full explanation →
+            </button>
+        </a>
+    </div>
+
+    <div class="bottom-bar">
+ 
+    <!-- Parametre: det du styrer -->
+    <div class="hud-params">
+        <div class="readout spin-control">
+            <span class="readout-label">Spin a / M</span>
+            <div class="spin-row">
+                <input type="range" id="spinSlider" min="0" max="0.998" step="0.002" value="0.85" aria-label="Black hole spin">
+                <span class="readout-value" id="spinReadout">0.85</span>
+            </div>
+        </div>
+        <div class="readout">
+            <span class="readout-label">Mass</span>
+            <div class="spin-row" id="massPresets">
+                <button class="mass-btn active">5 M☉</button>
+                <button class="mass-btn">Sgr A*</button>
+                <button class="mass-btn">M87*</button>
+                <button class="mass-btn">TON 618</button>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Telemetri: det du aflaeser -->
+    <div class="hud-telemetry">
+        <span class="tel-item">
+            <span class="tel-key">Dist</span><span class="readout-value" id="distReadout">—</span>
+        </span>
+        <span class="tel-sep">·</span>
+        <span class="tel-item">
+            <span class="tel-key">Elev</span><span class="readout-value" id="elevReadout">—</span>
+        </span>
+        <span class="tel-sep">·</span>
+        <span class="tel-item tel-scale">
+            <span class="tel-key">Scale</span><span class="readout-value" id="scaleReadout">—</span>
+        </span>
+    </div>
+ 
+    <!-- Kontroller: kameramodes (segmented) + toggles (ikoner) -->
+    <div class="hud-controls">
+        <div class="seg">
+            <button class="ctrl-btn active" id="orbitBtn"><span>⟳</span> Orbit</button>
+            <button class="ctrl-btn" id="diveBtn"><span>↓</span> Dive</button>
+            <button class="ctrl-btn" id="freelookBtn"><span>⊕</span> Explore</button>
+        </div>
+        <button class="ctrl-btn icon-btn" id="mathBtn" title="Math panel" aria-label="Math panel"><span>∑</span></button>
+        <button class="ctrl-btn icon-btn" id="bgBtn" title="Grid background" aria-label="Grid background"><span>▦</span></button>
+        <button class="ctrl-btn icon-btn" id="ecoBtn" title="Eco — half resolution" aria-label="Eco mode"><span>◐</span></button>
+        <button class="ctrl-btn icon-btn" id="pauseBtn" title="Pause" aria-label="Pause"><span>⏸</span></button>
+    </div>
+ 
+</div>
+
+    <!-- Scroll hint -->
+    <div class="scroll-hint">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- Context section -->
+<section class="context">
+    <div class="context-inner">
+
+        <div class="context-header">
+            <span class="context-eyebrow">What you're looking at</span>
+            <h2 class="context-title">A black hole that drags<br>space itself into rotation.</h2>
+        </div>
+
+        <div class="context-body">
+            <div class="fact-block">
+                <span class="fact-number">a / M</span>
+                <p class="fact-desc">Real black holes rotate. When a star collapses, it keeps its angular momentum, and concentrated into a few kilometers, that spin becomes extreme. The dimensionless parameter a/M runs from 0 (the non-rotating Schwarzschild case) to 1 (the extremal limit). Measurements suggest many astrophysical black holes spin fast: estimates for the supermassive black hole in M87 place it above 0.9. Drag the slider to travel that whole range.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">ω = 2J/r³</span>
+                <p class="fact-desc">Roy Kerr's 1963 solution revealed that a rotating mass drags spacetime around with it, like a whirlpool. This frame dragging is not exotic theory: NASA's Gravity Probe B satellite measured Earth's own (absurdly tiny) version of the effect in orbit. Around a black hole the drag becomes violent. In this simulation every photon is carried sideways by the flow, which is what smears the lensed starlight into a swirl near the shadow.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">ISCO</span>
+                <p class="fact-desc">The glowing disk is not decoration. Its inner edge sits at the innermost stable circular orbit, its gas rotates differentially at Keplerian speed, and its lopsided brightness is Doppler beaming: the side approaching you at near light speed glows blue-white while the receding side dims and reddens. The arc floating above the shadow is the far side of the disk, while its light bent over the top of the black hole on the way to your eye.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">r₊ shrinks</span>
+                <p class="fact-desc">Spin makes the event horizon smaller: r₊ = M(1 + √(1 − a²)). At maximum spin the horizon has half the radius of a non-rotating black hole of the same mass. But a second boundary appears outside it, called the ergosphere, inside which nothing can remain stationary. Roger Penrose showed in 1969 that this region can be mined: matter thrown into the ergosphere can come back out carrying stolen rotational energy.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">H = 0</span>
+                <p class="fact-desc">This exhibit integrates the genuine Kerr metric. Every photon carries a conserved energy and angular momentum, and its path through spacetime follows Hamilton's equations in Kerr–Schild coordinates, the same formulation used by research-grade renderers, and by the ray tracer built for Interstellar. Nothing in the image is painted on: the shadow, the swirl, the disk arcs and the brightness asymmetry all fall out of a single Hamiltonian, evaluated hundreds of times per pixel, per frame.</p>
+            </div>
+        </div>
+
+        <div class="context-footer">
+            <div class="tech-stack">
+                    <span class="tech-label">Built with</span>
+                    <span class="tech-item">Three.js</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">Kerr–Schild geodesics</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">RK4 Hamiltonian integration</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">Relativistic accretion disk</span>
+                    <span class="tech-divider">·</span>
+                    <span class="tech-item">NASA Deep Star Maps 2020</span>
+            </div>
+            <a class="back-link" href="/">← Back to museum</a>
+        </div>
+
+    </div>
+</section>
+
+<script type="module" src="/exhibits/Kerr_finalBoss/KerrGeodesics.js"></script>
+</body>
+</html>
