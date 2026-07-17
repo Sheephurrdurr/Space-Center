@@ -1,14 +1,14 @@
 # Space Center
 
-An interactive 3D center of astrophysics, built as a walkable planet in the browser. No game engine, no build step — just Three.js, vanilla ES modules, and a fair amount of general relativity.
+An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
-**[→ Visit the Center](https://your-url.netlify.app)**
+**[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
 
 ---
 
 ## What's in here
 
-Walk a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
+Roll a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
 
 | Exhibit | What it does |
 |---|---|
@@ -21,7 +21,7 @@ A fifth exhibit slot sits empty, waiting for a probe to fly into a black hole. T
 
 ## Why it exists
 
-This started as a Three.js learning project — a binary star system, some shaders, a lot of "wait, why is my sphere black." It did not stay small.
+This started as a small Three.js learning project. "can I make this sphere orbit this other sphere in THREE.js?", turned into this whole thing. Damn you, curiosity. And Claude. 
 
 ## Tech
 
