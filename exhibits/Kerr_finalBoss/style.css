@@ -85,6 +85,7 @@
         .math-panel.hidden { display: none; }
 
         .math-header {
+            position: relative;
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
         }

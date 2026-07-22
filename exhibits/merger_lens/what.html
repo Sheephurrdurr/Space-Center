@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What? — Black Hole / Neutron Star Merger with lensing effect — Space Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+    <link href="/shared/whatPage.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="what-page">
+
+        <a class="what-back" href="index.html">← Back to the simulation</a>
+
+        <div class="what-hero">
+            <span class="what-eyebrow">The physics, somewhat explained</span>
+            <h1 class="what-title">So, what are you actually looking at?</h1>
+            <p class="what-subtitle">Same neutron star, same black hole, same billion-year fall as the other merger exhibit. Different question, though. This time it's not about the ripples in spacetime — it's about what the light is actually doing on its way to your eye.</p>
+        </div>
+
+        <!-- ── 1 ── -->
+        <div class="chapter">
+            <div class="chapter-number">01</div>
+            <h2 class="chapter-title">Two ways to fake — or not fake — gravity</h2>
+
+            <p>The other merger exhibit bends the starfield with a screen-space trick: it looks at how close something is to the black hole <em>on your 2D screen</em>, and distorts pixels near it accordingly. It looks decent, and it's cheap to run, but it's not really tracing light — it's a convincing sleight of hand layered on top of a normal render.</p>
+
+            <p>This one doesn't do that. Every pixel here fires an actual photon from your eye, backward into the scene, and bends its path step by step through curved spacetime using the same geodesic equation from the static black hole exhibit. If the neutron star happens to be sitting somewhere along that bent path, the photon finds it — genuinely, geometrically, not because a shader noticed it was "close enough" on screen. That distinction matters most exactly when it's hardest to fake: right as the star crosses behind the shadow.</p>
+        </div>
+
+        <!-- ── 2 ── -->
+        <div class="chapter">
+            <div class="chapter-number">02</div>
+            <h2 class="chapter-title">The star isn't where it looks like it is</h2>
+
+            <p>Gravitational lensing means light from the neutron star doesn't travel in a straight line to you — it curves around the black hole first. Which means the star you're seeing isn't really "there," in the direction your eye thinks it's coming from. You're seeing a bent, secondhand image of it.</p>
+
+            <p>Watch what happens as the star lines up almost exactly behind the black hole from your point of view. Light from it can reach you by curving around <em>any</em> side of the black hole equally — left, right, top, bottom — and when the alignment is perfect, all of those bent paths arrive at once, smeared into a full circle. That's an <em>Einstein ring</em>, and it's not exhibit-only physics. Real telescopes have photographed real ones: distant galaxies lensed by other galaxies sitting directly in front of them, light bent into rings exactly this way.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🥃</div>
+                <div class="analogy-text">Look at a small light through the bottom of a curved glass and you'll see it smear, double, or ring depending on the angle. A black hole does the same thing to starlight, just with gravity playing the part of the glass.</div>
+            </div>
+        </div>
+
+        <!-- ── 3 ── -->
+        <div class="chapter">
+            <div class="chapter-number">03</div>
+            <h2 class="chapter-title">More than one image of the same star</h2>
+
+            <p>It's not just a ring at perfect alignment — even slightly off-center, the black hole produces more than one image of the neutron star at once. There's the obvious, direct-ish image close to where you'd naively expect it. But light can also swing almost all the way around the black hole and arrive from the opposite side, giving you a second, fainter image. Swing around twice, and there's a third, fainter still. In principle that continues forever, an infinite ladder of increasingly faint duplicate stars stacked right at the shadow's edge — the same underlying effect as the photon rings around the static black hole, just built from a point of light instead of a whole starfield.</p>
+
+            <p>This exhibit's ray march actually checks for exactly that: at every single step along a photon's bent path, it tests whether that step just crossed through the neutron star's sphere. Miss on the direct path, and the march keeps going, bending further, checking again — which is how it can catch that second, wrapped-around image if the geometry lines up for it.</p>
+        </div>
+
+        <!-- ── 4 ── -->
+        <div class="chapter">
+            <div class="chapter-number">04</div>
+            <h2 class="chapter-title">The reappearance takes the scenic route, and the slow route</h2>
+
+            <p>When the star reappears from behind the shadow, the light forming that image took a longer, curved path to reach you than a straight line would have — that part's obvious once you know it's lensing. Less obvious: that longer path also takes longer in time, over and above the extra distance. Light itself moves slower, in a real, measurable sense, when it's deep in a gravitational well. This is called the <em>Shapiro delay</em>, and it's not a rounding error — it was confirmed decades ago by bouncing radar signals off Venus and the Viking landers on Mars, timing how much longer the round trip took whenever the signal passed close to the Sun. Same effect, vastly stronger version, happening to every photon that grazes this black hole.</p>
+        </div>
+
+        <!-- ── 5 ── -->
+        <div class="chapter">
+            <div class="chapter-number">05</div>
+            <h2 class="chapter-title">What's real, and what's simplified</h2>
+
+            <p><em>The photon paths.</em> Fully real — the same geodesic equation as the static black hole exhibit, integrated per pixel, no shortcuts on the bending itself.</p>
+
+            <p><em>The integrator.</em> This exhibit uses a simpler stepping method than the rotating black hole exhibit, which needs full RK4 to stay stable. A non-spinning black hole is spherically symmetric, which is a much gentler problem — a simpler, cheaper step size still holds up well, since there's no frame dragging twisting the path sideways to account for. It's a deliberate trade: RK4 everywhere would cost more than the visual difference is worth here.</p>
+
+            <p><em>Inside the shadow.</em> There's one deliberate shortcut, and it's sitting right in the shader's comments: when a ray would be captured by the black hole, the code checks whether the neutron star blocks that path using a straight line, not a bent one. In reality, light grazing that close to the star while still that close to the black hole would curve slightly on the way there too. At this scale the difference is invisible, so the straight-line check stays — a known, acknowledged approximation, not an accident.</p>
+
+            <p><em>Everything else</em> — the shadow boundary, the ring, the multiple images, the delay in how the star reappears — falls directly out of the same physics as the static exhibit, just pointed at a second object instead of an empty starfield.</p>
+        </div>
+
+        <div style="padding-top: 48px; border-top: 1px solid var(--border);">
+            <a class="what-back" href="index.html">← Back to the simulation</a>
+        </div>
+
+    </div>
+</body>
+</html>

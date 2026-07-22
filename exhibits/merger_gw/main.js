@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BlackHole } from './BlackHole.js';
 import { LensingPass } from './LensingPass.js';
 import { BinaryOrbit, timeScaleForDuration } from './OrbitalPhysics.js';
+import { wireMathPanel } from '../../shared/exhibitCommon.js';
 
 const bhScreenPos = new THREE.Vector3();
 const bhWorldPos = new THREE.Vector3();
@@ -54,14 +55,7 @@ const clock = new THREE.Clock();
 let elapsed = 0;
 let paused = false;
 
-const mathBtn = document.getElementById('mathBtn');
-const mathPanel = document.getElementById('mathPanel');
-
-mathBtn.addEventListener('click', () => {
-    mathPanel.classList.toggle('hidden');
-    const label = mathBtn.querySelector('.btn-label');
-    if (label) label.textContent = mathPanel.classList.contains('hidden') ? 'Math' : 'Close';
-});
+wireMathPanel();
 
 const pauseBtn = document.getElementById('pauseBtn');
 const restartBtn = document.getElementById('restartBtn');

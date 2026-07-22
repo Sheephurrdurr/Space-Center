@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What? — Black Hole / Neutron Star Merger with gravitational waves — Space Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+    <link href="/shared/whatPage.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="what-page">
+
+        <a class="what-back" href="index.html">← Back to the simulation</a>
+
+        <div class="what-hero">
+            <span class="what-eyebrow">The physics, somewhat explained</span>
+            <h1 class="what-title">So, what are you actually looking at?</h1>
+            <p class="what-subtitle">A neutron star and a black hole, spiraling together, in the last moments before they become one. Not the light, this time — the ripples in spacetime itself. Let's go through what's actually being simulated here.</p>
+        </div>
+
+        <!-- ── 1 ── -->
+        <div class="chapter">
+            <div class="chapter-number">01</div>
+            <h2 class="chapter-title">A billion years, compressed into 10 seconds</h2>
+
+            <p>These two have been spiraling toward each other for a very, very long time — over a billion years, losing a tiny bit of orbital energy on every pass. What you're watching is only the final, violent instant of that: the actual merger takes about <span class="num">3 milliseconds</span>. This exhibit stretches that out roughly <span class="num">3000×</span>, just so a human eye can follow it.</p>
+
+            <p>That compression isn't just for show. Real gravitational wave detectors like LIGO only "hear" a signal for a fraction of a second before it's over — the frequency sweeps up so fast, from a low rumble to a sharp chirp, that the whole event is gone before you could react to it. Slowing it down is the only way to actually see the shape of something that, in real life, happens faster than you can blink.</p>
+        </div>
+
+        <!-- ── 2 ── -->
+        <div class="chapter">
+            <div class="chapter-number">02</div>
+            <h2 class="chapter-title">Two objects, one very specific mass gap</h2>
+
+            <p>The neutron star packs <span class="num">1.4 solar masses</span> into a sphere about 24 km wide — city-sized, but heavier than the sun. The black hole is <span class="num">5 solar masses</span>, with an event horizon about the same size as the star it's about to swallow.</p>
+
+            <p>That 5 solar mass figure isn't random. Anything below roughly 5 solar masses sits in what astronomers actually call the "lower mass gap" — there's a real, unexplained shortage of compact objects in that range. Supernovae seem to either leave behind a neutron star well under 2.5 solar masses, or a black hole well above 5, and almost nothing in between. Nobody's fully sure why. So the black hole in this exhibit is sitting right at the edge of an open problem in astrophysics, not just a convenient number for the shader.</p>
+        </div>
+
+        <!-- ── 3 ── -->
+        <div class="chapter">
+            <div class="chapter-number">03</div>
+            <h2 class="chapter-title">The chirp</h2>
+
+            <p>The inspiral runs on the Peters & Mathews quadrupole formula from 1964 — the same equation LIGO uses to predict when real mergers will happen:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">da/dt = −(64/5) × G³m₁m₂(m₁+m₂) / c⁵a³</div>
+                <div class="formula-explain">
+                    <span>a</span> — separation between the two objects<br>
+                    <span>m₁, m₂</span> — the two masses<br>
+                    <span>da/dt</span> — how fast that separation is shrinking
+                </div>
+            </div>
+
+            <p>Notice the a³ sitting in the denominator. That's the whole story right there: as the separation shrinks, the decay rate doesn't just increase, it explodes. Half the distance means eight times the decay rate. That runaway feedback loop is exactly why the whole multi-billion-year inspiral suddenly turns into a violent few milliseconds right at the end — nothing changes about the physics, the equation just stops being gentle once a gets small.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🎧</div>
+                <div class="analogy-text">Because the orbital frequency climbs as the separation shrinks, and the gravitational wave frequency is exactly double that, the signal LIGO records genuinely sounds like a chirp when converted to audio — a rising tone that sweeps up and ends in a snap. That's not a metaphor, astronomers actually call it "the chirp," and you can listen to real ones online.</div>
+            </div>
+        </div>
+
+        <!-- ── 4 ── -->
+        <div class="chapter">
+            <div class="chapter-number">04</div>
+            <h2 class="chapter-title">Does the star actually reach the black hole?</h2>
+
+            <p>Not always, not in one piece. Before a neutron star reaches the event horizon, it can cross the <em>tidal disruption radius</em> — the point where the black hole's gravity pulls harder on the near side of the star than the far side, hard enough to physically shred it apart. Whether that happens before or after the star would've hit the horizon anyway depends on the mass ratio and the black hole's spin.</p>
+
+            <p>For a black hole this size relative to the neutron star, the tidal disruption radius sits close to, or inside, the horizon itself — so the star mostly just gets swallowed whole, without much drama on the way in. Flip the masses around, though — a much lighter black hole, or a faster-spinning one — and the star can get ripped apart <em>outside</em> the horizon first, flinging hot neutron-rich matter outward. That's the mechanism behind a kilonova, the kind of afterglow actually observed following GW170817 in 2017, the first neutron star merger ever caught in both gravitational waves and light.</p>
+        </div>
+
+        <!-- ── 5 ── -->
+        <div class="chapter">
+            <div class="chapter-number">05</div>
+            <h2 class="chapter-title">After the merger, it rings</h2>
+
+            <p>The instant the two objects merge isn't the end of the signal. The newly formed black hole is left wobbling — not spherical, not settled — and it sheds that distortion by literally ringing, the same way a struck bell rings before going quiet. This is called the <em>ringdown</em>, and it decays in a very specific, predictable way: an exponentially fading oscillation, governed by what are called the black hole's <em>quasinormal modes</em>.</p>
+
+            <p>Those modes depend on nothing but the final black hole's mass and spin — a direct consequence of the no-hair theorem. Which means, in principle, listening closely enough to the ringdown alone would tell you exactly what black hole came out the other side, without needing to have seen the inspiral at all.</p>
+        </div>
+
+        <!-- ── 6 ── -->
+        <div class="chapter">
+            <div class="chapter-number">06</div>
+            <h2 class="chapter-title">What's real, and what's simplified</h2>
+
+            <p><em>The inspiral.</em> Fully governed by the real Peters & Mathews formula — no shortcuts on the orbital decay itself.</p>
+
+            <p><em>The last few orbits.</em> Peters & Mathews is a Newtonian approximation. It's extremely accurate far out, but right at the very end, general relativity adds corrections the formula doesn't capture — the true last-orbit behavior needs full numerical relativity to get exactly right. This exhibit doesn't do that; it rides the Newtonian formula all the way to merger, which is a reasonable simplification everywhere except the final instant.</p>
+
+            <p><em>The ringdown shape.</em> Real, in spirit — the exponential decay and oscillation are the correct qualitative behavior. The exact frequencies here are tuned for a clean visual rather than solved from the actual final black hole's mass and spin.</p>
+
+            <p><em>The 3000× slowdown.</em> Purely a viewing choice. The underlying physics doesn't care what speed you watch it at — everything you see is dictated entirely by the masses and the separation, at whatever timescale you choose to run it.</p>
+        </div>
+
+        <div style="padding-top: 48px; border-top: 1px solid var(--border);">
+            <a class="what-back" href="index.html">← Back to the simulation</a>
+        </div>
+
+    </div>
+</body>
+</html>

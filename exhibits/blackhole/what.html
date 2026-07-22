@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What? — Schwarzschild Black Hole — Space Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+    <link href="/shared/whatPage.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="what-page">
+
+        <a class="what-back" href="index.html">← Back to the simulation</a>
+
+        <div class="what-hero">
+            <span class="what-eyebrow">The physics, somewhat explained</span>
+            <h1 class="what-title">So, what are you actually looking at?</h1>
+            <p class="what-subtitle">A simplified and imaginary kind of black hole, without any spin or charge. Just mass. Let's go through what that dark circle means, why there's that weird ring around it, and how this is something "real." Let's go.</p>
+        </div>
+
+        <!-- ── 1 ── -->
+        <div class="chapter">
+            <div class="chapter-number">01</div>
+            <h2 class="chapter-title">Two "borders", not one</h2>
+
+            <p>Surrounding the black hole, is the <em>event horizon</em>. A region, in which, the curvature of space ONLY leads into the black hole. Sort of like a waterfall's edge, but not at all.</p>
+
+            <p>For a non-rotating black hole the event horizon is located at, what's called the Schwarzschild radius, <span class="num">Rs = 2GM/c²</span>. For the 5 solar mass black hole, like this one, that adds up to about <span class="num">14.8 km</span>.</p>
+
+            <p>However, the black hole's border is not the event horizon. The black hole appears larger due to it's <em>shadow radius</em>. Light doesn't need to touch the event horizon to get captured by the black hole, it just needs to pass close enough that its path curves back inward. That critical distance is the shadow radius, <span class="num">√27 × M ≈ 2.6 × Rs</span>. Everything inside that boundary is functionally black, whether or not it's actually crossed the horizon yet.</p>
+
+            <div class="callout">
+                <p>This is why the first real image of a black hole (M87*, Event Horizon Telescope, 2019) shows a dark region noticeably larger than the horizon itself. The photo is showing you the shadow, not the horizon — you can't photograph the horizon directly, by definition. They're funky like that.</p>
+            </div>
+
+            <p>Here's the part that trips people up: crossing the horizon isn't dramatic, at least not locally. No alarm bell, no wall, nothing that tells you "you're in now" — general relativity says the horizon isn't even a special place in the geometry right where you're standing. What actually kills you is <em>tidal force</em>: your feet feel more gravity than your head, and for a small hole like this one, that difference is already lethal well before you reach the horizon. Spaghettification, basically. Ironically, a much bigger black hole is gentler about it — something like Sagittarius A* is so large that the tidal gradient across your body is tiny, and you'd cross its horizon without feeling a thing. Bigger hole, softer fall.</p>
+        </div>
+
+        <!-- ── 2 ── -->
+        <div class="chapter">
+            <div class="chapter-number">02</div>
+            <h2 class="chapter-title">Where the weird looking distortion ring comes from</h2>
+
+            <p>Halfway between the event horizon and the shadow boundary sits the <em>photon sphere</em>, at <span class="num">1.5 × Rs</span>. Light that arrives at exactly the right angle can orbit the black hole here — not stably, but for a while, sometimes most of the way around before continuing on.</p>
+
+            <p>The bright ring you see is made of exactly those photons: light that grazed the photon sphere, got bent almost 360°, and escaped toward the camera. Because it wrapped around, that light carries a compressed, smeared image of the entire sky behind the black hole. You're looking at the whole universe, folded into a thin arc.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🔦</div>
+                <div class="analogy-text">Think of the photon sphere as a whispering gallery for light. Sound that grazes the right curved wall can travel most of the way around a room before it reaches your ear. Light does the same thing here, just with gravity instead of a wall.</div>
+            </div>
+
+            <p>What you're seeing is technically only the first of infinitely many rings. The one you can pick out is called the <span class="num">n = 0</span> photon ring — light that wrapped around roughly once. There's an <span class="num">n = 1</span> ring tucked just inside it, an <span class="num">n = 2</span> inside that, and so on forever, each one wrapped around one extra time and each one about 500× dimmer than the last. They also crowd exponentially closer to the shadow's edge the higher you go, which is exactly why the Event Horizon Telescope can only resolve the first one — the rest are compressed into a sliver thinner than any real telescope can currently see.</p>
+        </div>
+
+        <!-- ── 3 ── -->
+        <div class="chapter">
+            <div class="chapter-number">03</div>
+            <h2 class="chapter-title">The equation running per pixel</h2>
+
+            <p>Every pixel on your screen traces a photon backward from your eye through curved spacetime. How much that photon's path bends is governed by one equation, derived from Schwarzschild's 1916 solution to Einstein's field equations:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">accel = −1.5 × Rs × |h|² / r⁵ × r̂</div>
+                <div class="formula-explain">
+                    <span>h</span> — the photon's specific angular momentum, r × v, conserved along its whole path<br>
+                    <span>r</span> — current distance from the black hole<br>
+                    <span>r̂</span> — direction pointing away from the black hole
+                </div>
+            </div>
+
+            <p>That equation gets integrated numerically, step by step, up to 300 times per pixel, every frame.</p>
+
+            <p>Why is h conserved at all? Because a non-spinning black hole looks identical no matter which way you rotate it — pure spherical symmetry. Noether's theorem says every symmetry like that hands you a conserved quantity for free, and here it's angular momentum. It's the same reason planets sweep out equal areas in equal times around the sun, just dressed up in curved spacetime.</p>
+
+            <div class="callout">
+                <p>The simulation uses geometric units where G = c = 1. That's why there's no 6.674×10⁻¹¹ anywhere in the code. A cool trick, which is also standard practice in relativity, it just strips the constants out and leaves the geometry.</p>
+            </div>
+
+            <p>That factor of 1.5 in front is the whole reason Einstein got famous. Newtonian gravity also predicts light bends near a massive object, but it only gets half of the real answer — no 1.5, just 1. The extra half comes purely from spacetime curvature, something Newton's theory has no room for. When Eddington measured starlight bending during the 1919 solar eclipse and got Einstein's doubled number instead of Newton's, that was the moment general relativity went from "interesting math" to "this is how the universe actually works."</p>
+        </div>
+
+        <!-- ── 4 ── -->
+        <div class="chapter">
+            <div class="chapter-number">04</div>
+            <h2 class="chapter-title">What's real, and what's artistic</h2>
+
+            <p><em>The ring's brightness.</em> Photons that nearly orbit pick up real magnification from the bending geometry — that part is physical. The exact intensity curve is tuned by hand rather than derived from a full radiative transfer calculation, so treat the brightness as illustrative, not a precise brightness prediction.</p>
+
+            <p><em>The noise near the edge.</em> Right at the photon sphere, neighboring rays become chaotically sensitive, to a point where a tiny difference in starting angle sends two adjacent pixels to wildly different parts of the sky. Some of the graininess you see there is that real chaos, and some is numerical: finite step counts trying to resolve an infinitely sensitive boundary. Still being tuned.</p>
+
+            <p><em>The 300 steps.</em> That number isn't physics, it's a budget. More steps means smoother rings and less noise near the photon sphere, but every pixel already runs this loop up to 300 times, every frame, on your GPU. 300 was picked as the point where more steps stopped visibly helping and started visibly costing frame rate.</p>
+
+            <p><em>What's left out entirely.</em> Real black holes technically radiate — Hawking radiation. For this one it doesn't matter even slightly: at 5 solar masses the temperature works out to a few dozen nanokelvin, and it would take vastly longer than the current age of the universe to evaporate even a little. It's not an approximation being made here, it's a real effect being correctly ignored for being irrelevant at this scale.</p>
+
+            <p><em>The mass.</em> 5 solar masses was picked because it's a plausible stellar-mass black hole and it renders at a comfortable scale.</p>
+
+            <p>Everything else; the shadow boundary, the photon ring's position, the lensing of the background starfield, it all falls directly out of the geodesic equation above, with no shortcuts.</p>
+        </div>
+
+        <div style="padding-top: 48px; border-top: 1px solid var(--border);">
+            <a class="what-back" href="index.html">← Back to the simulation</a>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,19 +1,66 @@
-/* 1) Design-tokens: HELE sitets identitet som variabler */
+/* ==========================================================
+   base.css — delt design-vokabular, reset, og et par stabile
+   UI-atomer (knapper, luk-kryds). IKKE side-layout — hvert
+   exhibit beholder sit eget .math-panel/.fact-block/HUD, med
+   vilje, fordi de reelt er forskellige nok til at dele dem
+   ville være den forkerte abstraktion.
+   ========================================================== */
+
 :root {
-    --bg: #07070f;
-    --text: #d8d5e6;
-    --text-dim: #a49dc2;
-    --accent: #5fd3c4;
-    --warm: #ffb454;
-    --panel: rgba(10, 9, 20, 0.72);
-    --border: rgba(139, 132, 171, 0.25);
+    --accent:     #5fd3c4;
+    --accent-dim: #2a7fa0;
+    --warm:       #ffb454;
+    --border:     rgba(139, 132, 171, 0.25);
+
     --font-display: 'Cormorant Garamond', serif;
-    --font-ui: 'Space Grotesk', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui:      'Space Grotesk', sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
 }
 
-/* 2) Reset + hygiejne (fra sidst) */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--text); }
+html, body { margin: 0; padding: 0; }
 
-/* 3) Fælles komponenter: placard, spec-rows, hint-keys, hero-mønstret... */
+/* .ctrl-btn og .panel-btn er samme knap under to forskellige
+   navne, opstået historisk på tværs af exhibits. Begge styles
+   her, så du ikke skal omdøbe klasser i HTML'en for at få
+   konsistens — vælg ét navn fremadrettet, men ingen hastværk. */
+.ctrl-btn,
+.panel-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: var(--panel-bg, rgba(13, 20, 32, 0.75));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-mid, #c8d8e8);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s, color 0.2s;
+}
+.ctrl-btn:hover, .panel-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn.active, .panel-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Luk-krydset. Ét sted, én gang for alle. */
+.math-close {
+    position: absolute;
+    top: -6px;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--text-dim, #6a88a0);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+.math-close:hover { color: var(--accent); }

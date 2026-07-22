@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { wireMathPanel, observeCanvasResize } from '/shared/exhibitCommon.js';
 
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -180,14 +181,12 @@ function setMode(mode) {
     }
 }
 
-document.getElementById('mathBtn').addEventListener('click',     () => document.getElementById('mathPanel').classList.toggle('hidden'));
+wireMathPanel();
+
 document.getElementById('orbitBtn').addEventListener('click',    () => setMode('auto'));
 document.getElementById('diveBtn').addEventListener('click',     () => setMode('dive'));
 document.getElementById('freelookBtn').addEventListener('click', () => setMode('freelook'));
 
-document.querySelector('.math-close').addEventListener('click', () => {
-    document.querySelector('.math-panel').classList.add('hidden');
-});
 
 // ── Animate ──
 const clock  = new THREE.Clock();
@@ -243,9 +242,9 @@ function animate() {
 animate();
 
 // ── Resize ──
-window.addEventListener('resize', () => {
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    material.uniforms.uResolution.value.set(canvas.clientWidth, canvas.clientHeight);
+observeCanvasResize(canvas, (w, h) => {
+    renderer.setSize(w, h);
+    material.uniforms.uResolution.value.set(w, h);
 });
 
 document.querySelectorAll('*').forEach(el => {

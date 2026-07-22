@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { wireMathPanel, observeCanvasResize } from '/shared/exhibitCommon.js';
 
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -19,7 +20,7 @@ const RS      = 2.0 * BH_MASS;
 let spin = 0.85;
 
 // ISCO er den inderste stabile kredsbane (Bardeen, Press & Teukolsky 1972).
-// Spin 0 -> 6M (= 3 Rs). Spin 1 -> 1M. Skivens inderkant foelger den.
+// Spin 0 -> 6M (= 3 Rs). Spin 1 -> 1M. Skivens inderkant følger den.
 function iscoRadius(a) {
     const M  = RS / 2;
     const Z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a));
@@ -84,21 +85,18 @@ const material = new THREE.ShaderMaterial({
             return vec2(u, v);
         }
 
-        // ── Baggrund: stjernehimmel eller debug-grid ───────────────
-        // Grid'et er lensing-fysikerens proevebillede: naar man
-        // kender moensteret, kan man SE praecis hvor meget hver del
-        // af himlen er blevet flyttet, straekt og foldet.
+        // ── Baggrund: stjernehimmel eller funky debug-grid ───────────────
         vec3 skyColor(vec3 dir) {
             vec2 uv = dirToEquirect(dir);
             if (uBackground < 0.5) {
                 return texture2D(uStarfield, uv).rgb;
             }
-            // Skaktern + farve efter laengdegrad, saa man kan se
+            // Skaktern + farve efter længdegrad, så man kan se
             // hvilken del af himlen hver pixel er hentet fra
             float cells = mod(floor(uv.x * 24.0) + floor(uv.y * 12.0), 2.0);
             vec3  hue   = 0.5 + 0.5 * cos(6.28318 * (uv.x + vec3(0.0, 0.33, 0.67)));
             vec3  base  = mix(hue * 0.22, hue * 0.9, cells);
-            // hvid aekvatorlinje som reference
+            // hvid ækvatorlinje som reference
             float eq = smoothstep(0.010, 0.0, abs(uv.y - 0.5));
             return base + vec3(eq * 0.8);
         }
@@ -468,10 +466,13 @@ canvas.addEventListener('mousemove', e => {
 });
 
 canvas.addEventListener('mouseup',    () => { isDragging = false; canvas.style.cursor = cameraMode === 'freelook' ? 'grab' : 'default'; });
+
 canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
 canvas.addEventListener('wheel', e => {
     if (cameraMode !== 'freelook') return;
     e.preventDefault();
+
     targetRadius += e.deltaY * 0.05;
     targetRadius = Math.max(CAM_MIN, Math.min(CAM_MAX, targetRadius));
 }, { passive: false });
@@ -493,12 +494,14 @@ function setMode(mode) {
     }
 }
 
-document.getElementById('mathBtn').addEventListener('click',     () => document.getElementById('mathPanel').classList.toggle('hidden'));
+// Math Panel stuff
+wireMathPanel();
+
 document.getElementById('orbitBtn').addEventListener('click',    () => setMode('auto'));
 document.getElementById('diveBtn').addEventListener('click',     () => setMode('dive'));
 document.getElementById('freelookBtn').addEventListener('click', () => setMode('freelook'));
 
-// ── Baggrunds-toggle (kraever en #bgBtn knap i HTML'en, se chat) ──
+// ── Baggrunds-toggle ──
 const bgBtn = document.getElementById('bgBtn');
 if (bgBtn) {
     bgBtn.addEventListener('click', () => {
@@ -508,7 +511,7 @@ if (bgBtn) {
     });
 }
 
-// ── Pause: GPU'en faar helt fri ──
+// ── Pause funktion ──
 let paused = false;
 const pauseBtn = document.getElementById('pauseBtn');
 if (pauseBtn) {
@@ -519,11 +522,11 @@ if (pauseBtn) {
     });
 }
 
-// ── Eco: halv render-oploesning (kvart GPU-arbejde), reversibelt ──
+// ── Eco: halv render-opløsning, reversibelt ──
 const ecoBtn = document.getElementById('ecoBtn');
 if (ecoBtn) {
     ecoBtn.addEventListener('click', () => {
-        const ecoOn = renderer.getPixelRatio() > 1.0;   // taender eco hvis vi koerer hoejt nu
+        const ecoOn = renderer.getPixelRatio() > 1.0;   
         renderer.setPixelRatio(ecoOn ? 1.0 : Math.min(window.devicePixelRatio, 2.0));
         renderer.setSize(canvas.clientWidth, canvas.clientHeight);
         ecoBtn.classList.toggle('active', ecoOn);
@@ -531,14 +534,14 @@ if (ecoBtn) {
 }
 
 // ── Masse-presets ────────────────────────────────────────────────
-// Fysikken er skala-fri, saa geometrien roeres IKKE. Det eneste der
-// aendrer sig: skivens farvetemperatur, og hvad tallene betyder i
+// Fysikken er skala-fri, så selve geometrien røres IKKE. Det eneste der
+// ændrer sig er skivens farvetemperatur, og hvad tallene betyder i
 // virkelige enheder.
 const SOLAR_RS_KM  = 2.953;      // Schwarzschild-radius for 1 solmasse
 const SOLAR_TIME_S = 4.925e-6;   // GM_sol/c^3 — den geometriske tidsenhed
 const KM_PER_AU    = 1.496e8;
 
-// Raekkefoelgen SKAL matche knapperne i HTML'en
+// Rækkefølgen SKAL match knapperne i HTML
 const MASS_PRESETS = [
     { name: '5 M☉',    msun: 5,      coldness: 0.0  },
     { name: 'Sgr A*',  msun: 4.3e6,  coldness: 0.45 },
@@ -568,7 +571,7 @@ function updateMassReadouts() {
     const el = document.getElementById('scaleReadout');
     if (!el) return;
     const rsKm = SOLAR_RS_KM * currentPreset.msun;
-    // Omloebstid ved skivens inderkant: 2π(r^1.5 + a) i M-enheder,
+    // Omløbstid ved skivens inderkant: 2π(r^1.5 + a) i M-enheder,
     // ganget med den fysiske tidsenhed GM/c³ for den valgte masse.
     const rM         = iscoRadius(spin) / (RS / 2);
     const periodGeom = 2 * Math.PI * (Math.pow(rM, 1.5) + spin);
@@ -596,7 +599,7 @@ let simTime  = 0;
 
 function animate() {
     requestAnimationFrame(animate);
-    const dt = clock.getDelta();   // kaldes OGSAA under pause — ellers
+    const dt = clock.getDelta();   // kaldes OGSÅ under pause — ellers
     if (paused) return;            // teleporterer kameraet ved resume
     simTime += dt;
 
@@ -648,7 +651,7 @@ updateMassReadouts();
 animate();
 
 // ── Resize ──
-window.addEventListener('resize', () => {
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    material.uniforms.uResolution.value.set(canvas.clientWidth, canvas.clientHeight);
+observeCanvasResize(canvas, (w, h) => {
+    renderer.setSize(w, h);
+    material.uniforms.uResolution.value.set(w, h);
 });

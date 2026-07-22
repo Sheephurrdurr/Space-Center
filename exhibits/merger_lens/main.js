@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BlackHole } from './BlackHole.js';
 import { RayMarchPass } from './RayMarchPass.js';
 import { BinaryOrbit, timeScaleForDuration } from './OrbitalPhysics.js';
+import { wireMathPanel, observeCanvasResize, fitPerspectiveFov } from '../../shared/exhibitCommon.js';
 
 // ── Vectors til world/screen position tracking ──
 const bhWorldPos  = new THREE.Vector3();
@@ -29,18 +30,13 @@ camera.position.set(0, 30, 160);
 camera.lookAt(0, 0, 0);
 
 const BASE_FOV = 60; 
-
-function onResize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    const aspect = w / h;
-    camera.fov = aspect < 1 ? BASE_FOV / aspect : BASE_FOV;
-    camera.aspect = aspect;
+observeCanvasResize(canvas, (w, h) => {
+    camera.fov = fitPerspectiveFov(w / h, BASE_FOV);
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
     camera.lookAt(0, 0, 0);
-}
-window.addEventListener('resize', onResize);
-onResize(); // kør én gang med det samme, i stedet for de statiske linjer du har nu
+});
 
 
 // ── State ──
@@ -138,14 +134,9 @@ async function init() {
     const physicalSeconds = orbit.physicalTimeToMerge() * TOY_TIME_TO_SECONDS;
     document.getElementById("slowmoReadout").textContent = 
         "~" + (10 / physicalSeconds).toFixed(0) + "×";
-    // Event listeners
-    mathPanel = document.getElementById('mathPanel');
 
-    document.getElementById('mathBtn').addEventListener('click', () => {
-        mathPanel.classList.toggle('hidden');
-        const label = document.getElementById('mathBtn').querySelector('.btn-label');
-        if (label) label.textContent = mathPanel.classList.contains('hidden') ? 'Math' : 'Close';
-    });
+    // Event listeners
+    wireMathPanel();
 
     document.getElementById('pauseBtn').addEventListener('click', () => {
         paused = !paused;

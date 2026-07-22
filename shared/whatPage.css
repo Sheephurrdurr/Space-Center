@@ -1,0 +1,172 @@
+/* ==========================================================
+   whatPage.css — delt artikel-typografi til alle exhibits'
+   "what.html"-sider.
+
+   Bevidst IKKE farve-tokens her — de kommer fra det exhibit
+   som siden colokeres med (--ns-cyan, --text-bright, --space
+   osv. er allerede defineret i hver exhibits egen style.css,
+   som denne fil loades EFTER). Når base.css-migrationen til
+   --accent/--accent-dim engang bliver færdig, er det et
+   find-and-replace i denne ene fil — ikke fire.
+   ========================================================== */
+
+.what-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 28px 120px;
+}
+
+.what-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    margin-bottom: 64px;
+    transition: color 0.2s;
+}
+
+.what-back:hover { color: var(--ns-cyan); }
+
+.what-hero { margin-bottom: 80px; }
+
+.what-eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ns-cyan-dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.what-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 300;
+    color: var(--text-bright);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+}
+
+.what-subtitle {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text-mid);
+    font-weight: 300;
+    max-width: 560px;
+}
+
+/* Kapitler */
+.chapter {
+    margin-bottom: 72px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+}
+
+.chapter-number {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ns-cyan-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.chapter-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-bright);
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+}
+
+.chapter p {
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--text-mid);
+    font-weight: 300;
+    margin-bottom: 18px;
+}
+
+.chapter p:last-child { margin-bottom: 0; }
+
+/* Highlight-boks */
+.callout {
+    background: color-mix(in srgb, var(--ns-cyan) 5%, transparent);
+    border-left: 2px solid var(--ns-cyan-dim);
+    border-radius: 0 4px 4px 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+}
+
+.callout p {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--text-mid);
+}
+
+/* Formel-blok */
+.formula-block {
+    background: var(--panel-bg, rgba(13, 20, 32, 0.8));
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-family: var(--font-mono);
+}
+
+.formula-main {
+    font-size: 15px;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+
+.formula-explain {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+}
+
+.formula-explain span { color: var(--ns-cyan); }
+
+/* Analogi-kort */
+.analogy {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    margin: 24px 0;
+    align-items: start;
+}
+
+.analogy-icon { font-size: 24px; line-height: 1.6; }
+
+.analogy-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-mid);
+    font-weight: 300;
+}
+
+/* Tal-highlight inline */
+.num {
+    font-family: var(--font-mono);
+    color: var(--ns-cyan);
+    font-size: 0.95em;
+}
+
+.what-page em { font-style: italic; color: var(--text-bright); }
+
+@media (max-width: 600px) {
+    .what-page { padding: 56px 20px 80px; }
+    .chapter { margin-bottom: 56px; padding-top: 36px; }
+    .analogy { grid-template-columns: 28px 1fr; }
+}
