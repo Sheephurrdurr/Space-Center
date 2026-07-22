@@ -1,14 +1,14 @@
 # Space Center
 
-An interactive 3D center of astrophysics, built as a walkable planet in the browser. No game engine, no build step — just Three.js, vanilla ES modules, and a fair amount of general relativity.
+An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
-**[→ Visit the Center](https://your-url.netlify.app)**
+**[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
 
 ---
 
 ## What's in here
 
-Walk a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
+Roll a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
 
 | Exhibit | What it does |
 |---|---|
@@ -21,13 +21,13 @@ A fifth exhibit slot sits empty, waiting for a probe to fly into a black hole. T
 
 ## Why it exists
 
-This started as a Three.js learning project — a binary star system, some shaders, a lot of "wait, why is my sphere black." It did not stay small.
+This started as a small Three.js learning project. "can I make this sphere orbit this other sphere in THREE.js?", turned into this whole thing. Damn you, curiosity. And Claude. 
 
 ## Tech
 
 - **Rendering:** Three.js (self-hosted, no CDN dependency)
 - **Physics:** RK4 Hamiltonian geodesic integration (Kerr-Schild form), Peters & Mathews orbital decay, Schwarzschild ray marching in GLSL
-- **Everything else:** vanilla JavaScript ES modules, hand-rolled procedural low-poly geometry, no framework, no bundler — it runs directly off static files
+- **Everything else:** vanilla JavaScript ES modules, hand-rolled procedural low-poly geometry— it runs directly off static files
 - **Physically based rendering** via `MeshStandardMaterial`, hand-tuned lighting (no environment map — deliberately, see: budget)
 
 ## Architecture notes
@@ -36,7 +36,7 @@ The planet-facing part of the site (`/`) is built around a few core modules:
 
 - `planetMath.js` — single source of truth for the planet's geometry and spherical gravity math (terrain height, tangent-plane projection, surface orientation). Both the mesh and the player controller read from here, so they can never disagree about where the ground is.
 - `player.js` / `cameraRig.js` — spherical-gravity character controller and a lazy-follow camera that orbits the planet with the player.
-- `droid.js` — the rolling droid you control. Rolling without slipping, animated proceduraly (no rig, no keyframes).
+- `droid.js` — the rolling droid you control. Rolling without slipping, animated proceduraly.
 - `interactables.js` — a small proximity/registration system for exhibits. Adding exhibit №6 means adding one `register()` call, nothing else.
 - Each exhibit under `/exhibits/*` is its own self-contained Three.js scene with its own shader.
 
