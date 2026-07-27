@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // player.js — character controlleren. Og spherical gravity delen
 //
 // Kernen i hver update:
@@ -16,8 +17,7 @@ import {
 import { Droid } from './droid.js';
 import { DustEmitter } from './dust.js';
 
-// Genbrugte vektorer så vi ikke allokerer i game-loopet (GC-venligt —
-// tænk på det som at undgå unødige `new` i en hot path i C#).
+// Genbrugte vektorer så vi ikke allokerer i game-loopet.
 const _up = new THREE.Vector3();
 const _camFwd = new THREE.Vector3();
 const _gravDir = new THREE.Vector3();
@@ -27,7 +27,7 @@ const _q = new THREE.Quaternion();
 
 export class Player {
     constructor(scene) {
-        this.astronaut = new Droid(); // It's a droid, but it was an astronaut at some point. Sue me.
+        this.astronaut = new Droid(); // It's actually a droid now, but it was an astronaut at some point. Sue me.
         scene.add(this.astronaut.root);
 
         this.astronaut.root.traverse((o) => { if (o.isMesh) o.castShadow = true; });

@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // Keyboard input.
 //
 // Input-laget ved INTET om planeter, gravity eller

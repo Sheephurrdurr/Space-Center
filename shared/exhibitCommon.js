@@ -1,5 +1,5 @@
 // =====================================================================
-// exhibitCommon.js — delt boilerplate for alle exhibit-sider.
+// shared/exhibitCommon.js — delt boilerplate for alle exhibit-sider.
 //
 // Hvert exhibit har sin egen renderer, sit eget kamera, sin egen
 // shader — det er der ikke noget at dele, og vi skal ikke prøve.

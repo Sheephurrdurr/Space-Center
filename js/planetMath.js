@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // Planetens geometri og fysik.
 //
 // Både planet-meshen (planet.js) og spilleren (player.js) bruger de
@@ -17,6 +18,24 @@ export const PLANET = {
     terrainAmp: 1.1,   // max højdeforskel over/under radius
     terrainFreq: 2.6,  // hvor "store" kontinenterne er
 };
+
+// ---------------------------------------------------------------------
+// Realistisk gravity. Brugees af zero-g toggle i player.js
+// ---------------------------------------------------------------------
+const G = 6.67e-11;
+
+export const REALISTIC = {
+    density: 3000,  // kg/m³, tpysk "stenet" (S-type) asteroide densitet.
+    thrust: 0.4,    // m/s², droidens egne "jet thrusts"
+    boost: 6,       // multiplikator for radial RCS-boost på hop-tasten
+    bouncee: 0.35,  // restitution ved terræn-kollision
+
+}
+
+/** Surface-gravity for en homogen kugle: g = (4/3)π·G·ρ·r */
+export function realisticGravity(radius = PLANET.radius, density = REALISTIC.density) {
+    return (4 / 3) * Math.PI * G * density * radius;
+}
 
 // ---------------------------------------------------------------------
 // Retninger og projektioner

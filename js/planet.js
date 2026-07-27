@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // planet.js — bygger den low-poly planet.
 //
 // Trick til low-poly look: toNonIndexed() dublerer vertices så hver

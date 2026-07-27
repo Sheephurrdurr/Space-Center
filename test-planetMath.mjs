@@ -1,4 +1,4 @@
-// Hurtig sanity-test af planetMath — kør med: node test-planetMath.mjs
+// Hurtig sanity-test af planetMath til forsiden. Kør med: node test-planetMath.mjs
 import * as THREE from 'three';
 import {
     PLANET, surfaceUp, projectOnTangent,

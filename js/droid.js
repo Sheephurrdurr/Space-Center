@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // droid.js — en lille rullende kugle-droide med svævende hoved.
 //
 // Samme kontrakt som Astronaut/AstronautModel: root, update(dt, t,

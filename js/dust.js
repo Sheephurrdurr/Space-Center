@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // Billigt partikel-støv ved fodtrin og landing.
 //
 // THREE.Points med en fast pulje af positioner i en BufferAttribute.

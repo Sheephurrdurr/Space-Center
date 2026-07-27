@@ -1,9 +1,5 @@
 /* ==========================================================
-   base.css — delt design-vokabular, reset, og et par stabile
-   UI-atomer (knapper, luk-kryds). IKKE side-layout — hvert
-   exhibit beholder sit eget .math-panel/.fact-block/HUD, med
-   vilje, fordi de reelt er forskellige nok til at dele dem
-   ville være den forkerte abstraktion.
+   base.css.. men hvert exhibit beholder sit eget .math-panel/.fact-block/HUD
    ========================================================== */
 
 :root {

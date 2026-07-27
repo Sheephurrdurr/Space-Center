@@ -1,3 +1,5 @@
+// exhibits/merger_lens
+
 // Geometriske enheder: G = c = 1. Ligningerne er ægte fysik (Peters 1964).
 // Tallene (masse, afstand) er artistiske toy-units, ikke kg/meter.
 

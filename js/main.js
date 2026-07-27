@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // main.js — composition root. Det eneste sted alt kender til alt.
 //
 // Bemærk mønstret: hver klasse/factory får sine afhængigheder GIVET

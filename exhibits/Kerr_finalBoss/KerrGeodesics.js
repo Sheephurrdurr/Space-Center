@@ -1,3 +1,5 @@
+// /exhibits/Kerr_finalBoss/
+
 import * as THREE from 'three';
 import { wireMathPanel, observeCanvasResize } from '/shared/exhibitCommon.js';
 

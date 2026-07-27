@@ -1,5 +1,7 @@
+// exhibits/merger_lens
+
 import * as THREE from 'three';
-import { BlackHole } from './BlackHole.js';
+import { BlackHole } from '../../shared/BlackHole.js';
 import { RayMarchPass } from './RayMarchPass.js';
 import { BinaryOrbit, timeScaleForDuration } from './OrbitalPhysics.js';
 import { wireMathPanel, observeCanvasResize, fitPerspectiveFov } from '../../shared/exhibitCommon.js';
@@ -122,7 +124,7 @@ async function init() {
     barycenter.add(neutronStar);
     neutronStar.add(new THREE.PointLight(0xffaa33, 900, 1500));
 
-    blackHole = new BlackHole({ radius: R_s_BH });
+    blackHole = new BlackHole({ radius: R_s_BH, colorWrite: false });
     barycenter.add(blackHole.group);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.08));

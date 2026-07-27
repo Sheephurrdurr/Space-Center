@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // "lazy follow" third-person kamera.
 //
 // Kameraet husker sin egen position og bliver blot trukket mod en ønsket afstand + højde.

@@ -1,5 +1,7 @@
+// /exhibits/merger_gw/
+
 import * as THREE from 'three';
-import { BlackHole } from './BlackHole.js';
+import { BlackHole } from '../../shared/BlackHole.js';
 import { LensingPass } from './LensingPass.js';
 import { BinaryOrbit, timeScaleForDuration } from './OrbitalPhysics.js';
 import { wireMathPanel } from '../../shared/exhibitCommon.js';
@@ -46,7 +48,8 @@ const neutronStar = new THREE.Mesh(
 barycenter.add(neutronStar);
 neutronStar.add(new THREE.PointLight(0xffaa33, 900, 1500));
 
-const blackHole = new BlackHole({ radius: R_s_BH });
+const blackHole = new BlackHole({ radius: R_s_BH, colorWrite: true });
+
 barycenter.add(blackHole.group);
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.08));

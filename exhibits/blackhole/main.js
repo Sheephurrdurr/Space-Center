@@ -1,3 +1,5 @@
+// /exhibits/blackhole/
+
 import * as THREE from 'three';
 import { wireMathPanel, observeCanvasResize } from '/shared/exhibitCommon.js';
 

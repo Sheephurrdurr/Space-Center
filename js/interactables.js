@@ -1,4 +1,5 @@
 // =====================================================================
+// .js for the landing page
 // Exhibit-monumenter + proximity-systemet.
 //
 // Arkitekturen:
