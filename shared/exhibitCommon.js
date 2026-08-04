@@ -2,16 +2,15 @@
 // shared/exhibitCommon.js — delt boilerplate for alle exhibit-sider.
 //
 // Hvert exhibit har sin egen renderer, sit eget kamera, sin egen
-// shader — det er der ikke noget at dele, og vi skal ikke prøve.
+// shader.
 // Men math-panelets åbne/luk-logik og resize-håndteringen er
-// bogstaveligt talt identisk kode, kopieret fire gange. Denne fil er
+// bogstaveligt talt identisk kode. Denne fil er
 // single source of truth for præcis de to ting, og kun dem.
 // =====================================================================
 
 /**
  * Kobler "Math"-knappen (og et evt. luk-kryds) til at toggle panelet.
- * Virker uanset om exhibitet har en .math-close-knap eller ej — den
- * tjekker bare om den findes, i stedet for at kræve den.
+ * Virker uanset om exhibitet har en .math-close-knap eller ej
  */
 export function wireMathPanel(panelId = 'mathPanel', btnId = 'mathBtn') {
     const panel = document.getElementById(panelId);
@@ -24,6 +23,8 @@ export function wireMathPanel(panelId = 'mathPanel', btnId = 'mathBtn') {
     if (closeBtn) {
         closeBtn.addEventListener('click', () => panel.classList.add('hidden'));
     }
+
+    return panel;
 }
 
 /**

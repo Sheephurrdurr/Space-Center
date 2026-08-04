@@ -1,0 +1,142 @@
+<!-- /exhibits/dive/ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What? — Diving Into a Black Hole — Space Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+    <link href="/shared/whatPage.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="what-page">
+
+        <a class="what-back" href="index.html">← Back to the simulation</a>
+
+        <div class="what-hero">
+            <span class="what-eyebrow">The physics and the non physics, somewhat explained</span>
+            <h1 class="what-title">So, what was that?</h1>
+            <p class="what-subtitle">A fall into Sagittarius A* (a black hole is modelled after the supermassive black hole at the center of the Milky Way), all the way through the horizon and down to where the equations stop working. Some of what you see is computed. Some of it is drawn. This page is about which is which, and why the line falls where it does.</p>
+        </div>
+
+        <!-- ── 1 ── -->
+        <div class="chapter">
+            <div class="chapter-number">01</div>
+            <h2 class="chapter-title">The camera has mass</h2>
+
+            <p>In the other exhibits here, the camera is a thing that hovers. It sits at a fixed distance, does not fall, and generally behaves like a tripod that has ignored gravity its whole life. That's fine when the point is to look at a black hole. It stops being fine when the point is to go into one.</p>
+
+            <p>So this one works differently. The camera's position isn't animated. It's a particle with mass, released twelve horizon-radii out with slightly less angular momentum than a stable orbit needs, and then integrated through the Kerr metric until it can't be integrated anymore. Everything the camera does, it does because the geometry pushed it there.</p>
+
+            <p>The nice part is how little extra machinery that took. The shader already integrates photon paths using a Hamiltonian:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">H = ½ g^μν p_μ p_ν</div>
+                <div class="formula-explain">
+                    <span>g^μν</span> — the inverse metric, which is to say, the shape of spacetime here<br>
+                    <span>p_μ</span> — the four-momentum of whatever is moving<br>
+                    <span>H</span> — zero for light. Minus one half for anything with mass.
+                </div>
+            </div>
+
+            <p>That's the whole difference. A photon is a solution with <span class="num">H = 0</span>. An observer is a solution with <span class="num">H = −½</span>. Same equation, same RK4 integrator, one different number on the right-hand side. The camera and the light it sees are running the same physics against each other.</p>
+
+            <div class="callout">
+                <p>The Hamiltonian is also a free correctness check, which is the real reason to build it this way. H is supposed to stay at exactly −½ forever. If it drifts, the integration is wrong. During development the step size was tuned by watching that number: it held to seven decimal places over four hundred thousand steps, right up until the geometry genuinely broke down. You don't get that kind of self-diagnosis out of a hand-animated camera path.</p>
+            </div>
+        </div>
+
+        <!-- ── 2 ── -->
+        <div class="chapter">
+            <div class="chapter-number">02</div>
+            <h2 class="chapter-title">Two clocks, two completely different stories</h2>
+
+            <p>Watch the readouts as the fall goes in. Proper time, the clock the falling observer carries, ticks along at a completely ordinary rate. About twenty minutes, start to finish, and nothing about it feels unusual from the inside. Coordinate time, the clock of someone watching safely from a distance, does something else entirely. It climbs, then climbs faster, then runs away to infinity as the horizon approaches.</p>
+
+            <p>Both are correct. The distant observer never sees the fall complete. They watch the image slow down, redden, dim, and freeze just short of the boundary, fading toward nothing but never quite arriving. Meanwhile the person actually falling crosses the horizon at a specific moment on their own watch and notices nothing at all.</p>
+
+            <p>This is where the old textbook version of black holes gets stuck, and it's worth knowing why. The original Schwarzschild coordinates blow up at the horizon: terms divide by zero, and the mathematics appears to say that nothing can ever get through. It took until 1958, more than forty years after the solution was written down, for David Finkelstein to make it properly clear that this was a failure of the coordinates rather than of the spacetime. Nothing is torn at the horizon. The map was just badly drawn there.</p>
+
+            <p>This exhibit uses Kerr-Schild coordinates, which stay perfectly finite across the boundary. That's the entire reason the camera can keep going. There's no special-casing at the horizon in the code, no handoff, no seam. The integrator doesn't even notice it's happened. The only thing that changes at that moment is what the shader chooses to draw.</p>
+        </div>
+
+        <!-- ── 3 ── -->
+        <div class="chapter">
+            <div class="chapter-number">03</div>
+            <h2 class="chapter-title">Falling makes the black hole look smaller</h2>
+
+            <p>This is the one that catches people out, and it's genuinely counterintuitive rather than just surprising.</p>
+
+            <p>You'd expect the shadow to grow as you approach, swelling until it swallows everything and the screen goes dark. It doesn't. The shadow gets <em>smaller</em> on the way in, and the sky bunches up into a bright, compressed cone ahead of you.</p>
+
+            <p>The reason is speed. By the time the camera reaches the horizon it's moving at roughly 65% of light speed relative to a hovering observer at the same spot, and at those speeds relativistic aberration reshapes the entire sky. Light coming from ahead gets swept forward and concentrated. Light from behind gets stretched out and thinned. Running headfirst into a black hole does the same thing to your view of the sky that running headfirst into a rainstorm does to your view of the rain.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">🌧️</div>
+                <div class="analogy-text">Stand still in vertical rain and it falls straight down. Run, and it seems to slant toward your face, the faster the steeper. The rain didn't change direction. You did. Light behaves the same way, except the effect is on angle and brightness and colour all at once, and near a black hole you're moving fast enough for it to dominate what you see.</div>
+            </div>
+
+            <p>The gravitational bending is still there and still enormous. It's simply that aberration pulls the other way and, on the approach, wins. Put those together and falling in doesn't look like being engulfed by darkness at all. It looks more like the universe folding shut behind you.</p>
+        </div>
+
+        <!-- ── 4 ── -->
+        <div class="chapter">
+            <div class="chapter-number">04</div>
+            <h2 class="chapter-title">Inside, the radius becomes a moment in time</h2>
+
+            <p>Crossing the horizon changes something structural about the geometry, and it's stranger than "gravity gets stronger."</p>
+
+            <p>Outside, r is a spatial direction. You can move toward smaller r, or toward larger r, or hold still, the same way you can walk north or south or stand where you are. Inside, r stops being a direction you can choose and becomes something more like a date on a calendar. Decreasing r is as unavoidable as next Tuesday. Not because something is pulling hard enough to overwhelm you, but because "outward" has stopped being one of the available directions in the same way that "last week" isn't.</p>
+
+            <p>That's what the phrase "point of no return" is actually pointing at, and it's a much stranger claim than the usual telling suggests. There's no wall, no barrier, no force to fight. The singularity isn't a place waiting in front of you. It's an event in your future.</p>
+
+            <div class="callout">
+                <p>This is also why the interior can't be ray-traced the way the exterior can. Every other exhibit here works by tracing light backward from a stationary observer's eye. Inside the horizon there is no such thing as a stationary observer, so there's nothing to trace backward from. The technique doesn't produce a wrong picture. It stops having a picture to produce.</p>
+            </div>
+        </div>
+
+        <!-- ── 5 ── -->
+        <div class="chapter">
+            <div class="chapter-number">05</div>
+            <h2 class="chapter-title">A ring, not a point</h2>
+
+            <p>Everyone knows black holes have a singularity at the centre, and everyone pictures a point. For a spinning one, that picture is wrong. Kerr's solution has a <em>ring</em> singularity: a circle sitting in the equatorial plane with radius <span class="num">a = J/Mc</span>, which for this exhibit's spin of 0.85 works out to 0.85 M across. The centre of that ring is not itself singular. There's a hole in the middle of the hole.</p>
+
+            <p>Which raises the obvious question of what happens if you go through it, and the honest answer is that the mathematics gives an answer nobody quite believes. Continue Kerr's solution through the ring and you reach a region where r is negative, gravity is repulsive rather than attractive, and there exist closed timelike curves: paths through spacetime that loop back to their own past. Take one of those and you return to when you started. That's not a fringe reading of the equations. It's what the equations plainly say.</p>
+
+            <p>Most physicists take it as a sign that the solution has been pushed past where it should be trusted. Eternal, perfectly isolated, perfectly symmetric black holes don't exist. Real ones formed from collapsing matter, and the interior of a real rotating hole is thought to be unstable in a way that closes off the passage entirely. But that instability is itself an active research problem, not a settled result.</p>
+
+            <p>So the passage through the ring in this exhibit is deliberately the most invented thing in it. The ring's position and size are exact. Everything on the far side is a guess with a nice colour palette.</p>
+        </div>
+
+        <!-- ── 6 ── -->
+        <div class="chapter">
+            <div class="chapter-number">06</div>
+            <h2 class="chapter-title">Where the code gives up, and why that's the interesting part</h2>
+
+            <p>The integration stops at <span class="num">r = 0.55 M</span>, roughly a third of the way from the horizon to the ring plane, and that number was found rather than chosen.</p>
+
+            <p>Approaching the ring, momentum climbs past a thousand and the curvature diverges for real. The conserved Hamiltonian, rock solid at −½ for the whole journey down, begins to drift no matter how small the steps get. Halving the step size doesn't help. That's the tell: numerical error shrinks when you refine, and this doesn't. The equations aren't being solved badly, they're running out of things to say.</p>
+
+            <p>There's a second, quieter limit. Kerr-Schild coordinates can only represent <span class="num">r ≥ 0</span> by construction. The negative-r region on the far side of the ring lives on a different sheet of the solution that these coordinates simply don't cover. Even with a perfect integrator, this coordinate system cannot go there.</p>
+
+            <p>So the split is drawn where the physics draws it, rather than where it was convenient:</p>
+
+            <p><em>Computed, per pixel, no shortcuts.</em> The camera's entire path. Every photon path outside the horizon. The accretion disk's Doppler beaming and gravitational redshift, folded into a single factor from the photon's conserved energy and angular momentum. The relativistic aberration. The horizon's position, the ISCO, the ring's radius.</p>
+
+            <p><em>Drawn.</em> Everything after the horizon crossing fades in. The shrinking window back to the outside universe is based on something real and rendered by hand. The layered ghost images are an honest nod to the photon-ring ladder from the earlier exhibits rather than a computation. The colours are chosen. The ring passage is fiction.</p>
+
+            <p><em>Adjusted.</em> Time, throughout. The real fall takes about twenty minutes of proper time and this shows it in under a minute, unevenly, slowing down for the parts worth looking at. Correct physics, artistic scale, same as everywhere else on this site.</p>
+
+            <div class="callout">
+                <p>One last thing worth saying plainly. The observer in this exhibit is a fantasy: something that holds itself together through tidal forces that would destroy anything real. For Sagittarius A* that fantasy costs almost nothing at the horizon, where the stretch across a human body is about a ten-thousandth of Earth gravity and you would genuinely feel nothing. It only starts mattering in the last seconds near the ring. A stellar-mass black hole would be a different story entirely: tidal force at the horizon scales as 1/M², so a ten-solar-mass hole pulls on you roughly a hundred billion times harder there. You'd be shredded long before you had anything to look at.</p>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -26,62 +26,73 @@ const nsRadius = 2.9 * R_s_NS;   // ≈ 8.1
 
 const TOY_TIME_TO_SECONDS = (R_s_BH * 1474) / 3e8; // R_s_BH=10 toy-units, 1 toy-unit = 1474 m, c = 3e8 m/s → ≈ 4.91e-5 s, quick maths. 
 
+const clock = new THREE.Clock();
+let elapsed = 0;
+let paused = false;
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 2000);
 camera.position.set(0, 20, 170);
 camera.lookAt(0, 0, 0);
 
-const loader = new THREE.TextureLoader();
-const starfieldTexture = loader.load('/../assets/textures/starfield_4k.jpg');
-const lensingPass = new LensingPass(canvas, starfieldTexture);
+// ── Module-scope variabler (sættes i init) ──
+let lensingPass;
+let orbit;
+let neutronStar;
+let blackHole;
+let mathPanel
+let restartBtn;
 
-const barycenter = new THREE.Object3D(); // statisk container, fysikken styrer positionerne
-scene.add(barycenter);
+// ── Init. Async så jeg er sikker på texture er hentet først. Doesn't really matter a whole lot, fordi man bare kan vente... men async ──
+async function init() {
 
-const neutronStarTexture = loader.load('/assets/textures/neutron_star.jpg');
+    const loader = new THREE.TextureLoader();
+    
+    const starfieldTexture = await loader.loadAsync('/../assets/textures/starfield_4k.jpg');
+    const neutronStarTexture = await loader.loadAsync('/assets/textures/neutron_star.jpg');
 
-const neutronStar = new THREE.Mesh(
-    new THREE.SphereGeometry(nsRadius, 32, 32),
-    new THREE.MeshStandardMaterial({ map: neutronStarTexture, emissiveMap: neutronStarTexture, emissive: 0xffffff, emissiveIntensity: 1.0 })
-);
+    const barycenter = new THREE.Object3D(); // statisk container, fysikken styrer positionerne
+    scene.add(barycenter);
 
-barycenter.add(neutronStar);
-neutronStar.add(new THREE.PointLight(0xffaa33, 900, 1500));
+    lensingPass = new LensingPass(canvas, starfieldTexture);
 
-const blackHole = new BlackHole({ radius: R_s_BH, colorWrite: true });
+    neutronStar = new THREE.Mesh(
+        new THREE.SphereGeometry(nsRadius, 32, 32),
+        new THREE.MeshStandardMaterial({ map: neutronStarTexture, emissiveMap: neutronStarTexture, emissive: 0xffffff, emissiveIntensity: 1.0 })
+    );
+    barycenter.add(neutronStar);
+    neutronStar.add(new THREE.PointLight(0xffaa33, 900, 1500));
 
-barycenter.add(blackHole.group);
+    blackHole = new BlackHole({ radius: R_s_BH, colorWrite: true });
+    barycenter.add(blackHole.group);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.08));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.08));
 
-const clock = new THREE.Clock();
-let elapsed = 0;
-let paused = false;
+    orbit = new BinaryOrbit({
+        massStar: massNS,
+        massBH: massBH,
+        separation: 100,
+        timeScale: 1
+    });
+    orbit.timeScale = timeScaleForDuration(orbit, 10);
 
-wireMathPanel();
+    mathPanel = wireMathPanel();
+    
+    restartBtn = document.getElementById('restartBtn');
+    restartBtn.addEventListener("click", resetOrbit);
 
-const pauseBtn = document.getElementById('pauseBtn');
-const restartBtn = document.getElementById('restartBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    pauseBtn.addEventListener('click', () => {
+        paused = !paused;
+        if (!paused) clock.getDelta();
+        const icon = pauseBtn.querySelector('.btn-icon');
+        const label = pauseBtn.querySelector('.btn-label');
+        if (icon) icon.textContent = paused ? '▶' : '⏸';
+        if (label) label.textContent = paused ? 'Play' : 'Pause';
+    });
 
-pauseBtn.addEventListener('click', () => {
-    paused = !paused;
-    if (!paused) clock.getDelta();
-    const icon = pauseBtn.querySelector('.btn-icon');
-    const label = pauseBtn.querySelector('.btn-label');
-    if (icon) icon.textContent = paused ? '▶' : '⏸';
-    if (label) label.textContent = paused ? 'Play' : 'Pause';
-});
-
-restartBtn.addEventListener('click', resetOrbit);
-
-const orbit = new BinaryOrbit({
-    massStar: massNS,
-    massBH: massBH,
-    separation: 100,
-    timeScale: 1
-});
-
-orbit.timeScale = timeScaleForDuration(orbit, 10);
+    animate();
+}
 
 function resetOrbit() {
     orbit.a = 100;
@@ -97,7 +108,6 @@ function resetOrbit() {
     elapsed = 0;
     clock.getDelta(); // tøm akkumuleret tid
 }
-document.getElementById("restartBtn").addEventListener("click", resetOrbit);
 
 function updatePanel() {
     const status = orbit.merged ? "MERGED" : "INSPIRALING";
@@ -131,12 +141,12 @@ function updatePanel() {
         document.getElementById('freqReadout').textContent = gwFreqHz.toFixed(0) + ' Hz';
     }
 
-    const restartBtn = document.getElementById('restartBtn');
     if (orbit.merged && orbit.ringdownEnvelope(1.0) < 0.01) {
         restartBtn.classList.remove('hidden');
     } else {
         restartBtn.classList.add('hidden');
     }
+
 }
 
 function animate() {
@@ -216,4 +226,5 @@ function animate() {
 
     lensingPass.render(renderer, scene, camera);
 }
-animate();
+
+init();

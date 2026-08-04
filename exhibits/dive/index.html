@@ -1,0 +1,196 @@
+<!-- /exhibits/dive/ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="Diving Into a Black Hole — Space Center">
+    <meta property="og:description" content="A fall into Sagittarius A*, integrated as a real timelike geodesic through the Kerr metric — horizon, interior, and the ring singularity.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Diving Into a Black Hole — Space Center</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="/shared/base.css" rel="stylesheet">
+    <link href="/exhibits/dive/style.css" rel="stylesheet">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+<section class="hero">
+    <canvas id="c"></canvas>
+
+    <!-- Byline -->
+    <div class="byline">
+        <a href="/">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Center</span>
+        </a>
+    </div>
+
+    <!-- Mode label -->
+    <div class="mode-label" id="modeLabel">Falling</div>
+
+    <!-- Math panel -->
+    <div class="math-panel hidden" id="mathPanel">
+        <div class="math-header">
+            <span class="math-eyebrow">Kerr, 1963 — timelike geodesic</span>
+            <div class="math-title">The camera is not animated. It is falling.</div>
+            <button class="math-close" aria-label="Close panel">×</button>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Mass-shell condition</div>
+            <div class="math-formula">H = ½ g^μν p_μ p_ν = −½</div>
+            <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces and the observer tracing them.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Kerr-Schild radius</div>
+            <div class="math-formula">r² = ½[(ρ²−a²) + √((ρ²−a²)² + 4a²z²)]</div>
+            <div class="math-result">
+                <span class="math-live" id="rReadout">—</span>
+                <span class="math-unit">toy-units</span>
+            </div>
+            <div class="math-note">Surfaces of constant r are flattened ellipsoids, not spheres. These coordinates stay finite across the horizon, which is why the fall can be integrated straight through it instead of stopping there.</div>
+        </div>
+
+        <div class="math-block">
+            <div class="math-label">Altitude</div>
+            <div class="math-result">
+                <span class="math-live" id="altReadout">—</span>
+            </div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Coordinate time elapsed</div>
+            <div class="math-result">
+                <span class="math-live" id="coordReadout">—</span>
+            </div>
+            <div class="math-note">Time as measured by someone watching from far away. It diverges at the horizon: from the outside, this fall never finishes. The proper time in the bottom bar is what the falling observer's own clock reads, and it passes perfectly normally.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Tidal stretch across 2 m</div>
+            <div class="math-formula">a ≈ 2GM·Δr / r³</div>
+            <div class="math-result">
+                <span class="math-live" id="tidalReadout">—</span>
+                <span class="math-unit">g</span>
+            </div>
+            <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only becomes lethal in the last moments near the ring.</div>
+        </div>
+
+        <a href="what.html" style="text-decoration:none; margin-top: 4px;">
+            <button class="ctrl-btn" style="width:100%; justify-content:center;">
+                Full explanation →
+            </button>
+        </a>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+        <div class="readouts">
+            <div class="readout">
+                <span class="readout-label">Radius</span>
+                <span class="readout-value" id="distReadout">—</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">Proper time</span>
+                <span class="readout-value" id="properReadout">—</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">Speed</span>
+                <span class="readout-value" id="speedReadout">—</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="ctrl-btn" id="mathBtn"><span>∑</span> Math</button>
+            <button class="ctrl-btn" id="turnBtn" aria-label="Turn the camera 180 degrees">
+                <span>↻</span> Look back
+            </button>
+            <button class="ctrl-btn" id="pauseBtn"><span>⏸</span> Pause</button>
+            <button class="ctrl-btn hidden" id="restartBtn"><span>↺</span> Fall again</button>
+            <button class="ctrl-btn" id="ecoBtn"><span>◐</span> Eco</button>
+        </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="scroll-hint">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- Context section -->
+<section class="context">
+    <div class="context-inner">
+
+        <div class="context-header">
+            <span class="context-eyebrow">Exhibit 005 — One-way trip</span>
+            <h2 class="context-title">Nothing happens when you<br>cross the point of no return.</h2>
+        </div>
+
+        <div class="context-body">
+
+            <div class="fact-block">
+                <span class="fact-number">H = −½</span>
+                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve horizon radii out, integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the light it sees is one number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">4.3 million M☉</span>
+                <p class="fact-desc">Sagittarius A*, the black hole at the centre of our own galaxy. Chosen because tidal force at the horizon falls off as 1/M², so a hole this big lets you cross the boundary without noticing — the stretch across a human body there is roughly a ten-thousandth of Earth gravity. A stellar-mass hole would have shredded the observer long before it arrived.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">Aberration</span>
+                <p class="fact-desc">By the horizon the camera is moving at about 65% of light speed, and that changes what it sees more than the curvature does. Relativistic aberration sweeps the sky forward into a bunched, brightened cone, and the shadow gets <em>smaller</em> as you approach rather than swallowing the view. Falling in doesn't look like being engulfed. It looks like the universe closing behind you.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">r = 0.55 M</span>
+                <p class="fact-desc">Where the integration stops, and not because of a bug. Approaching the ring singularity, curvature genuinely diverges — momentum runs past a thousand and the conserved quantity starts to drift no matter how small the steps get. That's the mathematics failing, not the code. Everything past that point on screen is interpretation, and it's labelled as such.</p>
+            </div>
+        </div>
+
+        <div class="context-footer">
+            <div class="tech-stack">
+                <span class="tech-label">Built with</span>
+                <span class="tech-item">Three.js</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">GLSL ray marching</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">Kerr-Schild coordinates</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">RK4 geodesics</span>
+                <span class="tech-divider">·</span>
+                <span class="tech-item">NASA Deep Star Maps 2020</span>
+            </div>
+            <a class="back-link" href="/">← Back to Space Center</a>
+        </div>
+
+    </div>
+</section>
+<script type="module" src="/exhibits/dive/main.js"></script>
+</body>
+</html>

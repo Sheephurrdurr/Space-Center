@@ -100,7 +100,7 @@ function updatePanel() {
     restartBtn.classList.toggle('hidden', !showRestart);
 }
 
-// ── Init (async pga. EXR loader) ──
+// ── Init. Async så jeg er sikker på texture er hentet først. Doesn't really matter a whole lot, fordi man bare kan vente... men async ──
 async function init() {
     const loader = new THREE.TextureLoader();
     const starfieldTexture = await loader.loadAsync('/assets/textures/starfield_4k.jpg')
