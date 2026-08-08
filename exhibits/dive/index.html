@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta property="og:title" content="Diving Into a Black Hole — Space Center">
-    <meta property="og:description" content="A fall into Sagittarius A*, integrated as a real timelike geodesic through the Kerr metric — horizon, interior, and the ring singularity.">
+    <meta property="og:description" content="A fall into Sagittarius A*, integrated as a real timelike geodesic through the Kerr metric — horizon, interior, and the point where the equations stop being able to answer.">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <title>Diving Into a Black Hole — Space Center</title>
@@ -55,7 +55,7 @@
         <div class="math-block">
             <div class="math-label">Mass-shell condition</div>
             <div class="math-formula">H = ½ g^μν p_μ p_ν = −½</div>
-            <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces and the observer tracing them.</div>
+            <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces and the observer tracing them. The live value is in the bottom bar, and it is worth watching near the end.</div>
         </div>
 
         <hr class="math-divider">
@@ -80,6 +80,18 @@
         <hr class="math-divider">
 
         <div class="math-block">
+            <div class="math-label">Distance to the inner horizon</div>
+            <div class="math-formula">r₋ = M − √(M² − a²) = 0.4732 M</div>
+            <div class="math-result">
+                <span class="math-live" id="innerReadout">—</span>
+                <span class="math-unit">× r₋</span>
+            </div>
+            <div class="math-note">The second horizon, hidden inside the first. Kerr's solution continues through it and out to the ring, but the interior of a hole formed by collapse is thought to be unstable there: everything that ever falls in afterwards arrives on that surface at once, infinitely blueshifted. This number never reaches 1. The fall stops 16% short.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
             <div class="math-label">Coordinate time elapsed</div>
             <div class="math-result">
                 <span class="math-live" id="coordReadout">—</span>
@@ -96,14 +108,37 @@
                 <span class="math-live" id="tidalReadout">—</span>
                 <span class="math-unit">g</span>
             </div>
-            <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only becomes lethal in the last moments near the ring.</div>
+            <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only climbs in the final moments.</div>
+        </div>
+
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Dark cone, half-angle</div>
+            <div class="math-formula">cos θ = A / √(A² − 1 + f)</div>
+            <div class="math-result">
+                <span class="math-live" id="coneReadout">—</span>
+                <span class="math-unit">degrees</span>
+            </div>
+            <div class="math-note">Light from the outside universe carries positive energy measured at infinity. Rays traced backward that come out negative never touched the exterior at all, and this is the cone where the sign flips. It opens from nothing at the ergosphere and never quite reaches 90°, which is why the sky outside it stays wider than the field of view all the way down.</div>
         </div>
 
         <a href="what.html" style="text-decoration:none; margin-top: 4px;">
             <button class="ctrl-btn" style="width:100%; justify-content:center;">
-                Full explanation →
+                What?
             </button>
         </a>
+    </div>
+
+    <!-- End plate -->
+    <div class="end-plate" id="endPlate">
+        <div class="end-plate-inner">
+            <span class="end-eyebrow">r = 0.55 M · integration halted</span>
+            <p class="end-lead">This is where the mathematics stops working.</p>
+            <p>Not the code. Just below here is the inner horizon, and general relativity predicts its own breakdown there — the theory hands back infinities instead of answers.</p>
+            <p>Getting past this needs a theory of quantum gravity, and nobody has written one yet.</p>
+            <p class="end-note">Still waiting on that grand unified field theory.</p>
+        </div>
     </div>
 
     <!-- Bottom bar -->
@@ -120,6 +155,10 @@
             <div class="readout">
                 <span class="readout-label">Speed</span>
                 <span class="readout-value" id="speedReadout">—</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">H — should be −½</span>
+                <span class="readout-value" id="hamReadout">—</span>
             </div>
         </div>
 
@@ -168,8 +207,18 @@
             </div>
 
             <div class="fact-block">
+                <span class="fact-number">θ ≈ 54°</span>
+                <p class="fact-desc">The size of the dark cone at a third of a horizon radius, and the thing this exhibit had wrong for a long time. The outside universe does not shrink to a porthole and wink out. A photon's energy measured at infinity is conserved, light from outside always has it positive, and where that quantity changes sign is a cone opening in the direction of fall. It grows toward a hemisphere and stops there. Point the camera sideways this deep in and you are still looking at stars.</p>
+            </div>
+
+            <div class="fact-block">
+                <span class="fact-number">r₋ = 0.473 M</span>
+                <p class="fact-desc">The second horizon. Kerr's solution continues through it, past the ring, and into another universe — and for thirty years that was taken seriously enough to be worth checking. It didn't survive the check. Everything that falls in after you, and the entire future history of the outside universe, arrives on that surface compressed into one finite moment of your own time. The blueshift diverges, the curvature with it, and the doorway becomes a wall. <em>This exhibit ends before it gets there.</em></p>
+            </div>
+
+            <div class="fact-block">
                 <span class="fact-number">r = 0.55 M</span>
-                <p class="fact-desc">Where the integration stops, and not because of a bug. Approaching the ring singularity, curvature genuinely diverges — momentum runs past a thousand and the conserved quantity starts to drift no matter how small the steps get. That's the mathematics failing, not the code. Everything past that point on screen is interpretation, and it's labelled as such.</p>
+                <p class="fact-desc">Where the integration stops, and not because of a bug — it's 16% outside the inner horizon, which is to say the code gives up almost exactly where the physics does. The conserved Hamiltonian, rock solid at −½ for the whole journey, starts to drift here. Halve the step size and the drift doesn't halve with it; it settles on a floor. Numerical error doesn't behave that way. The number in the bottom bar is that drift, live.</p>
             </div>
         </div>
 

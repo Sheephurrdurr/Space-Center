@@ -10,10 +10,29 @@
 // Så er afspilningen bare opslag, og vi kan skrue på tempoet uden at
 // røre fysikken. Det er hele "correct physics, artistic scale" i én
 // arkitektonisk beslutning: banen er sand, tempoet er .. ikke.
+//
+// ── Om slutningen ────────────────────────────────────────────────────
+// Der lå engang en håndlagt ringpassage her: kameraet blev løftet op
+// over ringens plan, ført ind gennem åbningen, og på den anden side
+// åbnede der sig et nyt univers af proceduregenererede galakser.
+// Den er væk, og det er en forbedring.
+//
+// Grunden er den indre horisont. For a = 0.85M ligger r₋ = 0.4732 M.
+// Alt hvad der falder ind efter observatøren — plus hele det ydre
+// univers' fremtidige historie — ankommer til den flade komprimeret
+// ind i én endelig egentid, uendeligt blåforskudt. Poisson & Israel
+// kaldte det mass inflation (1990): den effektive masse divergerer
+// eksponentielt, og Cauchy-horisonten bliver en ægte singulær flade
+// i stedet for en dør.
+//
+// Geodæten stopper ved 0.55 M. Det er 16% UDENFOR r₋. Integratoren
+// giver altså op præcis dér hvor fysikken siger den skal, og faldet
+// når aldrig frem til den passage der alligevel ikke er der.
+// Så exhibittet ender hvor matematikken ender: i blåforskydningen.
 // =====================================================================
 
 import * as THREE from 'three';
-import { DiveGeodesic, ksR, buildTetrad, checkTetrad, dotG, solvePtAt } from './DiveGeodesic.js';
+import { DiveGeodesic, ksR, buildTetrad, dotG, solvePtAt } from './DiveGeodesic.js';
 import { createDiveMaterial } from './DiveShader.js';
 import { wireMathPanel, observeCanvasResize } from '/shared/exhibitCommon.js';
 
@@ -23,7 +42,18 @@ const BH_MASS   = 5.0;              // geometriske toy-units
 const RS        = 2.0 * BH_MASS;    // = 10
 const SPIN      = 0.85;             // a/M
 const MSUN      = 4.3e6;            // Sgr A*
-const COLDNESS  = 0.45;
+// 0 = hvidglødende, 1 = udbrændt rød.
+//
+// Var oppe på 0.75 for at redde en skive der så mørk bordeaux ud. Den
+// årsag var aldrig farven — det var fortegnsfejlen på g i diskSample(),
+// som låste beamingen på sit gulv og dæmpede ALT med en faktor 15.
+// Med den fejl væk skal paletten tilbage i den varme ende, ellers er
+// skiven bare en lys udgave af den samme brune.
+//
+// Kerr-exhibittets Sgr A*-preset står på 0.45. Her ligger den lidt
+// under, fordi vi kommer meget tættere på og gerne vil se den hvide
+// inderkant på vej ned.
+const COLDNESS  = 0.30;
 
 // Omregning fra toy-units til virkeligheden
 const SOLAR_RS_KM   = 2.953;
@@ -33,13 +63,17 @@ const TOY_METERS    = RS_METERS / RS;              // 1 toy-length i meter
 const TOY_SECONDS   = SOLAR_TIME_S * MSUN / BH_MASS; // 1 toy-tid i sekunder
 const C = 299792458;
 
+// Indre horisont, r₋ = M − sqrt(M² − a²). Bruges kun til aflæsning:
+// banen når den aldrig. = 2.3661 for a = 0.85M, mens vi stopper ved 2.75.
+const R_INNER = BH_MASS - Math.sqrt(Math.max(BH_MASS * BH_MASS - Math.pow(SPIN * BH_MASS, 2), 0));
+
 // ── Tidslinje (vægursekunder) ─────────────────────────────────────────
 const T_APPROACH = 22.0;   // udefra og ind mod horisonten
 const T_CROSS    = 3.5;    // selve passagen af horisonten
-const T_INTERIOR = 12.0;   // ned mod ring singulariteten
-const T_RING     = 2.5;    // ringpassagen
-const T_BEYOND   = 11.0;   // den anden side
-const T_TOTAL    = T_APPROACH + T_CROSS + T_INTERIOR + T_RING + T_BEYOND;
+const T_INTERIOR = 14.0;   // ned mod dér hvor ligningerne holder op
+const T_WHITE    = 8.0;    // blåforskydningen løber løbsk
+const T_PLATE    = 8.0;    // udbrænding, sort, og en forklaring
+const T_TOTAL = T_APPROACH + T_CROSS + T_INTERIOR + T_WHITE + T_PLATE;
 
 // ── Renderer ──────────────────────────────────────────────────────────
 const canvas   = document.getElementById('c');
@@ -65,7 +99,6 @@ starfield.wrapT = THREE.ClampToEdgeWrapping;
 
 const material = createDiveMaterial({
     starfield,
-    beyondSky: null,        // fyldes ud når (og hvis) filen lander
     rs: RS,
     spin: SPIN,
     width: canvas.clientWidth,
@@ -73,8 +106,6 @@ const material = createDiveMaterial({
     coldness: COLDNESS,
 });
 scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
-
-window.mat = material; // remove after debugging
 
 // ISCO — skivens inderkant (Bardeen, Press & Teukolsky 1972)
 function iscoRadius(a) {
@@ -93,13 +124,30 @@ material.uniforms.uDiskOut.value = RS * 5.5;
 /**
  * Integrerer hele faldet og gemmer det som en tabel af snapshots.
  *
- * Sampling-tætheden følger r: langt ude ændrer udsigten sig langsomt,
- * tæt på ændrer den sig voldsomt. Ensartede τ-skridt ville give hundredvis
- * af næsten identiske frames i starten og en håndfuld dér hvor det gælder.
+ * Sampling-tætheden styres af BEVÆGELSEN, ikke af egentiden. Det er en
+ * vigtigere detalje end den ser ud, for det var her billedet "hoppede"
+ * på vej ned:
+ *
+ * Med et fast τ-skridt på 0.01·r lå to nabo-samples 39% af r fra hinanden
+ * nede ved r ≈ 0.33 Rs, og impulsen ændrede sig 27% imellem dem. Banen
+ * krummer hårdt dér, så den rette linje mellem to samples skærer genvej
+ * inden om den rigtige kurve. Kameraets fart dykkede altså en smule midt
+ * mellem hvert sample og kom op igen ved næste — én blød puls pr. sample,
+ * og fordi de sidste samples strakte sig over flere sekunders afspilning,
+ * blev det til en langsom, tydelig pumpen i billedet.
+ *
+ * Kriteriet nu: gem et snapshot når positionen har flyttet sig 1.5% af r,
+ * eller impulsen har ændret sig 1.5%. Det giver ~8000 samples, og de
+ * ligger dér hvor der SKER noget. Integrationsarbejdet er uændret — det
+ * er kun hvor tit vi kigger på resultatet der ændrer sig.
+ *
+ * H gemmes med. Ikke til fysikken — til publikum. Se noten ved
+ * updateReadouts().
  */
 function buildTrajectory() {
     // z0 = 4: lidt ud af ækvatorplanet. Uden det ser man skiven eksakt
-    // fra kanten hele vejen ned. Med hældning  svinger banen gennem planet, og skiven åbner sig undervejs.
+    // fra kanten hele vejen ned. Med hældning svinger banen gennem planet,
+    // og skiven åbner sig undervejs.
     const g = new DiveGeodesic({
         M: BH_MASS, spin: SPIN, r0: 60, angMom: 13, inward: 0.02, z0: 4.0,
     });
@@ -115,19 +163,34 @@ function buildTrajectory() {
             px: g.mom.x, py: g.mom.y, pz: g.mom.z,
             vx: v.x, vy: v.y, vz: v.z,
             r: g.r, tau: g.tau, t: g.coordTime,
+            H: g.hamiltonianCheck(),
         });
     };
 
     push();                                   // startpunktet
+    let last = samples[0];
     let guard = 0;
-    while (g.valid && guard++ < 100000) {
-        g.advance(Math.max(0.002, 0.01 * g.r));
+    while (g.valid && guard++ < 400000) {
+        // Bed aldrig om et skridt der er meget større end det integratoren
+        // selv ville tage. Ellers gemmer vi ét snapshot af noget der
+        // indeholdt hundredvis af substeps.
+        g.advance(Math.min(Math.max(1e-5, 0.01 * g.r), 0.75 * g.suggestedStep()));
 
-        // Første sample der ligger inde i horisonten. Indekset er
-        // samples.length netop nu, fordi push() lægger den bagerst.
-        if (horizonIndex < 0 && g.r <= rH) horizonIndex = samples.length;
+        const dx = g.pos.x - last.x, dy = g.pos.y - last.y, dz = g.pos.z - last.z;
+        const dp = Math.hypot(g.mom.x - last.px, g.mom.y - last.py, g.mom.z - last.pz);
+        const pm = Math.hypot(last.px, last.py, last.pz);
+        const tol = 0.015 * Math.max(g.r, 0.35);
 
-        push();
+        if (!g.valid || dx*dx + dy*dy + dz*dz >= tol*tol || dp >= 0.015 * Math.max(pm, 0.3)) {
+            push();
+            last = samples[samples.length - 1];
+        }
+    }
+    if (samples[samples.length - 1] !== last) push();
+
+    // Første sample der ligger inde i horisonten.
+    for (let i = 0; i < samples.length; i++) {
+        if (samples[i].r <= rH) { horizonIndex = i; break; }
     }
 
     // Visuel progression: lineær i log(r). Lige store skridt i log r
@@ -156,6 +219,44 @@ function buildTrajectory() {
 const traj = buildTrajectory();
 material.uniforms.uRayStop.value = traj.rH * 1.005;
 
+// ── Den mørke kegle ──
+// Samme tal som shaderen afgør hver pixel med, bare regnet én gang
+// for hele billedet så panelet kan vise det.
+//   E = A + n·B  for en foton set i retningen n
+//   |B|² = A² − 1 + f      (fordi ∂_t·∂_t = −1 + f)
+// E skifter fortegn på keglen cos θ = A/|B|. Findes kun når f > 1,
+// altså inde i ergosfæren.
+const A_OBS = -traj.pt;   // observatørens bevarede energi, −u_t
+
+function darkConeDeg(pos) {
+    const a  = SPIN * BH_MASS;
+    const r  = ksR(pos.x, pos.y, pos.z, a);
+    const r2 = r * r;
+    const f  = 2 * BH_MASS * r2 * r / (r2 * r2 + a * a * pos.z * pos.z);
+    const B2 = A_OBS * A_OBS - 1 + f;
+    if (B2 <= A_OBS * A_OBS) return 0;
+    return Math.acos(Math.min(1, A_OBS / Math.sqrt(B2))) * 180 / Math.PI;
+}
+
+/**
+ * Catmull-Rom i Hermite-form, med ujævnt fordelte knuder.
+ *
+ * Forskellen fra lineær interpolation er at kurven her kender sin egen
+ * HÆLDNING i endepunkterne — tangenten estimeres fra naboerne på hver
+ * side. En ret linje mellem to punkter på en krum bane skærer indenom;
+ * en kurve der starter og slutter med den rigtige retning gør ikke.
+ * Det er den samme idé som at tegne en blød streg gennem punkter i
+ * stedet for at forbinde dem med en lineal.
+ */
+function hermite(p0, p1, p2, p3, v0, v1, v2, v3, t) {
+    const h  = v2 - v1;
+    const m1 = (v2 - v0) > 1e-12 ? (p2 - p0) / (v2 - v0) * h : (p2 - p1);
+    const m2 = (v3 - v1) > 1e-12 ? (p3 - p1) / (v3 - v1) * h : (p2 - p1);
+    const t2 = t * t, t3 = t2 * t;
+    return (2*t3 - 3*t2 + 1) * p1 + (t3 - 2*t2 + t) * m1
+         + (-2*t3 + 3*t2) * p2 + (t3 - t2) * m2;
+}
+
 /** Slår op i banen ved visuel progression v ∈ [0,1], med interpolation. */
 function sampleAt(v) {
     const S = traj.samples;
@@ -166,17 +267,17 @@ function sampleAt(v) {
         const mid = (lo + hi) >> 1;
         if (S[mid].v <= v) lo = mid; else hi = mid;
     }
-    const a = S[lo], b = S[hi];
+    const P = S[Math.max(0, lo - 1)], a = S[lo], b = S[hi], Q = S[Math.min(S.length - 1, hi + 1)];
     const f = b.v > a.v ? (v - a.v) / (b.v - a.v) : 0;
-    const L = (p, q) => p + (q - p) * f;
+    const L = k => hermite(P[k], a[k], b[k], Q[k], P.v, a.v, b.v, Q.v, f);
 
-    const pos = new THREE.Vector3(L(a.x,b.x), L(a.y,b.y), L(a.z,b.z));
-    const mom = { x: L(a.px,b.px), y: L(a.py,b.py), z: L(a.pz,b.pz) };
+    const pos = new THREE.Vector3(L('x'), L('y'), L('z'));
+    const mom = { x: L('px'), y: L('py'), z: L('pz') };
 
     return {
         pos,
-        vel: new THREE.Vector3(L(a.vx,b.vx), L(a.vy,b.vy), L(a.vz,b.vz)),
-        r: L(a.r, b.r), tau: L(a.tau, b.tau), t: L(a.t, b.t),
+        vel: new THREE.Vector3(L('vx'), L('vy'), L('vz')),
+        r: L('r'), tau: L('tau'), t: L('t'), H: L('H'),
         // Interpoleret par + lokalt løst pt = glat OG gyldigt.
         frame: { pos: { x: pos.x, y: pos.y, z: pos.z }, mom,
                  pt: solvePtAt({ x: pos.x, y: pos.y, z: pos.z }, mom, BH_MASS, SPIN * BH_MASS) },
@@ -188,131 +289,98 @@ function sampleAt(v) {
 // =====================================================================
 
 const easeInOut = u => u < 0.5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2;
-const clamp01    = u => Math.max(0, Math.min(1, u));
-
-/**
- * Oversætter vægursekunder til (visuel progression, faseparametre).
- * Al pacing bor her.
- */
-function timeline(t) {
-    const vH = traj.vHorizon;
-    let v, pass = 0, flash = 0, ringS = -1, phase = 'approach';
-
-    if (t < T_APPROACH) {
-        // Udefra og ind. Easing, så starten er rolig og slutningen haster.
-        v = easeInOut(t / T_APPROACH) * vH;
-
-    } else if (t < T_APPROACH + T_CROSS) {
-        const u = (t - T_APPROACH) / T_CROSS;
-        phase = 'crossing';
-        v = vH + u * (1 - vH) * 0.10;
-
-    } else if (t < T_APPROACH + T_CROSS + T_INTERIOR) {
-        const u = (t - T_APPROACH - T_CROSS) / T_INTERIOR;
-        phase = 'interior';
-        v = vH + (0.10 + 0.90 * easeInOut(u)) * (1 - vH);
-
-    } else {
-        // Ring og beyond deler én kurve. Ellers står kameraet stille i
-        // elleve sekunder mens kun støjen bevæger sig, og det føles dødt.
-        v = 1;
-        const tR = t - T_APPROACH - T_CROSS - T_INTERIOR;
-
-        // Passagen selv er hurtig, den anden side er langsom. To forskellige
-        // hastigheder på den samme s, delt ved gennemslaget.
-        if (tR < T_RING) {
-            phase = 'ring';
-            ringS = RING_CROSS_S * easeInOut(clamp01(tR / T_RING));
-        } else {
-            phase = 'beyond';
-            const u = clamp01((tR - T_RING) / T_BEYOND);
-            ringS = RING_CROSS_S + (1 - RING_CROSS_S) * easeInOut(u);
-        }
-
-        // Paletten vender omkring gennemslaget
-        pass  = smoothstep(RING_CROSS_S - 0.06, RING_CROSS_S + 0.14, ringS);
-         // Asymmetrisk: eksplosivt ind, langsomt ud. En udkastning har
-        // hård attack og lang decay — et blitz har begge dele lige hurtigt.
-        const d = ringS - RING_CROSS_S;
-        flash = d < 0
-            ? Math.exp(-Math.pow(d / 0.020, 2.0))
-            : Math.exp(-d / 0.16);
-    }
-
-    // ── Hvornår skifter vi renderer? ──
-    // Det her hænger bevidst på POSITION og ikke på fasen. Grunden er
-    // konkret: raymarchen dropper enhver stråle der kommer inden for
-    // rH·1.005, så et kryds der ligger helt inde ved horisonten ville
-    // fade fra ren sort over i interiøret. Ved at binde fadet til v
-    // begynder det mens der stadig er noget at se, og de sidste
-    // stjerner bliver hængende ind i overgangen.
-    const BAND = 0.05;
-    const inside = smoothstep(vH - BAND, vH + BAND, v);
-
-    return { v, inside, pass, flash, ringS, phase };
-}
+const clamp01   = u => Math.max(0, Math.min(1, u));
 
 function smoothstep(e0, e1, x) {
     const u = clamp01((x - e0) / (e1 - e0));
     return u * u * (3 - 2 * u);
 }
 
-// =====================================================================
-//  Ringpassagen — den eneste kamerabevægelse på siden der IKKE er fysik
-// =====================================================================
-//
-// Geodæten stopper ved r = 0.55 M, og den peger på det tidspunkt næsten
-// rent tangentialt: kameraet piskes rundt om ringen, ikke ind gennem den.
-// Så en simpel forlængelse af banen ville føre væk. Passagen er derfor "håndlavet".
-//
-// Kurven er sat i cylinderkoordinater omkring spin-aksen, fordi ringen
-// er defineret i netop de koordinater (z = 0, ρ = a). Det gør nøglerne
-// læsbare: "løft op over ringen, ind over midten, ned gennem hullet."
-// ρ er en FAKTOR af hvor geodæten slap. z og φ er absolutte tilføjelser.
-// Geodætens sidste z er -0.18, altså praktisk talt i ringens plan, så
-// nøgle 0 starter bare i z = 0 og springet er usynligt.
-const RING_KEYS = [
-    // s      ρ-faktor   z      Δφ
-    [0.00,     1.000,   0.00,  0.00],   // hvor geodæten slap
-    [0.30,     0.614,   1.90,  0.70],   // op over ringens plan, og indad
-    [0.55,     0.139,   0.00,  1.35],   // gennem åbningen i midten
-    [1.00,     0.515,  -4.20,  2.10],   // væk, på den anden side
-];
-const RING_CROSS_S = 0.55;   // hvor z = 0 passeres. Glimtet ligger her.
+/**
+ * Oversætter vægursekunder til (visuel progression, faseparametre).
+ * Al pacing bor her.
+ *
+ * De tre slut-parametre:
+ *   blue  — hvor hårdt blåforskydningen skrues op. Rammer den ALLEREDE
+ *           blåforskudte rand af den mørke kegle først, fordi shaderen
+ *           vægter effekten med gShift. Det er den ægte effekt, forstærket.
+ *   white — det hvide tæppe ovenpå. Det er dér det holder op med at
+ *           være fysik og bliver fortælling.
+ *   dim   — udbrændingen bagefter. Hvid → sort, og så kommer teksten.
+ */
+function timeline(t) {
+    const vH = traj.vHorizon;
+    let v, phase = 'approach', look = 0, blue = 0, white = 0, dim = 1, plate = 0;
 
-// Passagen starter præcis dér hvor geodæten holder op.
-const ringAnchor = (() => {
-    const last = traj.samples[traj.samples.length - 1];
-    return {
-        rho: Math.hypot(last.x, last.y),
-        phi: Math.atan2(last.y, last.x),
-    };
-})();
+    const tI = T_APPROACH + T_CROSS;
+    const tW = tI + T_INTERIOR;
+    const tP = tW + T_WHITE;
 
-const _ringPos = new THREE.Vector3();
+    if (t < T_APPROACH) {
+        // Udefra og ind. Easing, så starten er rolig og slutningen haster.
+        v = easeInOut(t / T_APPROACH) * vH;
 
-/** Position langs den scriptede passage, s ∈ [0,1]. */
-function ringPath(s) {
-    s = clamp01(s);
-    let i = 0;
-    while (i < RING_KEYS.length - 2 && s > RING_KEYS[i + 1][0]) i++;
-    const A = RING_KEYS[i], B = RING_KEYS[i + 1];
-    const u = (s - A[0]) / (B[0] - A[0]);
-    const e = u * u * (3 - 2 * u);           // smoothstep mellem nøgler
+    } else if (t < tI) {
+        const u = (t - T_APPROACH) / T_CROSS;
+        phase = 'crossing';
+        v = vH + u * (1 - vH) * 0.10;
+        look = easeInOut(u);
 
-    const rho = ringAnchor.rho * (A[1] + (B[1] - A[1]) * e);
-    const z   = A[2] + (B[2] - A[2]) * e;
-    const phi = ringAnchor.phi + (A[3] + (B[3] - A[3]) * e);
+    } else if (t < tW) {
+        const u = (t - tI) / T_INTERIOR;
+        phase = 'interior';
+        v = vH + (0.10 + 0.90 * easeInOut(u)) * (1 - vH);
+        look = 1;
+        // Effekten begynder MENS der stadig er bevægelse. Ellers står
+        // kameraet stille i otte sekunder mens kun lysstyrken ændrer sig,
+        // og så føles det som en fade i stedet for som en begivenhed.
+        blue = 0.30 * smoothstep(0.76, 1.0, u);
 
-    return _ringPos.set(rho * Math.cos(phi), rho * Math.sin(phi), z);
+    } else if (t < tP) {
+        const u = (t - tW) / T_WHITE;
+        phase = 'cauchy';
+        v = 1; look = 1;
+        // Eksponent > 1: langsomt i starten, så løber det fra én. Det er
+        // formen på mass inflation, ikke en lineær optoning.
+        blue  = 0.30 + 0.70 * Math.pow(u, 1.8);
+        white = Math.pow(clamp01((u - 0.42) / 0.58), 2.2);
+
+    } else {
+        const u = clamp01((t - tP) / T_PLATE);
+        phase = 'end';
+        v = 1; look = 1; blue = 1; white = 1;
+        // Hvid → sort over godt to sekunder. Teksten kommer bagefter,
+        // på sort, så den ikke skal kæmpe med udbrændingen.
+        dim   = 1 - smoothstep(0.03, 0.30, u);
+        plate = smoothstep(0.34, 0.52, u);
+    }
+
+    // ── Hvornår må tegningen komme på? ──
+    // Fadet hænger på POSITION, ikke på fasen, så det følger geometrien
+    // og ikke stopuret.
+    //
+    // Det STARTEDE tidligere et halvt bånd FØR horisonten, tilbage da
+    // raymarchen droppede alt inden for rH·1.005 og krydset derfor ville
+    // have faded fra ren sort. Den grund findes ikke længere: strålerne
+    // integreres nu glat hele vejen igennem. Til gengæld gav den tidlige
+    // start en synlig fejl — ved r = 0.765 Rs, altså stadig UDENFOR
+    // horisonten, stod uInside allerede på 0.48, og så tegnede
+    // interiørets folder en streg tværs hen over stjernehimlen.
+    //
+    // Nu begynder fadet præcis ved krydset og er færdigt inden
+    // crossing-fasen slutter.
+    const BAND = 0.03;
+    const inside = smoothstep(vH, vH + BAND, v);
+
+    return { v, inside, blue, white, dim, plate, phase, look };
 }
 
 const PHASE_LABEL = {
     approach: 'Falling',
     crossing: 'Crossing the horizon',
     interior: 'Inside',
-    ring:     'The ring',
-    beyond:   'Beyond',
+    cauchy:   'Blueshift — integration halted',
+    end:      '',
 };
 
 // =====================================================================
@@ -339,33 +407,68 @@ const _velDir = new THREE.Vector3();
 const _qYaw   = new THREE.Quaternion();
 const _qPitch = new THREE.Quaternion();
 
+// Hvilerammen — den udrejede base. Tetraden seedes med DEN, aldrig med
+// den drejede. Se den lange note over orientCamera().
+const _baseR = new THREE.Vector3();
+const _baseU = new THREE.Vector3();
+const _baseF = new THREE.Vector3();
+
+// Drejningen, udtrykt som rene tal i basen: _lookM[i] er den i'te drejede
+// akse skrevet i (baseR, baseU, baseF). Ni tal, og de er en ægte
+// rotationsmatrix fordi begge baser er ortonormale.
+const _lookM = [[1,0,0], [0,1,0], [0,0,1]];
+
 /**
  * Bygger kamerabasen i to trin: først hvileretningen (indad, blandet med
  * bevægelsesretningen), så brugerens drejning oveni.
  *
- * Den gamle version lagde en skaleret vektor til _fwd og normaliserede.
- * Det er en småvinkel-approksimation, og den kan aldrig komme forbi 90°
- * uanset hvad man fodrer den. Quaternionerne her er ægte rotationer og
- * er lige glade med om vinklen er 0.2 eller 12.
+ * ── Hvorfor drejningen ikke længere lever her ──
+ * Den gamle version drejede _fwd/_right/_up som almindelige pile i
+ * KS-koordinater og sendte dem videre som seeds til buildTetrad(). Men
+ * Gram-Schmidt retter seeds op i forhold til metrikken OG observatørens
+ * firehastighed, og den opretning er ikke en rotation. Den klemmer
+ * retningerne sammen fremad og strækker dem bagud — det er aberration,
+ * den samme der gør himlen til en kegle i kapitel 03.
+ *
+ * Konsekvensen var at håndtaget sad i koordinatrummet mens billedet lever
+ * i observatørens øje, med en linse imellem. Målt ved r = 0.275 Rs:
+ * 5° musebevægelse drejede synsretningen mellem 0.85° og 28.47° alt efter
+ * hvor man stod i omdrejningen. Faktor 33.6. Udenfor horisonten var
+ * forholdet 1.1, og DERFOR føltes det kun i stykker derinde.
+ *
+ * Nu bygges hvilerammen her, og drejningen leveres separat som _lookM.
+ * Den bliver lagt på tetradens tre rumlige ben i stedet — altså inde i
+ * observatørens egen ortonormale base, hvor en rotation er en rotation.
+ * 5° mus giver 5° syn, overalt. Og fordi seeds nu er rent geometriske,
+ * er de også glatte: ingen Gram-Schmidt-spring når man drejer forbi en
+ * retning hvor to seeds var ved at blive parallelle.
  */
-function orientCamera(pos, vel, driftT) {
+function orientCamera(pos, vel, driftT, lookBack) {
     // ── 1. Hvilerammen ──
-    _fwd.copy(pos).normalize().multiplyScalar(-1);
+    _baseF.copy(pos).normalize().multiplyScalar(-1);
     if (vel.lengthSq() > 1e-9) {
         _velDir.copy(vel).normalize();
-        _fwd.addScaledVector(_velDir, 0.35).normalize();
+        _baseF.addScaledVector(_velDir, 0.35).normalize();
     }
 
     // cross(fwd, spinakse) er nul hvis de to er parallelle, og så bliver
     // hele basen NaN — sort skærm, ingen fejl i konsollen. Gardér.
-    _right.crossVectors(_fwd, SPIN_AXIS);
-    if (_right.lengthSq() < 1e-12) _right.set(1, 0, 0);
-    _right.normalize();
-    _up.crossVectors(_right, _fwd).normalize();
+    _baseR.crossVectors(_baseF, SPIN_AXIS);
+    if (_baseR.lengthSq() < 1e-12) _baseR.set(1, 0, 0);
+    _baseR.normalize();
+    _baseU.crossVectors(_baseR, _baseF).normalize();
 
     // ── 2. Drej rammen ──
-    const yaw   = lookYaw   + Math.sin(driftT * 0.21) * 0.045;
+    // lookBack er fortællingens egen drejning: 0 = kig ind mod hullet,
+    // 1 = kig tilbage ad den vej vi kom. Den lægges oveni brugerens yaw,
+    // så man altid kan dreje sig fri af den. Grunden til at den findes
+    // er fysisk: indenfor horisonten er der SORT fremad — hver eneste
+    // stråle bagud i tiden ender i singulariteten. Alt der er tilbage at
+    // se ligger bagude, i vinduet der lukker sig. Så det er dér vi kigger.
+    const yaw   = lookYaw   + Math.PI * lookBack + Math.sin(driftT * 0.21) * 0.045;
     const pitch = lookPitch + Math.cos(driftT * 0.17) * 0.030;
+
+    _fwd.copy(_baseF); _right.copy(_baseR); _up.copy(_baseU);
 
     // Yaw om _up, som er bygget ud fra spin-aksen. Derfor kan der aldrig
     // snige sig roll ind: horisonten bliver vandret gratis.
@@ -381,6 +484,62 @@ function orientCamera(pos, vel, driftT) {
     _fwd.applyQuaternion(_qPitch);
 
     _up.crossVectors(_right, _fwd).normalize();
+
+    // ── 3. Skriv drejningen ned som ni tal ──
+    // Ingen udledning med fortegn og håndethed: bare projicér hver drejet
+    // akse ned på den udrejede base. Begge er ortonormale, så resultatet
+    // ER rotationsmatricen, og den kan ganges direkte på tetraden.
+    _lookM[0][0] = _right.dot(_baseR); _lookM[0][1] = _right.dot(_baseU); _lookM[0][2] = _right.dot(_baseF);
+    _lookM[1][0] = _up.dot(_baseR);    _lookM[1][1] = _up.dot(_baseU);    _lookM[1][2] = _up.dot(_baseF);
+    _lookM[2][0] = _fwd.dot(_baseR);   _lookM[2][1] = _fwd.dot(_baseU);   _lookM[2][2] = _fwd.dot(_baseF);
+}
+
+/**
+ * Lægger drejningen på tetradens rumlige ben.
+ *
+ * e0 røres ikke — observatøren bevæger sig ikke af at dreje hovedet.
+ * De tre andre blandes med en ortogonal matrix, og det er den eneste
+ * operation der bevarer <e_i, e_j> = delta_ij eksakt. Tetraden er stadig
+ * en tetrade bagefter, til de elleve decimaler checkTetrad() måler.
+ */
+function rotateTetrad(tet, Mx) {
+    const mix = m => {
+        const o = [0, 0, 0, 0];
+        for (let c = 0; c < 4; c++)
+            o[c] = m[0] * tet[1][c] + m[1] * tet[2][c] + m[2] * tet[3][c];
+        return o;
+    };
+    return [tet[0], mix(Mx[0]), mix(Mx[1]), mix(Mx[2])];
+}
+
+// ── Retningen "ud", gjort rigtigt ────────────────────────────────────
+// uOutDir var normalize(pos): "væk fra hullets centrum". Det holder for
+// en observatør der falder lige ned. Denne her gør ikke — med angMom 13
+// og frame dragging piskes hun rundt, og nede ved r = 0.275 Rs ligger
+// den radiale retning 118° fra det sted hvor universet faktisk står.
+//
+// Det rigtige tal er B: den del af tidstranslations-vektoren d/dt der
+// peger et sted hen i HENDES rum. Alt uden for hullet står stille i
+// forhold til d/dt, så B er per definition den vej "derud" ligger.
+// Den mørke kegle sidder modsat, om -B.
+const _XI = [1, 0, 0, 0];
+
+function outAxisFrom(framePos, tet, into) {
+    const aa = SPIN * BH_MASS;
+    const xu = dotG(framePos, BH_MASS, aa, _XI, tet[0]);   // = -A, observatørens energi
+    const B  = [_XI[0] + xu * tet[0][0], _XI[1] + xu * tet[0][1],
+                _XI[2] + xu * tet[0][2], _XI[3] + xu * tet[0][3]];
+    // Komponenterne langs de UDREJEDE ben, så de matcher basen nedenfor.
+    const b1 = dotG(framePos, BH_MASS, aa, B, tet[1]);
+    const b2 = dotG(framePos, BH_MASS, aa, B, tet[2]);
+    const b3 = dotG(framePos, BH_MASS, aa, B, tet[3]);
+    const n  = Math.hypot(b1, b2, b3);
+    if (!(n > 1e-9)) return;      // B = 0 præcis i vendepunktet. Behold sidste.
+    into.set(0, 0, 0)
+        .addScaledVector(_baseR, b1 / n)
+        .addScaledVector(_baseU, b2 / n)
+        .addScaledVector(_baseF, b3 / n)
+        .normalize();
 }
 
 // ── Drag ──────────────────────────────────────────────────────────────
@@ -493,7 +652,7 @@ function fmtDuration(s) {
  * a ≈ 2GM·Δr/r³. Skalerer med 1/M² ved horisonten, hvilket er hele
  * grunden til at et supermassivt hul er så mildt: for Sgr A* er tallet
  * her omkring 10⁻⁴ g når man passerer horisonten. Man mærker bogstaveligt
- * talt ingenting. Det er først helt nede ved ringen det løber løbsk.
+ * talt ingenting. Det er først helt nede i de sidste sekunder det stiger.
  */
 function tidalG(rToy) {
     const dr = 2 / TOY_METERS;                       // 2 m i toy-units
@@ -504,30 +663,59 @@ function tidalG(rToy) {
 
 const el = id => document.getElementById(id);
 
-// Slå op ÉN gang. 
+// Slå op ÉN gang.
 const dom = {
     dist:    el('distReadout'),
     proper:  el('properReadout'),
     speed:   el('speedReadout'),
+    ham:     el('hamReadout'),
     mode:    el('modeLabel'),
     panel:   el('mathPanel'),
     r:       el('rReadout'),
     alt:     el('altReadout'),
     coord:   el('coordReadout'),
     tidal:   el('tidalReadout'),
+    cone:    el('coneReadout'),
+    inner:   el('innerReadout'),
     restart: el('restartBtn'),
     pause:   el('pauseBtn'),
     eco:     el('ecoBtn'),
-    turn: el('turnBtn'),
+    turn:    el('turnBtn'),
+    plate:   el('endPlate'),
 };
 
 dom.turn.addEventListener('click', turn180);
 
+/**
+ * H i bundlinjen — den eneste aflæsning på siden der viser en FEJL.
+ *
+ * Tallet skal stå på -1/2 for evigt. Det gør det også, i seks decimaler,
+ * hele vejen ned gennem horisonten. Så begynder det at glide. Målt:
+ *
+ *     r = 1.933 M   |H + ½| passerer 1e-7
+ *     r = 0.764 M   ................. 1e-6      ← her tændes amber
+ *     r = 0.600 M   ................. 1e-5
+ *     r = 0.550 M   H = -0.4999865, og der stopper vi
+ *
+ * Og her er det tal der betyder noget: halvér skridtet, og driften
+ * bliver ikke mindre. Over fire opløsninger lander maksimum på
+ * 1.42, 1.60, 1.61, 1.62 · 10⁻⁵. Den konvergerer mod et GULV i stedet
+ * for mod nul. Numerisk fejl gør det modsatte — den halveres når man
+ * halverer skridtet. Det er dét tal der viser at det ikke er koden.
+ *
+ * Derfor står det på skærmen. Publikum skal se de sidste cifre gå i
+ * gang, lige inden skærmen bliver hvid.
+ */
 function updateReadouts(s, phase, speedFrac) {
     dom.dist.textContent   = (s.r / RS).toFixed(3) + '× Rs';
     dom.proper.textContent = fmtDuration(s.tau * TOY_SECONDS);
     dom.speed.textContent  = (speedFrac * 100).toFixed(1) + '% c';
     dom.mode.textContent   = PHASE_LABEL[phase];
+    dom.mode.style.opacity = phase === 'end' ? '0' : '1';
+
+    const drift = Math.abs(s.H + 0.5);
+    dom.ham.textContent = s.H.toFixed(7);
+    dom.ham.classList.toggle('drifting', drift > 1e-6);
 
     // Panelet er skjult det meste af tiden.
     if (dom.panel.classList.contains('hidden')) return;
@@ -540,6 +728,13 @@ function updateReadouts(s, phase, speedFrac) {
 
     const tg = tidalG(Math.max(s.r, 0.4));
     dom.tidal.textContent = tg < 0.01 ? tg.toExponential(1) : tg.toFixed(2);
+
+    const cone = darkConeDeg(s.pos);
+    dom.cone.textContent = cone < 0.05 ? '0 — hele himlen' : cone.toFixed(1);
+
+    // Afstanden til den indre horisont, i enheder af den selv.
+    // Går aldrig under 1.000. Det er hele pointen.
+    dom.inner.textContent = (s.r / R_INNER).toFixed(3);
 }
 
 // =====================================================================
@@ -548,6 +743,8 @@ function updateReadouts(s, phase, speedFrac) {
 
 let elapsed = 0;
 let paused  = false;
+let lastTet = null;
+const _outAxis = new THREE.Vector3(1, 0, 0);
 
 wireMathPanel();
 
@@ -565,10 +762,13 @@ dom.pause.addEventListener('click', () => {
 });
 
 // Settings for the quality of the exhibit. So it doesn't torch your device
+// Med den strammere skridtregel omkring fotonsfæren bruger den dyreste
+// stråle 241 skridt ved r = 0.275 Rs (målt, ikke gættet). 260 er altså
+// gulvet hvis billedet skal være helt uden sorte huller.
 const QUALITY = [
-    { label: '◑ High',  ratio: () => Math.min(window.devicePixelRatio, 1.25), steps: 260, minFrame: 0 },
-    { label: '◐ Eco',   ratio: () => 0.70,                                 steps: 170, minFrame: 0 },
-    { label: '○ Ultra', ratio: () => 0.45,                                 steps: 100, minFrame: 1/30 },
+    { label: '◑ High',  ratio: () => Math.min(window.devicePixelRatio, 1.25), steps: 900, minFrame: 0 },
+    { label: '◐ Eco',   ratio: () => 0.70,                                 steps: 420, minFrame: 0 },
+    { label: '○ Ultra', ratio: () => 0.45,                                 steps: 280, minFrame: 1/30 },
 ];
 let qIndex = 0;
 
@@ -624,6 +824,7 @@ function adaptQuality(dt) {
 const clock = new THREE.Clock();
 
 let frameAcc = 0;
+let plateShown = false;
 
 function animate() {
     requestAnimationFrame(animate);
@@ -648,68 +849,81 @@ function animate() {
     const tl = timeline(looped);
     const s  = sampleAt(tl.v);
 
-    if (Math.floor(elapsed * 4) !== window._lastLog) {
-        window._lastLog = Math.floor(elapsed * 4);
-        console.log(
-            'r/Rs', (s.r / RS).toFixed(3),
-            'v', tl.v.toFixed(3),
-            'vH', traj.vHorizon.toFixed(3),
-            'inside', tl.inside.toFixed(3)
-        );
-    }
-
-
-    // Efter geodætens sidste punkt overtager den håndlagte kurve.
-    if (tl.ringS >= 0) {
-        s.pos.copy(ringPath(tl.ringS));
-
-        // r er stadig veldefineret for en vilkårlig position — det er bare
-        // en koordinat. Så aflæsningen kan følge med, selvom BANEN ikke
-        // længere er en geodæt. Og den gør noget interessant: inde i
-        // ringens åbning (z = 0, ρ < a) er r eksakt nul.
-        s.r = ksR(s.pos.x, s.pos.y, s.pos.z, SPIN * BH_MASS);
-
-        // Aberrationen tones ud sammen med farten. Vi har ikke længere
-        // en fysisk hastighed at aberrere efter, så at lade den stå ville
-        // være at lade som om vi stadig regnede på noget.
-        s.vel.multiplyScalar(Math.max(0, 1 - tl.ringS * 1.6));
-    }
-
-    orientCamera(s.pos, s.vel, elapsed);
+    orientCamera(s.pos, s.vel, elapsed, tl.look);
 
     const u = material.uniforms;
 
-    // Tetraden seedes med kameraets egne akser, så e1,e2,e3 ER højre/op/frem.
-    const tet = buildTetrad(s.frame.pos, s.frame.mom, s.frame.pt, BH_MASS, SPIN * BH_MASS,
-        [[_right.x,_right.y,_right.z], [_up.x,_up.y,_up.z], [_fwd.x,_fwd.y,_fwd.z]]);
+    // ── Tetraden ──
+    // Seedes med kameraets egne akser, så e1,e2,e3 ER højre/op/frem.
+    // Den er gyldig hele vejen nu. Den gamle fryse-logik var kun der
+    // fordi ringpassagen ikke havde nogen firehastighed at bygge en
+    // observatør ud af; uden passagen er der ingen frame hvor tetraden
+    // ikke er ægte.
+    try {
+        lastTet = buildTetrad(s.frame.pos, s.frame.mom, s.frame.pt,
+            BH_MASS, SPIN * BH_MASS,
+            [[_baseR.x,_baseR.y,_baseR.z], [_baseU.x,_baseU.y,_baseU.z], [_baseF.x,_baseF.y,_baseF.z]]);
+        outAxisFrom(s.frame.pos, lastTet, _outAxis);
+    } catch (err) {
+        // Degenereret seed. Den forrige tetrade er en frame gammel,
+        // og det er uendeligt meget bedre end en sort skærm.
+        if (!lastTet) throw err;
+    }
+
+    // Drejningen lægges på HER, ikke i seedsne. Det er hele fixet.
+    const view = rotateTetrad(lastTet, _lookM);
 
     // Pakkes som (rum, tid). Tetraden har [t,x,y,z].
     const pack = (e, v) => v.set(e[1], e[2], e[3], e[0]);
-    pack(tet[0], u.uE0.value);
-    pack(tet[1], u.uE1.value);
-    pack(tet[2], u.uE2.value);
-    pack(tet[3], u.uE3.value);
+    pack(view[0], u.uE0.value);
+    pack(view[1], u.uE1.value);
+    pack(view[2], u.uE2.value);
+    pack(view[3], u.uE3.value);
 
     u.uCamPos.value.copy(s.pos);
     u.uCamFwd.value.copy(_fwd);
     u.uCamRight.value.copy(_right);
     u.uCamUp.value.copy(_up);
-    u.uVel.value.copy(s.vel);
-    u.uOutDir.value.copy(s.pos).normalize();
-    u.uTime.value  = elapsed;
-    u.uInside.value = 0; // Was tl.inside; changed to 0 for testing
-    u.uPass.value   = tl.pass;
-    u.uFlash.value  = tl.flash;
+    u.uOutDir.value.copy(_outAxis);
+    u.uTime.value   = elapsed;
+    u.uInside.value = tl.inside;
+    u.uBlue.value   = tl.blue;
+    u.uWhite.value  = tl.white;
+    u.uDim.value    = tl.dim;
 
-    u.uRayStop.value = s.r < traj.rH ? 0.5 * BH_MASS : traj.rH * 1.005;
+    // ── Hvor strålerne dør ──
+    // Udenfor: lidt inden for horisonten, så asymptotiske stråler ikke
+    // integreres i en uendelighed. Indenfor: helt ned til 0.5 M, hvor
+    // baglæns-tracing stadig betyder noget i Kerr-Schild.
+    //
+    // Skiftet SKAL være glidende. Da det var et hårdt spring, lå
+    // grænsen på rH·1.005 mens kameraet selv var nået ned under den —
+    // altså startede hver eneste stråle inde i sin egen dødszone og
+    // døde på skridt nul. Det gav et helt sort billede i det smalle
+    // bånd r ∈ (0.7634, 0.7672)·Rs, præcis dér hvor lyset forsvandt
+    // og kom igen et øjeblik senere.
+    const stopHi = traj.rH * 1.005;
+    const stopLo = 0.5 * BH_MASS;
+    const wStop  = clamp01((traj.rH * 1.10 - s.r) / (traj.rH * 0.10));
+    u.uRayStop.value = stopHi + (stopLo - stopHi) * (wStop * wStop * (3 - 2 * wStop));
 
-    // Dybde: 0 ved horisonten, 1 ved ringen
+    // Dybde: 0 ved horisonten, 1 dér hvor integrationen holder op.
     u.uDepth.value = clamp01((traj.vHorizon === 1) ? 0
         : (tl.v - traj.vHorizon) / (1 - traj.vHorizon));
 
     updateReadouts(s, tl.phase, Math.min(s.vel.length(), 0.999));
 
-    dom.restart.classList.toggle('hidden', elapsed < T_TOTAL);
+    // Tekstpladen. Klassetoggle i stedet for inline opacity, så CSS
+    // ejer transitionen og prefers-reduced-motion kan slå den fra.
+    const wantPlate = tl.plate > 0.5;
+    if (wantPlate !== plateShown) {
+        plateShown = wantPlate;
+        dom.plate.classList.toggle('visible', wantPlate);
+    }
+
+    // "Fall again" kommer op sammen med teksten, ikke først når
+    // hele tidslinjen er brugt op.
+    dom.restart.classList.toggle('hidden', tl.plate <= 0.5);
 
     renderer.render(scene, orthoCamera);
 }
@@ -719,7 +933,5 @@ observeCanvasResize(canvas, (w, h) => {
     material.uniforms.uResolution.value.set(w, h);
 });
 
-
-setInterval(() => console.log('fps', (1/frameAvg).toFixed(0), 'scale', dynScale.toFixed(2)), 500);
 
 animate();

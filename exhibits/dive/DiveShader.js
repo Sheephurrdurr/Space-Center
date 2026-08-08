@@ -1,26 +1,28 @@
 // =====================================================================
 // exhibits/dive/DiveShader.js. Explore at your own peril
 //
-// To renderere i én shader, krydsfadet af uInside:
+// Raytrace på hele "rejsen", via ortonormal tetrade (kind of a reference frame).
+// Tetraden fungerer lidt som et sæt øjne, der giver mulighed for at trace baglæns fra dem.
+// Det er ret smart, fordi der inden for horizonten ikke findes nogen statisk observatør. Cuz everything has to move.
 //
-//   UDENFOR  — Kerr-geodæter per pixel. Samme Hamilton-maskine som
-//              Kerr_finalBoss, men med relativistisk aberration oveni,
-//              fordi kameraet nu bevæger sig hurtigt. Det er aberrationen
-//              der får himlen til at klumpe sig forud og skyggen til at
-//              SKRUMPE på vej ind, i stedet for at sluge synsfeltet.
+// ── Hvad der er skåret væk ───────────────────────────────────────────
+// Der lå cirka halvfems linjer GLSL her der lavede et nyt univers:
+// galaxyShell() lagde proceduregenererede galakser ud på tre
+// kugleskaller, deepField() stablede dem, og en voksende kegle
+// erstattede den gamle himmel med den nye under ringpassagen.
+// Alt sammen pænt. Alt sammen opdigtet.
 //
-//   INDENFOR — fortolkning. Der findes ingen statisk observatør indenfor
-//              horisonten at trace baglæns fra, så baglæns-raytracing
-//              holder op med at betyde noget. Det der er
-//              tilbage af ægte fysik derinde er geometrien: hvor ringen
-//              ligger, hvilken vej "ud" er, og at alt lys udefra bliver
-//              blåforskudt og klemt sammen. Resten er tegnet.
+// Det er væk, fordi faldet ikke længere når frem til ringen. Den indre
+// horisont ved r₋ = 0.4732 M er ustabil (mass inflation), og geodæten
+// stopper 16% udenfor den. Så i stedet for at fabrikere en passage
+// gennem noget der lukker sig, ender exhibittet i det der faktisk sker
+// på vej derned: blåforskydningen.
 //
-//   BEYOND   — det univers på den anden side af ormehullet. Genereres
-//              proceduralt som en funktion af RETNING, ikke af skærm-
-//              koordinater. Det er hele forskellen mellem "et sted" og
-//              "et klistermærke på linsen": et fladt billede følger med
-//              når man drejer kameraet, et retningsfelt gør ikke.
+// uBlue forstærker den ægte gShift, og fordi vægten er smoothstep på
+// gShift selv, tænder randen af den mørke kegle FØRST — dét er stedet
+// hvor E_uendelig går mod nul og g mod uendelig. Effekten starter altså
+// hvor fysikken siger den skal, og bliver først kunstnerisk når uWhite
+// lægger tæppet over.
 // =====================================================================
 
 import * as THREE from 'three';
@@ -38,9 +40,6 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             uCamUp:    { value: new THREE.Vector3(0, 1, 0) },
             uFov:      { value: 62.0 },
 
-            // Kameraets koordinat-3-hastighed. Driver aberrationen.
-            uVel: { value: new THREE.Vector3(0, 0, 0) },
-
             // Retningen "ud" — dér hvor universet vi forlod ligger.
             uOutDir: { value: new THREE.Vector3(1, 0, 0) },
 
@@ -52,19 +51,20 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             uColdness:  { value: coldness },
 
             // ── Fortællings-uniforms ──
-            uInside:  { value: 0.0 },  // 0 udenfor, 1 helt over i interiøret
-            uDepth:   { value: 0.0 },  // 0 ved horisont → 1 ved ringen
-            uPass:    { value: 0.0 },  // ringpassagen, 0 → 1
-            uFlash:   { value: 0.0 },  // hvidt glimt i selve passagen
+            uInside: { value: 0.0 },  // 0 udenfor, 1 helt inde. Vægter KUN tegningen.
+            uDepth:  { value: 0.0 },  // 0 ved horisont → 1 hvor integrationen stopper
 
-            uMaxSteps: { value: 260.0 },
-            uRayStop: { value: 7.6 },
-            uDebug: { value: 0.0 },
+            // ── Slutningen ──
+            uBlue:  { value: 0.0 },   // forstærkning af den ægte blåforskydning
+            uWhite: { value: 0.0 },   // hvidt tæppe ovenpå, 0 → 1
+            uDim:   { value: 1.0 },   // udbrænding bagefter, 1 → 0
 
-            // Hvor langt vi er fløjet ind i det nye univers.
-            uBeyondTravel: { value: 0.0 },
+            uMaxSteps: { value: 300.0 },
 
-            // tetrad arms or directions. Or whatever. 
+            uRayStop:  { value: 7.6 },
+            uDebug:    { value: 0.0 },
+
+            // Tetraden. Fire firevektorer: .xyz = rum, .w = tid.
             uE0: { value: new THREE.Vector4(0,0,0,1) },
             uE1: { value: new THREE.Vector4(1,0,0,0) },
             uE2: { value: new THREE.Vector4(0,1,0,0) },
@@ -83,19 +83,30 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             uniform sampler2D uStarfield;
             uniform vec2  uResolution;
             uniform vec3  uCamPos, uCamFwd, uCamRight, uCamUp;
-            uniform vec3  uVel, uOutDir;
+            uniform vec3  uOutDir;
             uniform float uFov, uRs, uSpin, uTime;
             uniform float uDiskIn, uDiskOut, uColdness;
-            uniform float uInside, uDepth, uPass, uFlash;
-            uniform float uBeyondTravel;
+            uniform float uInside, uDepth;
+            uniform float uBlue, uWhite, uDim;
             varying vec2 vUv;
 
             uniform float uMaxSteps;
             uniform float uRayStop, uDebug;
 
-            uniform vec4 uE0, uE1, uE2, uE3; // .xyz = space, .w = time. Spacetime 
+            uniform vec4 uE0, uE1, uE2, uE3; // .xyz = rum, .w = tid
 
-            #define MAX_STEPS   260
+            // 384 var nok overalt undtagen ét sted: båndet langs
+            // skyggekanten hvor stråler wrapper rundt om fotonsfæren.
+            // Målt ved r = 1.28 Rs, hvor kameraet står praktisk talt PÅ
+            // den prograde fotonsfære: et 10 graders bånd hvor den
+            // dyreste stråle bruger 819 skridt. Med 384 blev hele båndet
+            // sort, og det er den takkede kant langs skyggen.
+            //
+            // Loopet brydes så snart strålen slipper ud, så de 95% af
+            // pixels der klarer sig på 130-250 skridt betaler ingenting
+            // for det højere loft. Det er kun båndet der koster, og det
+            // er præcis dér man vil betale.
+            #define MAX_STEPS   900
             #define ESCAPE_DIST 160.0
             #define PI 3.14159265358979
 
@@ -169,16 +180,6 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 return fract(p.x * p.y);
             }
 
-            // 3D-udgaven. Tre tal ind, tre tilfældige tal ud — men altid
-            // DE SAMME tre for det samme input. Det er hele pointen med
-            // en hash: den lader os "huske" en galakses egenskaber uden
-            // at gemme dem nogen steder. Vi genberegner dem hver frame.
-            vec3 hash33(vec3 p) {
-                p = fract(p * vec3(0.1031, 0.1030, 0.0973));
-                p += dot(p, p.yxz + 33.33);
-                return fract((p.xxy + p.yxx) * p.zyx);
-            }
-
             float vnoise(vec2 p) {
                 vec2 i = floor(p), f = fract(p);
                 f = f * f * (3.0 - 2.0 * f);
@@ -200,11 +201,8 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
 
                 // Radius i STØJ-koordinater voksede før ikke med r — hele
                 // skivens omkreds blev presset ned på samme lille cirkel
-                // uanset fysisk størrelse, så tæt på kameraet dækkede en
-                // håndfuld støjceller hele vejen rundt. Nu vokser cirklen
-                // med r, så flere celler kommer i spil jo større omkredsen
-                // faktisk er — det er den der giver den finkornede,
-                // fotografiske tekstur i stedet for bløde klatter.
+                // uanset fysisk størrelse. Nu vokser cirklen med r, så
+                // flere celler kommer i spil jo større omkredsen faktisk er.
                 float ringNoise = 1.6 + 0.14 * r;
                 vec2 q1 = vec2(r*1.1, 0.0) + ringNoise * vec2(cos(p1), sin(p1));
                 vec2 q2 = vec2(r*1.1, 0.0) + ringNoise * vec2(cos(p2), sin(p2));
@@ -214,7 +212,9 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             // ── Akkretionsskiven ───────────────────────────────────────
             // g-faktoren pakker Doppler beaming OG gravitationel
             // rødforskydning i ét tal, regnet direkte ud af fotonens
-            // bevarede E og Lz.
+            // bevarede E og Lz. Bemærk at den er et FORHOLD mellem to
+            // størrelser der begge skalerer med fotonens affine
+            // normering — så den er ligeglad med at vi normerer p.
             vec4 diskSample(vec3 xc, vec3 p, float pt) {
                 float M = 0.5 * uRs;
                 float a = uSpin * M;
@@ -224,146 +224,88 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 float Om = sqrt(M) / (pow(r, 1.5) + a * sqrt(M));
                 float ut = 1.0 / sqrt(max(1.0 - 3.0*M/r + 2.0*a*sqrt(M)/pow(r,1.5), 0.02));
 
-                float E  = -pt;
-                float Lz = xc.x * p.y - xc.y * p.x;
-                float g  = E / max(ut * (E - Om * Lz), 0.05);
+                // ── Fortegnet. Det her var fejlen ──
+                // Kerr-exhibittet skyder fotoner FREMAD fra kameraet og
+                // løser pt med minus-roden, så pt < 0 og E = -pt > 0.
+                // Her tracer vi BAGLÆNS fra tetraden: k = -e0 + n·e_i.
+                // Den foton er fortidsrettet, så pt > 0 og E blev NEGATIV.
+                //
+                // g er i sig selv invariant under et samlet fortegnsskift
+                // af (p, pt) — både E og Lz vender, og de to minusser går
+                // ud med hinanden. Men max(..., 0.05) i nævneren er ikke
+                // invariant: med E < 0 blev hele nævneren negativ, blev
+                // klemt op på 0.05, og g endte på sit gulv 0.40 for HVER
+                // eneste pixel i skiven.
+                //
+                // Konsekvensen var to ting på én gang: ingen beaming
+                // overhovedet (deraf ingen hvidglødende side), og en fast
+                // dæmpning på clamp(0.40)³ ≈ 0.064 gange GAIN, plus at
+                // Doppler-farven altid landede på den røde ende.
+                float sgn = pt > 0.0 ? -1.0 : 1.0;   // gør fotonen fremadrettet
+                float E   = -sgn * pt;
+                float Lz  = sgn * (xc.x * p.y - xc.y * p.x);
+                float g   = E / max(ut * (E - Om * Lz), 0.05);
 
+                // R0 er den radius hvor "heat" passerer 1, altså hvor
+                // skiven regnes som fuldt hvidglødende. Samme profil som
+                // Kerr-exhibittet nu: den stejlere eksponent er dét der
+                // giver den hvide inderkant og den orange yderkant i
+                // stedet for én jævn tone hele vejen ud.
                 float R0   = uRs * 1.5;
                 float heat = pow(R0 / r, 1.5) * sqrt(max(1.0 - sqrt(uDiskIn / r), 0.0));
 
+                // diskPattern() har middelværdi omkring 0.25, ikke 0.5 —
+                // fbm af value noise lander lavere end man tror. Med
+                // 0.45 + 1.1·p gav den derfor en gennemsnitlig faktor på
+                // 0.72, altså en skjult 28% dæmpning af hele skiven.
+                // Nu ligger middelværdien omkring 0.9 og udsvinget er
+                // større, så turbulensen faktisk kan ses.
                 float ang = atan(xc.y, xc.x);
-                float sw  = 0.45 + 1.1 * diskPattern(r, ang, Om);
+                float sw  = 0.50 + 1.5 * diskPattern(r, ang, Om);
 
-                vec3 hotCol  = mix(vec3(1.0,0.93,0.78), vec3(1.0,0.55,0.20), uColdness);
-                vec3 coolCol = mix(vec3(1.0,0.35,0.08), vec3(0.75,0.15,0.03), uColdness);
+                // uColdness = 0 er en hvidglødende skive, 1 er en
+                // udbrændt rød. Begge endepunkter er varmet op: coolCol's
+                // kolde ende var (0.75,0.15,0.03), som er mere tørt blod
+                // end glødende metal. Nu er selv den kolde ende orange.
+                vec3 hotCol  = mix(vec3(1.00,0.97,0.90), vec3(1.00,0.72,0.36), uColdness);
+                vec3 coolCol = mix(vec3(1.00,0.60,0.26), vec3(0.96,0.36,0.11), uColdness);
                 vec3 col = mix(coolCol, hotCol, clamp(heat, 0.0, 1.0));
-                float lum = (0.25 + 2.6 * heat) * sw;
+                float lum = (0.40 + 3.0 * heat) * sw;
 
-                lum *= pow(clamp(g, 0.35, 2.2), 3.0);
-                col  = mix(col * vec3(1.25,0.75,0.55), col * vec3(0.85,0.95,1.35),
+                // ── Beaming ──
+                // g ligger under 1 næsten overalt, fordi den gravitationelle
+                // rødforskydning trækker hele skiven ned uanset hvilken vej
+                // gassen bevæger sig. I tredje potens blev det en konstant
+                // dæmpning på 2-3x oven i alting.
+                //
+                // GAIN sætter niveauet tilbage uden at røre kontrasten.
+                // Forholdet mellem den kommende og den vigende side er
+                // stadig det ægte, omkring 10:1 — det er kun nulpunktet
+                // der er valgt. Det her er lysstyrkeknappen.
+                const float GAIN = 0.6;
+                lum *= GAIN * pow(clamp(g, 0.40, 2.4), 3.0);
+                // Doppler-farven. Den vigende side må gerne rødne, men
+                // den skal ikke slukkes: 0.75/0.55 på g og b trak den ned
+                // i det bordeaux igen. Mildere nu.
+                col  = mix(col * vec3(1.22,0.80,0.60), col * vec3(0.86,0.95,1.35),
                            smoothstep(0.8, 1.3, g));
 
+                // Ydrekanten faded fra 0.75·uDiskOut, altså over den
+                // yderste fjerdedel. Sammen med den stejle heat gjorde
+                // det hele den ydre ring til en mørk brun bræmme.
                 float edge = smoothstep(uDiskIn, uDiskIn*1.15, r)
-                           * (1.0 - smoothstep(uDiskOut*0.75, uDiskOut, r));
+                           * (1.0 - smoothstep(uDiskOut*0.88, uDiskOut, r));
 
-                // was "return vec4(col * lum * edge, 0.9 * edge);", disable the disk for testing
-                return vec4(0.0);
+                return vec4(col * lum * edge, 0.9 * edge);
             }
 
             // =========================================================
-            //  DET NYE UNIVERS - Efter singulariteten
-            // =========================================================
-            //
-            // Ét lag galakser, fordelt på en kugleskal i afstanden R.
-            //
-            // Opskriften er den samme som al proceduel gitterstøj, og
-            // det er værd at kende, for den dukker op overalt:
-            //
-            //   1. Tag punktet, gang op med scale, og floor() det.
-            //      Nu har du et heltals-CELLE-id.
-            //   2. Hash celle-id'et. Nu har du tilfældige, men STABILE
-            //      egenskaber for lige præcis den celle.
-            //   3. Læg ét objekt i cellen, jitret med hash-værdien så
-            //      gitteret ikke kan ses.
-            //   4. Kig også i nabocellerne, for objektet i naboen kan
-            //      godt række ind over grænsen til din egen.
-            //
-            // Trin 4 er 3×3×3 = 27 opslag. Det lyder dyrt, men husk at
-            // hele raymarch-loopet (260 RK4-skridt) er slået fra her
-            // inde, så vi har rigeligt budget.
-            vec3 galaxyShell(vec3 dir, vec3 camOff, float R, float scale, float seed) {
-                // HER ligger parallaksen. camOff er kameraets forskydning.
-                // For en nær skal (lille R) flytter den samme forskydning
-                // synsretningen meget; for en fjern skal næsten intet.
-                // Det er præcis sådan dybde ser ud i virkeligheden.
-                vec3 hit  = normalize(camOff + dir * R);
-
-                vec3 p    = hit * scale;
-                vec3 base = floor(p);
-                vec3 acc  = vec3(0.0);
-
-                for (int i = -1; i <= 1; i++)
-                for (int j = -1; j <= 1; j++)
-                for (int k = -1; k <= 1; k++) {
-                    vec3 cell = base + vec3(float(i), float(j), float(k));
-                    vec3 h1 = hash33(cell + seed);
-
-                    // Langt fra alle celler indeholder en galakse. Uden
-                    // det her bliver himlen en jævn grød i stedet for
-                    // spredte objekter med tomrum imellem.
-                    if (h1.x > 0.5) continue;
-
-                    vec3 h2 = hash33(cell + seed + 19.73);
-
-                    // Galaksens position: cellens midte, jitret, og så
-                    // projiceret tilbage ud på kugleskallen.
-                    vec3 g  = normalize(cell + 0.5 + (h2 - 0.5) * 0.85) * scale;
-                    vec3 gd = normalize(g);
-
-                    // Tangentplan ved galaksen, så den kan få en FORM.
-                    // Uden det her er hver galakse en rund klat, og runde
-                    // klatter ligner stjerner, ikke galakser.
-                    vec3 t1 = normalize(cross(gd, vec3(0.0, 0.0, 1.0)) + vec3(1e-4, 1e-4, 0.0));
-                    vec3 t2 = cross(gd, t1);
-
-                    vec3 d3 = p - g;
-                    vec2 q  = vec2(dot(d3, t1), dot(d3, t2));
-
-                    // Tilfældig rotation i planet
-                    float ang = h1.y * 6.28318;
-                    float ca = cos(ang), sa = sin(ang);
-                    q = vec2(q.x * ca - q.y * sa, q.x * sa + q.y * ca);
-
-                    // Inklination: en skive set skråt fra er en ellipse.
-                    // Divisionen presser den ene akse sammen, så vi får
-                    // alt fra flad kant-på-streg til rund face-on skive.
-                    q.y /= mix(0.16, 1.0, h1.z);
-
-                    float size = mix(0.09, 0.38, h2.x * h2.x);
-                    float d    = length(q) / size;
-                    if (d > 2.5) continue;
-
-                    // Kerne + halo. To gaussere med vidt forskellig
-                    // bredde er nok til at det ligner et objekt med
-                    // en lysende midte i stedet for en tåge.
-                    float halo = exp(-d * d * 2.0);
-                    float core = exp(-d * d * 24.0);
-
-                    // Rødforskydning. Det her er faktisk hvad et ægte
-                    // deep field VISER: de fjerneste galakser er rødere
-                    // og svagere, fordi lyset er strakt af universets
-                    // udvidelse undervejs. Indholdet er opdigtet — men
-                    // statistikken er rigtig.
-                    float z   = h2.y;
-                    vec3  col = mix(vec3(0.62, 0.78, 1.00),
-                                    vec3(1.00, 0.52, 0.28), z);
-
-                    acc += col * (halo * 0.5 + core * 2.0) * mix(1.0, 0.22, z);
-                }
-                return acc;
-            }
-
-            // Tre skaller i forskellig afstand. Det er dybden.
-            vec3 deepField(vec3 dir, vec3 camOff) {
-                vec3 col = vec3(0.0);
-                col += galaxyShell(dir, camOff, 12.0, 30.0,  3.00) * 1.00;
-                col += galaxyShell(dir, camOff, 34.0, 46.0, 17.00) * 0.55;
-                col += galaxyShell(dir, camOff, 90.0, 70.0, 41.00) * 0.28;
-
-                // De uopløste. I et ægte deep field er der aldrig helt
-                // sort mellem galakserne — der er bare flere, for små
-                // til at skille ad.
-                col += vec3(0.018, 0.022, 0.040);
-                return col;
-            }
-
-            // =========================================================
-            //  INTERIØRET
+            //  TEGNINGEN OVENPÅ
             // =========================================================
 
             // Ringsingulariteten er ægte geometri: cirklen z = 0,
-            // x² + y² = a². Ikke et punkt — en ring. Det er DEN detalje
-            // der gør et roterende sort hul mærkeligere end et statisk.
+            // x² + y² = a². Ikke et punkt — en ring. Vi når den aldrig,
+            // men vi kan se den nedefra og ind gennem de sidste sekunder.
             float ringGlow(vec3 x, vec3 dir, float a) {
                 if (abs(dir.z) < 1e-4) return 0.0;
                 float t = -x.z / dir.z;
@@ -374,72 +316,57 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 return exp(-(d*d) / (w*w + 1e-6)) / (1.0 + 0.02 * t * t);
             }
 
-            // Stablede spøgelsesbilleder af det univers man forlod.
-            // Samme idé som fotonring-stigen udenfor: lys der har viklet
-            // sig rundt n gange, hver kopi svagere end den før.
-            vec3 layeredSky(vec3 dir, vec3 outDir, float depth) {
-                vec3 acc = vec3(0.0);
-                float w = 1.0;
-                for (int k = 0; k < 4; k++) {
-                    float bend = float(k) * (0.22 + 0.5 * depth);
-                    vec3 d = normalize(mix(dir, outDir, clamp(bend, 0.0, 0.92)));
-                    acc += w * skyColor(d);
-                    w *= 0.34;
-                }
-                return acc;
-            }
-
-            vec3 interior(vec3 x, vec3 dir) {
+            /**
+             * Alt det der ER tegnet, lagt OVEN PÅ det raytracede billede.
+             *
+             * base er pixlens fysiske svar. Den bliver aldrig kastet væk,
+             * kun lagt til.
+             *
+             * dir er den ikke-aberrerede synsretning (kameraets egen basis).
+             * Det er med vilje: aberrationen presser alle pixels ned i en
+             * brøkdel af en grad tæt på slutningen, og tegnede elementer der
+             * fulgte MED den ville kollapse til ét punkt. Fysikken skal
+             * aberrere. Pynten skal kunne ses.
+             */
+            vec3 interiorFX(vec3 x, vec3 dir, vec3 base, float empty) {
                 float M = 0.5 * uRs;
                 float a = uSpin * M;
-                vec3 outDir = normalize(uOutDir);
+                vec3 outDir  = normalize(uOutDir);
+                float depth  = clamp(uDepth,  0.0, 1.0);
+                float w      = clamp(uInside, 0.0, 1.0);
+                float mu     = dot(dir, outDir);
 
-                float mu = dot(dir, outDir);          // 1 = kigger "op", tilbage mod universet
-                float depth = clamp(uDepth, 0.0, 1.0);
+                vec3 col = base;
 
-                // ── Vinduet ud ──
-                // Universet udenfor klemmes sammen til en plet i den
-                // udadgående retning, og den plet skrumper. Det her er
-                // den ene ting ved interiøret der IKKE er opfundet:
-                // udsigten ud bliver smallere og blåere, hele vejen ned.
-                float aperture = mix(0.15, 0.93, depth * depth);
-                float win = smoothstep(aperture, min(aperture + 0.20, 0.999), mu);
-
-                // Komprimér himlen ind i vinduet, så hele udsigten
-                // stadig er dér — bare mast sammen.
-                float squeeze = mix(1.0, 7.0, depth);
-                vec3 sampleDir = normalize(mix(outDir, dir, 1.0 / squeeze));
-                vec3 sky = layeredSky(sampleDir, outDir, depth);
-
-                // Blåforskydning: alt udefra rammer os hårdere jo dybere vi er.
-                vec3 blue = vec3(0.55, 0.82, 1.6);
-                sky *= mix(vec3(1.0), blue, depth) * (1.0 + 5.0 * depth);
-
-                vec3 col = sky * win;
+                // ── Hvor må der overhovedet tegnes? ──
+                // Luminans alene duer ikke som maske. Stjernehimlen er
+                // MØRK i tal — typisk 0.02-0.05 — og bliver først lys af
+                // tonemapperen bagefter. Så "dark" stod på ~0.95 selv midt
+                // i vinduet ud til universet, og både ringen og folderne
+                // sivede henover det.
+                //
+                // empty kommer fra raymarchen i stedet, og den ved det man
+                // faktisk skal bruge: blev der SAMPLET en himmel i den her
+                // retning, eller endte strålen i singulariteten? Kan man se
+                // universet den vej, er ringen ikke i vejen, og så skal den
+                // ikke tegnes. Kanten er skarp, men det er den ægte kant
+                // også — det er dér strålerne holder op med at slippe ud.
+                float lum  = dot(base, vec3(0.299, 0.587, 0.114));
+                float dark = 1.0 - smoothstep(0.015, 0.30, lum);
+                float mask = empty * dark;
 
                 // ── Foldet rumtid ──
-                // Strømmende filamenter omkring faldretningen. Ren tegning,
-                // men den bevæger sig som noget der bliver trukket forbi.
-                //
-                // Bemærk: INGEN atan2 her. En tidligere version brugte
-                // atan(dot(dir,ay), dot(dir,ax)) som støjkoordinat, men
-                // atan2 springer fra +π til −π, og fbm() er ikke periodisk —
-                // så præcis dér hvor vinklen hopper 2π, hopper støjen også,
-                // brat. Det gav en synlig søm tværs over billedet. Ved at
-                // bruge de rå basis-komponenter (rene kartesiske tal, ingen
-                // wrap) forsvinder sømmen, fordi der ikke er noget spring
-                // at ramme.
                 vec3 ax = normalize(cross(outDir, vec3(0.0, 0.0, 1.0)) + vec3(1e-3));
                 vec3 ay = normalize(cross(outDir, ax));
-                vec2  pl = vec2(dot(dir, ax), dot(dir, ay));
+                vec2  pl  = vec2(dot(dir, ax), dot(dir, ay));
                 float rad = acos(clamp(mu, -1.0, 1.0));
 
                 // Roter selve planet med tiden i stedet for at skubbe til en
-                // vinkel-skalar — det er det der giver "strømningen", uden
-                // at genindføre en wrap-diskontinuitet.
-                float spin = uTime * (0.6 + 1.8 * depth);
-                float cs = cos(spin), sn = sin(spin);
-                vec2 pr = vec2(pl.x * cs - pl.y * sn, pl.x * sn + pl.y * cs);
+                // vinkel-skalar — det giver "strømningen" uden at genindføre
+                // en wrap-diskontinuitet.
+                float sp = uTime * (0.6 + 1.8 * depth);
+                float cs = cos(sp), sn = sin(sp);
+                vec2  pr = vec2(pl.x * cs - pl.y * sn, pl.x * sn + pl.y * cs);
 
                 float flow = fbm(pr * 2.6 + vec2(0.0, rad * 3.4))
                            * fbm(pr * 5.3 + vec2(9.0, rad * 7.0) - uTime * 0.4);
@@ -447,70 +374,28 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
 
                 vec3 foldA = vec3(0.28, 0.14, 0.55);   // violet, højt oppe
                 vec3 foldB = vec3(0.20, 0.75, 1.00);   // cyan, dybt nede
-                col += mix(foldA, foldB, depth) * streak * (1.0 - win);
+
+                // Folderne bliver hvidere i takt med uBlue. De er tegnede,
+                // men de skal ikke stå tilbage som farvede striber mens
+                // alt andet brænder ud — så ville det tegnede være det
+                // sidste man ser, og det er præcis den forkerte pointe.
+                vec3 foldCol = mix(mix(foldA, foldB, depth),
+                                   vec3(0.72, 0.86, 1.00), clamp(uBlue, 0.0, 1.0));
+                col += foldCol * streak * w * mask * (1.0 + 2.2 * uBlue);
 
                 // ── Ringen ──
-                float ring = ringGlow(x, dir, a);
-                vec3 ringCol = mix(vec3(1.0, 0.72, 0.30), vec3(0.85, 0.95, 1.0), depth);
-                col += ringCol * ring * (0.6 + 14.0 * depth * depth);
-
-                // Den vej kameraet faktisk VENDER under passagen. Kameraet
-                // ser mod origo, og uOutDir peger fra origo ud mod kameraet,
-                // så synsretningen er den modsatte. Uden det her ville det
-                // nye univers åbne sig bag ryggen på publikum.
-                vec3 viewDir = -outDir;
-
-                // ── Den anden side ──
-                if (uPass > 0.0) {
-                    float p = clamp(uPass, 0.0, 1.0);
-
-                    // Ormehullets hals: en kegle der vokser fra ingenting
-                    // til hele himlen. Tjek yderpunkterne — det er den
-                    // eneste måde ikke at vende fortegnet forkert:
-                    //   p = 0 → smoothstep(1.2, 0.8, mu), og mu ≤ 1 → 0
-                    //   p = 1 → smoothstep(-0.8, -1.2, mu)          → 1
-                    float W = 0.12;
-                    float t = mix(1.0 + W, 0.30 - W, p);
-                    float newSky = smoothstep(t - W, t + W, dot(dir, viewDir));
-
-                    vec3 df = deepField(dir, viewDir * uBeyondTravel);
-
-                    // Amber-gløden sidder nu i selve keglens KANT og
-                    // rejser udad med den, i stedet for at ligge som et
-                    // jævnt lag over hele billedet. rim er størst dér hvor
-                    // newSky er halvvejs, altså præcis på overgangen.
-                    float rim  = newSky * (1.0 - newSky) * 4.0;
-                    float glow = 1.0 - smoothstep(0.0, 0.75, p);
-                    df += vec3(1.0, 0.62, 0.22) * rim
-                        * (0.35 + 1.6 * pow(clamp(flow, 0.0, 1.0), 1.2)) * glow;
-
-                    col = mix(col, df, newSky);
-                }
-
-                // ── Udkastningen ──
-                // Et hvidt hul er tidsomvendingen af et sort: intet kan
-                // komme IND, alt bevæger sig UDAD. Derfor stråler fra
-                // centrum og udefter, ikke et jævnt blitz.
+                // To spærrer, og de er der begge af en grund.
                 //
-                // Før hang det her på vUv, altså på skærmen. Så sad
-                // strålerne fast på linsen når man bevægede musen. Nu er
-                // qrad vinkelafstanden fra synsretningen og qang vinklen
-                // i den samme basis som foldene bruger — begge dele er
-                // bundet til VERDEN, så strålerne bliver liggende hvor
-                // de hører til når kameraet drejer.
-                float qrad = acos(clamp(dot(dir, viewDir), -1.0, 1.0)) * 2.2;
-                float qang = atan(pl.y, pl.x);
-
-                // Vinklen ganges OP, radius ned. Det gør støjen tæt i
-                // vinkel og udstrakt i radius — og dét er hvad der laver
-                // stråler i stedet for klatter.
-                float rays = fbm(vec2(qang * 3.2, qrad * 0.5 - uTime * 1.4));
-                rays = pow(clamp(rays, 0.0, 1.0), 1.8);
-
-                float core  = exp(-qrad * qrad * 2.2);
-                float burst = core + rays * smoothstep(0.1, 1.1, qrad) * 0.8;
-
-                col += vec3(1.0, 0.97, 0.92) * uFlash * (1.5 + 3.5 * burst);
+                // depthGate: ringen tændes først et stykke inde.
+                //
+                // mask: ringGlow() er et rent skæringspunkt mellem en
+                // stråle og et plan. Den ved intet om hvad der ellers
+                // ligger i den retning, så uden masken skærer den lige
+                // igennem stjernehimlen som om den lå foran.
+                float depthGate = smoothstep(0.10, 0.45, depth);
+                float ring = ringGlow(x, dir, a);
+                col += mix(vec3(1.0, 0.72, 0.30), vec3(0.85, 0.95, 1.0), depth)
+                     * ring * w * depthGate * mask * (0.6 + 14.0 * depth * depth);
 
                 return col;
             }
@@ -526,97 +411,248 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 vec3 nl = normalize(vec3(ndc.x * halfFovTan,
                                          ndc.y * halfFovTan, 1.0));
 
-                vec3 col = vec3(0.0);
-                {
-                    float M  = 0.5 * uRs;
-                    float a  = uSpin * M;
+                float M = 0.5 * uRs;
+                float a = uSpin * M;
 
-                    // Fotonen observatøren ser, kommer imod os. Vi følger den bagud
-                    // i tiden, altså vender vi den om: k = -e0 + n·(e1,e2,e3).
-                    // Minusset på e0 ER "fortidsrettet". Intet at gætte.
-                    vec4 k = -uE0 + nl.x * uE1 + nl.y * uE2 + nl.z * uE3;
+                // Den samme pixel, men uden aberration. Bruges kun af
+                // tegningen — se kommentaren over interiorFX().
+                vec3 dirLocal = normalize(nl.x * uCamRight + nl.y * uCamUp + nl.z * uCamFwd);
 
-                    vec3  x  = uCamPos;
+                // Fotonen observatøren ser, kommer imod os. Vi følger den
+                // bagud i tiden, altså vender vi den om: k = -e0 + n·(e1,e2,e3).
+                // Minusset på e0 ER "fortidsrettet". Intet at gætte.
+                vec4 k = -uE0 + nl.x * uE1 + nl.y * uE2 + nl.z * uE3;
 
-                    // Sænk indekset: integratoren regner med p_mu, ikke p^mu.
-                    Metric m0 = metricAt(x);
-                    float  Lk = k.w + dot(m0.l, k.xyz);
-                    float  pt = -k.w + m0.f * Lk;
-                    vec3   p  = k.xyz + m0.f * Lk * m0.l;
+                // Strålerne udgår fra kameraet. Punktum. Der var engang en
+                // separat uRayPos her, fordi den håndlagte ringpassage førte
+                // kameraet gennem ringens åbning hvor Kerr-Schild-r er
+                // eksakt nul — altså ind i strålernes egen dødszone, hvor
+                // hver eneste stråle døde på skridt nul og skærmen blev
+                // sort. Uden passagen er kameraet altid et sted hvor der
+                // findes en gyldig observatør, og så er der intet at fryse.
+                vec3 x = uCamPos;
 
-                    bool escaped = false, dead = false;
-                    int steps = 0;
+                // Sænk indekset: integratoren regner med p_mu, ikke p^mu.
+                Metric m0 = metricAt(x);
+                float  Lk = k.w + dot(m0.l, k.xyz);
+                float  pt = -k.w + m0.f * Lk;
+                vec3   p  = k.xyz + m0.f * Lk * m0.l;
 
-                    vec3 outD = p, emission = vec3(0.0);
-                    float trans = 1.0;
-                    
+                // ── Affin normering. Vigtigere end den ser ud ──
+                // En lysbane er den samme kurve uanset hvordan man skalerer
+                // sin parameter, så p og pt må ganges med hvad som helst.
+                // Det udnytter vi: uden normering vokser |p| med kameraets
+                // boost — nede ved r ≈ 0.3 Rs er |p| omkring 90 for nogle
+                // pixels og 20 for andre. Så rammer nogle stråler
+                // sikkerhedsgrænsen |p|² > 1e4 med det samme og andre gør
+                // ikke, og grænsen mellem "sort" og "himmel" flytter sig
+                // med observatørens boost i stedet for med geometrien.
+                // DET var billedet der pulserede i størrelse på vej ned.
+                // Med |p| = 1 for hver eneste pixel betyder grænsen igen
+                // det den skal: "denne stråle er ved at eksplodere".
+                float sc = 1.0 / max(length(p), 1e-6);
+                p  *= sc;
+                pt *= sc;
+                // Fotonen er fortidsrettet, så E_∞ for den fremadrettede
+                // foton er +pt her. pt <= 0 betyder negativ energi i
+                // uendelig, og der findes ikke negativ-energi-lys ude i
+                // det ydre univers. I den maksimalt udvidede løsning kommer
+                // den slags fra et hvidt hul, og det har et hul dannet ved
+                // kollaps ikke. Altså sort, gratis.
+                //
+                // Randen pt = 0 er en kegle:
+                //     cos θ = A / sqrt(A² − 1 + f)
+                // A er observatørens egen bevarede energi, f er KS-
+                // potentialet. Keglen åbner sig først ved ergosfæren
+                // (f = 1) og vokser mod 90° når f → uendelig. Den lukker
+                // ALDRIG universet ned til en lille cirkel: man mister
+                // knap en tredjedel af himlen på vejen ned, ikke mere.
+                bool noSource = (pt <= 0.0);
 
-                    for (int i = 0; i < MAX_STEPS; i++) {
-                        if (float(i) >= uMaxSteps) break;
+                // g = E_observeret / E_uendelig. E_obs er 1 før normeringen
+                // (det er definitionen af tetraden), E_∞ er |p_t|. g < 1 er
+                // rødforskydning. Bemærk fortegnet: lys der indhenter en
+                // faldende observatør bagfra bliver RØDERE, ikke blåere.
+                //
+                // Loftet var 2.8, så 12. Nu 15, fordi slutningen hænger
+                // på netop den øvre ende: randen af den mørke kegle er dér
+                // hvor E_uendelig går mod nul og g mod uendelig — det
+                // klareste sted på hele himlen. Tonemapperen tager toppen,
+                // så loftet koster ikke noget andre steder.
+                float gShift = clamp(sc / max(abs(pt), 1e-6), 0.10, 15.0);
 
-                        steps++;
+                bool escaped = false, dead = noSource;
+                int steps = 0;
 
-                        float r = ksR(x, a);
-                        if (r < uRayStop) { dead = true; break; } // was "r < rH * 1.005", changed to "r < 0.5 * M"... and then to r < uRayStop
+                vec3 outD = p, emission = vec3(0.0);
+                float trans = 1.0;
 
-                        // Stråler der asymptotisk nærmer sig horisonten får
-                        // |p| til at eksplodere. De kom fra det uendeligt
-                        // fjerne fortid og er uendeligt rødforskudte, altså
-                        // sorte. Uden det her driver H til 1e57 og man får NaN.
-                        if (dot(p, p) > 1.0e4) { dead = true; break; }
+                for (int i = 0; i < MAX_STEPS; i++) {
+                    if (dead || float(i) >= uMaxSteps) break;
 
-                        Deriv k1 = deriv(x, p, pt);
+                    steps++;
 
-                        if (r > ESCAPE_DIST || (r > uRs * 8.0 && dot(k1.dx, x) < 0.0)) {
-                            escaped = true; outD = k1.dx; break;
-                        }
+                    float r = ksR(x, a);
+                    if (r < uRayStop) { dead = true; break; }
 
-                       float jitter = r > uRs * 4.0
-                            ? 0.95 + 0.1 * fract(sin(dot(nl.xy, vec2(12.9898,78.233))) * 43758.5453)
-                            : 1.0;
+                    // Stråler der asymptotisk nærmer sig horisonten får
+                    // |p| til at eksplodere. De kom fra det uendeligt
+                    // fjerne fortid og er uendeligt rødforskudte, altså
+                    // sorte. Uden det her driver H til 1e57 og man får NaN.
+                    if (dot(p, p) > mix(1.0e4, 2.0e3, clamp(uInside, 0.0, 1.0))) { dead = true; break; }
 
-                        float dl = 1.1 * clamp(r / (uRs * 1.5), 0.3, 8.0) * jitter
-                                 / max(length(k1.dx), 0.25);
+                    Deriv k1 = deriv(x, p, pt);
 
-                        Deriv k2 = deriv(x + 0.5*dl*k1.dx, p + 0.5*dl*k1.dp, pt);
-                        Deriv k3 = deriv(x + 0.5*dl*k2.dx, p + 0.5*dl*k2.dp, pt);
-                        Deriv k4 = deriv(x + dl*k3.dx,     p + dl*k3.dp,     pt);
-
-                        vec3 x0 = x;
-                        x += dl/6.0 * (k1.dx + 2.0*k2.dx + 2.0*k3.dx + k4.dx);
-                        p += dl/6.0 * (k1.dp + 2.0*k2.dp + 2.0*k3.dp + k4.dp);
-
-                        if (x0.z * x.z < 0.0) {
-                            float tC = x0.z / (x0.z - x.z);
-                            vec4  d  = diskSample(mix(x0, x, tC), p, pt);
-                            emission += trans * d.rgb;
-                            trans    *= (1.0 - d.a);
-                            if (trans < 0.02) break;
-                        }
+                    if (r > ESCAPE_DIST || (r > uRs * 8.0 && dot(k1.dx, x) > 0.0)) {
+                        escaped = true; outD = k1.dx; break;
                     }
 
-                    vec3 bg = vec3(0.0);
-                    if (!dead) {
-                        // Løb den tør for skridt tæt på hullet, ved vi ikke
-                        // hvor den ville ende. So black it is.
-                        if (!escaped && ksR(x, a) < uRs * 2.0) {
-                            bg = vec3(0.0);
-                        } else {
-                            if (!escaped) outD = dxdl(x, p, pt);
-                            bg = skyColor(outD);
-                        }
-                    }
+                    float jitter = r > uRs * 4.0
+                        ? 0.95 + 0.1 * fract(sin(dot(nl.xy, vec2(12.9898,78.233))) * 43758.5453)
+                        : 1.0;
 
-                    col = emission + trans * bg;
+                    // ── Skridtlængden. Her lå den halve skærm ──
+                    // Meningen med formlen er at dl · |dx| ER den fysiske
+                    // afstand strålen flytter sig. Men |p| normeres til 1
+                    // ved kameraet, og kameraet er dybt boostet — ude i det
+                    // flade rum er |p| nede omkring 0.02. Gulvet på 0.25 i
+                    // nævneren betød så at hvert skridt kun rykkede
+                    // 0.02/0.25 = en tolvtedel af det formlen troede.
+                    float sp   = max(length(k1.dx), 1e-4);
+                    float want = min(1.1 * clamp(r / (uRs * 1.5), 0.3, 8.0) * jitter, 0.5 * r);
 
-                    if (uDebug > 0.5) {
-                        float fr = float(steps) / uMaxSteps;
-                        gl_FragColor = vec4(fr, fr * fr, 1.0 - fr, 1.0);
-                        return;
+                    // ── Opstramning omkring fotonsfæren ──
+                    // At fjerne gulvet på 0.25 fjernede også den bremse det
+                    // uforvarende lagde netop dér hvor stråler wrapper mange
+                    // gange rundt om hullet. Resultatet var et smalt bånd
+                    // inde i skyggen hvor stråler slap ud som ikke burde:
+                    // saltkorn i det sorte. Ikke jitteren — den ændrer
+                    // ingenting; det er ét for langt RK4-skridt der smider
+                    // en spiralerende stråle ud ad en tangent.
+                    //
+                    // Båndet er målt: 420 retninger gennem skyggekanten,
+                    // og lækagen forsvinder ved K = 2. Med K = 3 er der
+                    // margin, og dybt inde koster den kun 195 skridt mod 131.
+                    // uRs/r alene duer ikke som vægt — den er 3.6 nede ved
+                    // r = 0.275 Rs, hvor der slet ikke ER et problem, og
+                    // kvæler hele interiøret.
+                    float band = (1.0 - smoothstep(uRs * 1.6, uRs * 4.0, r))
+                               * smoothstep(uRs * 0.6, uRs * 1.0, r);
+                    want /= (1.0 + 3.0 * band);
+
+                    float dl   = want / sp;
+
+                    Deriv k2 = deriv(x + 0.5*dl*k1.dx, p + 0.5*dl*k1.dp, pt);
+                    Deriv k3 = deriv(x + 0.5*dl*k2.dx, p + 0.5*dl*k2.dp, pt);
+                    Deriv k4 = deriv(x + dl*k3.dx,     p + dl*k3.dp,     pt);
+
+                    vec3 x0 = x;
+                    x += dl/6.0 * (k1.dx + 2.0*k2.dx + 2.0*k3.dx + k4.dx);
+                    p += dl/6.0 * (k1.dp + 2.0*k2.dp + 2.0*k3.dp + k4.dp);
+
+                    if (x0.z * x.z < 0.0) {
+                        float tC = x0.z / (x0.z - x.z);
+                        vec4  d  = diskSample(mix(x0, x, tC), p, pt);
+                        emission += trans * d.rgb;
+                        trans    *= (1.0 - d.a);
+                        if (trans < 0.02) break;
                     }
                 }
 
-                col = col / (col + vec3(0.85)) * 1.85;
+                emission *= mix(1.0, 0.30, clamp(uInside, 0.0, 1.0) * clamp(uDepth, 0.0, 1.0));
+
+                vec3 bg = vec3(0.0);
+                bool sawSky = false;
+                if (escaped) {
+                    bg = skyColor(outD);
+                    sawSky = true;
+                } else if (!dead) {
+                    // Her lå fejlen. Den gamle kode samplede himlen på
+                    // strålens ØJEBLIKKELIGE retning uanset hvor strålen
+                    // var, hvis bare r > 2·Rs. Nede ved 0.34 Rs løb næsten
+                    // alle stråler tør midt i en hård krumning, og så fik
+                    // nabopixels næsten samme retning: en kæmpeforstørret,
+                    // udsmurt mælkevej med en lodret trappekant, dér hvor
+                    // skridtbudgettet slap op.
+                    //
+                    // Nu skal strålen være langt ude OG på vej udad for at
+                    // tælle. Alt andet er sort, og så er det interiorFX()
+                    // der tegner folder ovenpå, som den skal.
+                    vec3 dOut = dxdl(x, p, pt);
+                    if (ksR(x, a) > uRs * 4.0 && dot(dOut, x) > 0.0) {
+                        bg = skyColor(dOut);
+                        sawSky = true;
+                    }
+                }
+
+                // Doppler + gravitationel forskydning på himlen.
+                // Bolometrisk skulle det være g⁴. Det ville slukke
+                // interiøret helt, så eksponenten er skruet ned:
+                // korrekt fysik, kunstnerisk skala.
+                bg *= pow(gShift, 1.1);
+                bg *= mix(vec3(1.35, 0.86, 0.58), vec3(1.0), smoothstep(0.55, 1.0, gShift));
+                bg  = mix(bg, bg * vec3(0.70, 0.86, 1.35), smoothstep(1.0, 1.9, gShift));
+
+                // ── Blåforskydningen løber løbsk ──
+                // Det her er den ægte effekt, skruet op — ikke en ny effekt.
+                // Vægten er smoothstep på gShift SELV, så de pixels der
+                // allerede er mest blåforskudte tænder først, og det er
+                // præcis randen af den mørke kegle: dér hvor E_uendelig går
+                // mod nul. Randen brænder altså ud indefra og udefter, i
+                // den rækkefølge geometrien bestemmer.
+                //
+                // Fysikken bag: nærmer man sig den indre horisont, ankommer
+                // hele det ydre univers' fremtid komprimeret ind i endelig
+                // egentid. Divergensen er ægte. Kurven er vores.
+                if (uBlue > 0.0) {
+                    float rim = smoothstep(0.9, 2.8, gShift);
+                    bg *= 1.0 + uBlue * (1.6 + 30.0 * rim);
+                    bg  = mix(bg, bg * vec3(0.66, 0.83, 1.50), uBlue * (0.35 + 0.65 * rim));
+                }
+
+                vec3 col = emission + trans * bg;
+
+                if (uInside > 0.002) {
+                    // "Der kom ingen himmel den vej" — den eneste maske
+                    // der ved hvad der rent faktisk ligger bag pixlen.
+                    col = interiorFX(uCamPos, dirLocal, col, sawSky ? 0.0 : 1.0);
+                }
+
+                if (uDebug > 0.5) {
+                    float fr = float(steps) / uMaxSteps;
+                    gl_FragColor = vec4(fr, fr * fr, 1.0 - fr, 1.0);
+                    return;
+                }
+
+                // ── Tonemap, hue-bevarende ──
+                // Reinhard pr. kanal komprimerer den lyseste kanal hårdest,
+                // så alt lyst glider mod hvidt. Det er præcis dér farven
+                // betyder noget her: den forstørrede kerne ER mørkerød —
+                // rumvinklen bagud er blæst op 12.5 gange af aberrationen,
+                // og den samme Doppler-faktor 0.283 er rødforskydningen.
+                // Jo mere forstørret, jo rødere. Pr. kanal vaskede den
+                // sammenhæng væk og efterlod en hvid skive.
+                //
+                // Så: komprimér LUMINANSEN, og skalér farven med samme
+                // faktor. Hue overlever. Kun hvis en enkelt kanal alligevel
+                // løber over, giver vi slip og lader den gå mod hvid —
+                // ellers ville den klippe til en forkert farve i stedet.
+                float Lin = dot(col, vec3(0.2126, 0.7152, 0.0722));
+                float Lot = Lin / (Lin + 0.85) * 1.85;
+                vec3  cc  = col * (Lot / max(Lin, 1e-5));
+                float ov  = max(cc.r, max(cc.g, cc.b));
+                col = mix(cc, vec3(Lot), smoothstep(1.0, 1.6, ov));
+
+                // ── Slutningen, efter tonemap ──
+                // Tæppet lægges HER med vilje. Gik det ind før tonemapperen,
+                // ville den komprimere det tilbage mod grå og man ville
+                // aldrig nå ren udbrænding. Farven er en anelse blå, så
+                // det læses som blåforskydning og ikke som en fade-to-white.
+                col = mix(col, vec3(0.88, 0.93, 1.00), clamp(uWhite, 0.0, 1.0));
+
+                // Og så slukker den. Hvid → sort, mens teksten kommer op.
+                col *= clamp(uDim, 0.0, 1.0);
+
                 gl_FragColor = vec4(col, 1.0);
             }
         `,

@@ -1,12 +1,11 @@
 // =====================================================================
 // exhibits/dive/DiveGeodesic.js
 //
-// Kameraets EGEN bane. Ikke en animation, ikke en Bézier-kurve — en
-// rigtig tidsagtig geodæt integreret gennem Kerr-rumtiden.
+// Rigtig tidsagtig geodæt, integreret gennem Kerr spacetime.
 //
 // Pointen: shaderen i Kerr_finalBoss integrerer LYSETS baner (H = 0).
-// Præcis den samme Hamilton-maskine beskriver også en partikel MED
-// masse — eneste forskel er at H = -1/2 i stedet for 0. Så i stedet
+// Den samme Hamilton-maskine beskriver også en partikel MED
+// masse. Den eneste forskel er at H = -1/2 i stedet for 0. Så i stedet
 // for at finde på en kamerabevægelse, lader vi kameraet falde.
 //
 // Og fordi vi regner i Kerr-Schild-koordinater, gælder integrationen
@@ -34,7 +33,7 @@ export function outerHorizon(M, a) {
 
 /**
  * Metrikken kogt ned til ét tal og én vektor: g = eta + f (l ⊗ l).
- * Det er hele Kerr-geometrien, i fire linjer.
+ * Kerr-geometrien, i fire linjer. Kerr Code Golf
  */
 function metricAt(x, y, z, M, a) {
     const r = ksR(x, y, z, a);
@@ -73,19 +72,17 @@ export class DiveGeodesic {
         this.M = M;
         this.a = spin * M;
 
-        // Start på +x-aksen, eventuelt løftet z0 ud af ækvatorplanet.
-        // z0 != 0 giver en bane der svinger gennem planet på vej ned —
-        // stadig en helt almindelig geodæt, bare ikke en ækvatorial en.
+        // Start på +x-aksen
         this.pos = { x: r0, y: 0, z: z0 };
 
         // L_z = x·p_y - y·p_x. På +x-aksen er det bare r0·p_y.
         this.mom = { x: -inward, y: angMom / r0, z: 0 };
 
-        this.tau = 0;       // egentid — den ur-tid rejsende selv mærker
-        this.coordTime = 0; // koordinattid — divergerer ved horisonten
+        this.tau = 0;       // egentid — den tid observatøren selv mærker
+        this.coordTime = 0; // koordinattid som divergerer ved horisonten
 
         // Sættes til false når vi når så tæt på ringen at ligningerne
-        // ikke længere kan følge med. Derfra overtager fortolkningen.
+        // ikke længere kan følge med. Derfra overtager fortolkningen. Damn you microgravity
         this.valid = true;
 
          this.pt = this._solvePt();
@@ -175,11 +172,28 @@ export class DiveGeodesic {
      * Hvorfor: ét fast skridt der er fint ved r = 60 sprænger fuldstændig
      * ved r = 5. Rumtiden krummer hårdere jo længere ind man kommer, så
      * skridtet skal skrumpe i takt. Uden det her flyver kameraet ud i
-     * r = 10^7 et par tiendedele efter horisonten — set med egne øjne.
+     * r = 10^7 et par tiendedele efter horisonten.
      *
      * Kriteriet er det samme som shaderen bruger på fotonerne: skridtet
      * skaleres med r og divideres med hvor hurtigt tilstanden bevæger sig.
      */
+    /**
+     * Det skridt integratoren SELV ville tage lige nu.
+     *
+     * Bruges udefra af sampleren: hvis man beder om et τ-skridt der er
+     * meget større end det her, kommer der én sample ud af noget der
+     * indeholdt hundredvis af substeps — og så ligger to nabo-samples
+     * så langt fra hinanden at lineær interpolation imellem dem skærer
+     * genvej gennem en bane der krummer hårdt. Det er dét der gav
+     * "hoppet" i billedet tæt på ringen.
+     */
+    suggestedStep() {
+        const d = this._dxdl(this.pos.x, this.pos.y, this.pos.z,
+            this.mom.x, this.mom.y, this.mom.z);
+        const speed = Math.hypot(d.x, d.y, d.z);
+        return Math.max(1e-7, Math.min(0.05, 0.02 * this.r / Math.max(speed, 1e-3)));
+    }
+
     advance(dTau) {
         if (!this.valid) return;
 
@@ -203,10 +217,10 @@ export class DiveGeodesic {
             remaining -= h;
 
             // ── Her stopper fysikken, og det er ikke en bug ──
-            // Tæt på ringen divergerer krumningen ægte. |p| er allerede
+            // Tæt på ringen divergerer krumningen. |p| er allerede
             // over 1000 her, og H begynder at drive fra -1/2 uanset hvor
             // små skridt man tager — det er ikke integratoren der giver
-            // op, det er singulariteten der er ægte.
+            // op, det er singulariteten der er ... er en singularitet.
             //
             // Kerr-Schild-koordinater kan i øvrigt kun repræsentere r >= 0.
             // Den berømte "negativ-r-region" på den anden side af ringen

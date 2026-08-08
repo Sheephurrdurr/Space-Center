@@ -18,9 +18,9 @@
         <a class="what-back" href="index.html">← Back to the simulation</a>
 
         <div class="what-hero">
-            <span class="what-eyebrow">The physics and the non physics, somewhat explained</span>
-            <h1 class="what-title">So, what was that?</h1>
-            <p class="what-subtitle">A fall into Sagittarius A* (a black hole is modelled after the supermassive black hole at the center of the Milky Way), all the way through the horizon and down to where the equations stop working. Some of what you see is computed. Some of it is drawn. This page is about which is which, and why the line falls where it does.</p>
+            <span class="what-eyebrow">The physics, somewhat explained</span>
+            <h1 class="what-title">So, what are you actually looking at?</h1>
+            <p class="what-subtitle">A fall into Sagittarius A*, all the way through the horizon and down to where the equations stop working. Some of what you see is computed. Some of it is drawn. This page is about which is which, and why the line falls where it does — including why this exhibit stops instead of taking you through to another universe.</p>
         </div>
 
         <!-- ── 1 ── -->
@@ -30,7 +30,7 @@
 
             <p>In the other exhibits here, the camera is a thing that hovers. It sits at a fixed distance, does not fall, and generally behaves like a tripod that has ignored gravity its whole life. That's fine when the point is to look at a black hole. It stops being fine when the point is to go into one.</p>
 
-            <p>So this one works differently. The camera's position isn't animated. It's a particle with mass, released twelve horizon-radii out with slightly less angular momentum than a stable orbit needs, and then integrated through the Kerr metric until it can't be integrated anymore. Everything the camera does, it does because the geometry pushed it there.</p>
+            <p>So this one works differently. The camera's position isn't animated. It's just a particle with mass, released twelve horizon-radii out with slightly less angular momentum than a stable orbit needs, and then integrated through the Kerr metric until it can't be integrated anymore. Everything the camera does, it does because the geometry pushed it there.</p>
 
             <p>The nice part is how little extra machinery that took. The shader already integrates photon paths using a Hamiltonian:</p>
 
@@ -45,8 +45,12 @@
 
             <p>That's the whole difference. A photon is a solution with <span class="num">H = 0</span>. An observer is a solution with <span class="num">H = −½</span>. Same equation, same RK4 integrator, one different number on the right-hand side. The camera and the light it sees are running the same physics against each other.</p>
 
+            <p>One more thing falls out of having a camera with mass, and it turns out to be the thing that makes the second half of this exhibit possible at all. A falling observer carries four directions with them: one pointing along their own future, and three pointing right, up, and forward. Together they form what's called an orthonormal tetrad, four rigid rulers carried through a space that is anything but rigid. Building it is ordinary linear algebra, Gram-Schmidt on four vectors, with the single oddity that the time direction has length minus one instead of plus one. The exhibit rebuilds it every frame from the camera's own momentum, and checks it: ten dot products that should come out as minus one, one, one, one and zeros everywhere else. They hold to eleven decimal places all the way down.</p>
+
+            <p>Why it matters is that the tetrad is what turns a pixel into a photon. A pixel is a direction in someone's eye, and "someone's eye" is exactly what a tetrad is. Without one you have to guess at a correction factor for aberration and bolt it on afterwards. With one, aberration isn't a correction at all. It's just what the arithmetic does.</p>
+
             <div class="callout">
-                <p>The Hamiltonian is also a free correctness check, which is the real reason to build it this way. H is supposed to stay at exactly −½ forever. If it drifts, the integration is wrong. During development the step size was tuned by watching that number: it held to seven decimal places over four hundred thousand steps, right up until the geometry genuinely broke down. You don't get that kind of self-diagnosis out of a hand-animated camera path.</p>
+                <p>The Hamiltonian is also a free correctness check, which is the real reason to build it this way. H is supposed to stay at exactly −½ forever. If it drifts, the integration is wrong. During development the step size was tuned by watching that number, and it's still on screen: it's the fourth readout in the bottom bar. It holds to six decimal places for the entire journey down through the horizon, and then, in the last stretch, it starts to move. Chapter 06 is about why that isn't a bug.</p>
             </div>
         </div>
 
@@ -62,6 +66,8 @@
             <p>This is where the old textbook version of black holes gets stuck, and it's worth knowing why. The original Schwarzschild coordinates blow up at the horizon: terms divide by zero, and the mathematics appears to say that nothing can ever get through. It took until 1958, more than forty years after the solution was written down, for David Finkelstein to make it properly clear that this was a failure of the coordinates rather than of the spacetime. Nothing is torn at the horizon. The map was just badly drawn there.</p>
 
             <p>This exhibit uses Kerr-Schild coordinates, which stay perfectly finite across the boundary. That's the entire reason the camera can keep going. There's no special-casing at the horizon in the code, no handoff, no seam. The integrator doesn't even notice it's happened. The only thing that changes at that moment is what the shader chooses to draw.</p>
+
+            <p>Hold on to that distinction, because chapter 05 is about a place where the mathematics does <em>not</em> turn out to be fine underneath, and telling the two cases apart is most of the work.</p>
         </div>
 
         <!-- ── 3 ── -->
@@ -95,22 +101,86 @@
             <p>That's what the phrase "point of no return" is actually pointing at, and it's a much stranger claim than the usual telling suggests. There's no wall, no barrier, no force to fight. The singularity isn't a place waiting in front of you. It's an event in your future.</p>
 
             <div class="callout">
-                <p>This is also why the interior can't be ray-traced the way the exterior can. Every other exhibit here works by tracing light backward from a stationary observer's eye. Inside the horizon there is no such thing as a stationary observer, so there's nothing to trace backward from. The technique doesn't produce a wrong picture. It stops having a picture to produce.</p>
+                <p>There's a standard objection at this point, and for a long time this exhibit believed it. Every other exhibit here works by tracing light backward from a stationary observer's eye, and inside the horizon there is no such thing as a stationary observer. So the interior got drawn by hand instead.</p>
+                <p>The objection is half right. Stationary observers really do stop existing at the horizon. But nothing ever required the observer to be stationary, only to exist, and a falling one exists all the way down and carries a perfectly good tetrad with them. Trace backward from that, in coordinates that stay finite across the boundary, and the rays behave. The interior is now computed on the same footing as everything else.</p>
             </div>
+
+            <p>What comes back is worth describing, because it is not what the drawn version showed and it is not what the popular telling predicts either.</p>
+
+            <p>Inside, the sky splits in two along a sharp edge, and the test for which side a pixel lands on is a single number. Every photon carries an energy measured at infinity, and that number is conserved along its whole path. Light that actually came from the outside universe has it positive, because there is no negative-energy light out there to send. Trace a ray backward from the falling observer's eye, read the number off, and if it is negative that ray never touched the exterior. In the fully extended solution it arrives from a white hole, which a black hole formed by collapsing matter does not have. The shader can therefore decide before the ray takes a single step.</p>
+
+            <p>Where the sign flips is a cone, and its half-angle has a closed form:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">cos θ = A / √(A² − 1 + f)</div>
+                <div class="formula-explain">
+                    <span>A</span> — the observer's own conserved energy, close to one for a fall that started far out<br>
+                    <span>f</span> — the Kerr-Schild potential, 2M/r in the equatorial plane<br>
+                    <span>θ</span> — the angular radius of the dark region, measured from the direction of fall
+                </div>
+            </div>
+
+            <p>A cone exists only once f passes one, which happens at the ergosphere rather than at the horizon. From there it opens steadily. By <span class="num">r = 0.34 Rs</span> it is about 54° across from its axis, and as r runs down it tends toward 90° without ever reaching it.</p>
+
+            <p>So the image most people carry, of the universe closing to a shrinking porthole that finally winks out, is wrong. The dark cone sits in the direction of fall and takes less than a third of the sky by the time the equations quit. The rest is still the outside universe, and it is still wider than the field of view. Turn the camera sideways this deep in and you get stars, not a wall. The exhibit swings the view around automatically at the crossing so the interesting half is the one facing you.</p>
+
+            <p>Which sets up the last question, the one everybody actually wants answered: what's at the bottom, and can you get through it?</p>
         </div>
 
         <!-- ── 5 ── -->
         <div class="chapter">
             <div class="chapter-number">05</div>
-            <h2 class="chapter-title">A ring, not a point</h2>
+            <h2 class="chapter-title">The door that isn't there</h2>
 
             <p>Everyone knows black holes have a singularity at the centre, and everyone pictures a point. For a spinning one, that picture is wrong. Kerr's solution has a <em>ring</em> singularity: a circle sitting in the equatorial plane with radius <span class="num">a = J/Mc</span>, which for this exhibit's spin of 0.85 works out to 0.85 M across. The centre of that ring is not itself singular. There's a hole in the middle of the hole.</p>
 
-            <p>Which raises the obvious question of what happens if you go through it, and the honest answer is that the mathematics gives an answer nobody quite believes. Continue Kerr's solution through the ring and you reach a region where r is negative, gravity is repulsive rather than attractive, and there exist closed timelike curves: paths through spacetime that loop back to their own past. Take one of those and you return to when you started. That's not a fringe reading of the equations. It's what the equations plainly say.</p>
+            <p>And the mathematics is unambiguous about what's on the other side. Continue Kerr's solution through the ring and you reach a region where r is negative and gravity pushes instead of pulls. Keep going the other way, outward through the second horizon, and the extended solution opens into another exterior universe entirely — and then another, and another, an infinite chain of them. This isn't a fringe reading. It's what you get by writing the solution down and refusing to stop early.</p>
 
-            <p>Most physicists take it as a sign that the solution has been pushed past where it should be trusted. Eternal, perfectly isolated, perfectly symmetric black holes don't exist. Real ones formed from collapsing matter, and the interior of a real rotating hole is thought to be unstable in a way that closes off the passage entirely. But that instability is itself an active research problem, not a settled result.</p>
+            <p>An earlier version of this exhibit took that seriously enough to build it. The camera was lifted over the ring's plane, carried through the opening, and came out into a procedurally generated sky full of galaxies. It was the prettiest thing on the page. It's gone now, and this chapter is why.</p>
 
-            <p>So the passage through the ring in this exhibit is deliberately the most invented thing in it. The ring's position and size are exact. Everything on the far side is a guess with a nice colour palette.</p>
+            <h3 class="sub-title">Two horizons, not one</h3>
+
+            <p>A rotating black hole has two. The outer one, <span class="num">r₊ = 7.63</span> in this exhibit's units, is the famous one — the point of no return from chapter 04. The inner one sits at:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">r₋ = M − √(M² − a²) = 0.4732 M</div>
+                <div class="formula-explain">
+                    <span>M</span> — the mass<br>
+                    <span>a</span> — the spin, 0.85 M here<br>
+                    <span>r₋</span> — the Cauchy horizon, and the actual end of this story
+                </div>
+            </div>
+
+            <p>Between the two, r behaves like time and the fall is compulsory. Cross the inner one and it flips back: r becomes a direction again, you can steer, and you can miss the ring entirely. That's what makes the passage sound survivable in the first place. Everything downstream — the ring, the negative-r region, the other universes — sits on the far side of that surface.</p>
+
+            <h3 class="sub-title">Why the inner horizon is not like the outer one</h3>
+
+            <p>Chapter 02 made a point of the outer horizon being fine underneath a bad map. It's tempting to assume the same trick works twice. It doesn't, and the reason is not about coordinates at all.</p>
+
+            <p>Think about what arrives at the inner horizon. Not just you — everything that ever falls into this hole after you do, plus every photon from the outside universe that ever crosses the outer horizon, for the entire future history of that universe. All of it, arriving on one surface, compressed into a finite amount of your proper time.</p>
+
+            <div class="analogy">
+                <div class="analogy-icon">📻</div>
+                <div class="analogy-text">Imagine tuning into a radio broadcast that plays the rest of eternity, and the closer you get to a certain moment, the faster it runs. Not "sped up" as a figure of speech: infinite content delivered in finite time, which means infinite frequency, which means infinite energy. That's the blueshift at the inner horizon. Every wave that ever comes in stacks up on that surface.</div>
+            </div>
+
+            <p>Poisson and Israel worked out in 1990 what that does to the geometry, and the result has a name that says it well: <em>mass inflation</em>. The effective mass measured just inside the inner horizon grows exponentially. Curvature grows with it. The surface that was supposed to be a smooth doorway turns into a genuine singularity — not a coordinate artefact, an actual one, where the theory stops having anything to say.</p>
+
+            <p>So the two horizons fail in opposite directions. The outer one looked broken and turned out to be fine. The inner one looks fine — the metric is perfectly well-behaved there in the eternal, undisturbed Kerr solution — and turns out to be broken the moment you let anything else fall in. And things do fall in. That's how black holes are made.</p>
+
+            <div class="callout">
+                <p>This is still live research rather than a closed case. The current consensus is "strong cosmic censorship holds, in the sense that matters": the inner horizon does become singular, but the singularity is <em>weak</em> — tidal distortion stays finite even as curvature diverges, so an infalling object isn't necessarily torn apart by it. What's genuinely dead is the idea of continuing the solution smoothly past that surface. Whatever is on the other side, general relativity cannot tell you, because the equations no longer determine it. Getting an answer needs a theory of quantum gravity, and there isn't one yet.</p>
+            </div>
+
+            <h3 class="sub-title">And the wormhole?</h3>
+
+            <p>Worth separating out, because it's a different objection with a different answer. The traversable wormhole — the one you could actually fly a ship through, worked out properly by Morris and Thorne in 1988 — has a problem that has nothing to do with black hole interiors. To hold a throat open you need something that pushes light apart. All ordinary matter does the opposite: gravity focuses, always, for anything with sensible energy conditions. You need negative energy density, in quantity, held stable, for as long as the throat exists.</p>
+
+            <p>Negative energy density does exist. The Casimir effect produces it, in amounts measured between plates a few nanometres apart, and quantum inequalities put hard limits on how much you can borrow and for how long. Scaling it up to hold a human-sized throat open lands you somewhere around a planet's worth of negative energy. That isn't an engineering gap. There's no known material that does this.</p>
+
+            <p>The original Einstein-Rosen bridge from 1935 fails differently and more simply. It's dynamic: the throat opens, pinches off, and closes faster than light can cross it. Send a photon in from each side and they can meet in the middle. Neither one comes out the other end. There's a connection in the geometry, but not one you can travel through.</p>
+
+            <p>So the Kerr passage never needed exotic matter — it's a real feature of a real vacuum solution. It just needed the inner horizon to hold. It doesn't.</p>
         </div>
 
         <!-- ── 6 ── -->
@@ -118,22 +188,51 @@
             <div class="chapter-number">06</div>
             <h2 class="chapter-title">Where the code gives up, and why that's the interesting part</h2>
 
-            <p>The integration stops at <span class="num">r = 0.55 M</span>, roughly a third of the way from the horizon to the ring plane, and that number was found rather than chosen.</p>
+            <p>The integration stops at <span class="num">r = 0.55 M</span>. That number was found rather than chosen — it's where the RK4 stepper stopped being able to hold the fall together, discovered by watching it fail. Here's the part worth pausing on: the inner horizon is at 0.4732 M. The code gives up <em>16% outside</em> the surface where the physics gives up, without having been told about it.</p>
 
-            <p>Approaching the ring, momentum climbs past a thousand and the curvature diverges for real. The conserved Hamiltonian, rock solid at −½ for the whole journey down, begins to drift no matter how small the steps get. Halving the step size doesn't help. That's the tell: numerical error shrinks when you refine, and this doesn't. The equations aren't being solved badly, they're running out of things to say.</p>
+            <p>That's not a coincidence, and it isn't a coordinate accident either. Both limits come from the same divergence. It just showed up in the arithmetic before anyone went looking for it in the theory.</p>
 
-            <p>There's a second, quieter limit. Kerr-Schild coordinates can only represent <span class="num">r ≥ 0</span> by construction. The negative-r region on the far side of the ring lives on a different sheet of the solution that these coordinates simply don't cover. Even with a perfect integrator, this coordinate system cannot go there.</p>
+            <h3 class="sub-title">How you tell a bug from a boundary</h3>
 
-            <p>So the split is drawn where the physics draws it, rather than where it was convenient:</p>
+            <p>A conserved quantity that drifts is normally an accusation. H should sit at exactly −½ for the whole journey, and if it doesn't, the integrator is wrong. Watching the readout as the fall goes in:</p>
 
-            <p><em>Computed, per pixel, no shortcuts.</em> The camera's entire path. Every photon path outside the horizon. The accretion disk's Doppler beaming and gravitational redshift, folded into a single factor from the photon's conserved energy and angular momentum. The relativistic aberration. The horizon's position, the ISCO, the ring's radius.</p>
+            <div class="formula-block">
+                <div class="formula-main">|H + ½|</div>
+                <div class="formula-explain">
+                    <span>r = 1.933 M</span> — first exceeds 10⁻⁷<br>
+                    <span>r = 0.764 M</span> — first exceeds 10⁻⁶ &nbsp;(the readout turns amber here)<br>
+                    <span>r = 0.600 M</span> — first exceeds 10⁻⁵<br>
+                    <span>r = 0.550 M</span> — H = −0.4999865, and the integration halts
+                </div>
+            </div>
 
-            <p><em>Drawn.</em> Everything after the horizon crossing fades in. The shrinking window back to the outside universe is based on something real and rendered by hand. The layered ghost images are an honest nod to the photon-ring ladder from the earlier exhibits rather than a computation. The colours are chosen. The ring passage is fiction.</p>
+            <p>So far that reads like ordinary accumulated error, and there's a standard way to check: refine the step and see whether the error shrinks. Halve the step size, and honest numerical error roughly halves with it.</p>
 
-            <p><em>Adjusted.</em> Time, throughout. The real fall takes about twenty minutes of proper time and this shows it in under a minute, unevenly, slowing down for the parts worth looking at. Correct physics, artistic scale, same as everywhere else on this site.</p>
+            <p>Run at four resolutions and the peak drift comes out as <span class="num">1.42, 1.60, 1.61, 1.62 × 10⁻⁵</span>. It doesn't halve. It doesn't shrink at all — it converges onto a floor and sits there. Sixty-four thousand steps buys exactly nothing over eight thousand.</p>
+
+            <p>That's the tell. Numerical error goes to zero as you refine. This doesn't, because there's nothing left to refine toward. The equations are running out of things to say, and no amount of arithmetic recovers an answer that was never determined. The drift is on screen, live, in the bottom bar — it's the only readout on the site that shows a failure rather than a measurement.</p>
 
             <div class="callout">
-                <p>One last thing worth saying plainly. The observer in this exhibit is a fantasy: something that holds itself together through tidal forces that would destroy anything real. For Sagittarius A* that fantasy costs almost nothing at the horizon, where the stretch across a human body is about a ten-thousandth of Earth gravity and you would genuinely feel nothing. It only starts mattering in the last seconds near the ring. A stellar-mass black hole would be a different story entirely: tidal force at the horizon scales as 1/M², so a ten-solar-mass hole pulls on you roughly a hundred billion times harder there. You'd be shredded long before you had anything to look at.</p>
+                <p>There's a second, quieter limit worth knowing about. Kerr-Schild coordinates can only represent <span class="num">r ≥ 0</span> by construction. The negative-r region beyond the ring lives on a different sheet of the solution that these coordinates simply don't cover. So even with a perfect integrator, and even if the inner horizon were stable, this coordinate system could not go there. Two independent reasons, same answer.</p>
+            </div>
+
+            <h3 class="sub-title">What the ending actually shows</h3>
+
+            <p>The last thing you see is a blueshift running away, and it is mostly the real one. Every pixel already carries a shift factor <span class="num">g</span> computed from its photon's conserved energy — that's what colours the whole interior. The rim of the dark cone is where the energy measured at infinity passes through zero, so g runs toward infinity there, making it the brightest edge on the sky by a wide margin.</p>
+
+            <p>The final sequence amplifies g rather than painting over it, which means the burn-out starts at that rim and spreads outward in the order the geometry dictates, not in the order that looked good. The last few seconds — the flat white, and the fade after it — are a decision. The screen goes white because there's nothing left to compute, and staying on a frozen frame would have implied otherwise.</p>
+
+            <p>So the split, drawn where the physics draws it:</p>
+
+            <p><em>Computed, per pixel, no shortcuts.</em> The camera's entire path. Every photon path, outside the horizon and inside it, from the observer's own tetrad. The edge of the dark cone, which is not drawn and not tuned — it's the locus where the traced photon's conserved energy changes sign, evaluated per pixel. The relativistic aberration and the redshift of the sky, both emerging from the local frame rather than applied on top of it. The accretion disk's Doppler beaming and gravitational redshift, folded into a single factor. The horizon positions, the ISCO, the ring's radius. The Hamiltonian drift in the readout.</p>
+
+            <p><em>Drawn.</em> The streaming violet and cyan filaments in the interior, which fill the part of the sky where the physics correctly returns nothing. The ring's glow. The colours throughout. The final white-out and the fade.</p>
+
+            <p><em>Adjusted.</em> Time, throughout: the real fall takes about twenty minutes of proper time and this shows it in under a minute, unevenly, slowing down for the parts worth looking at. And the redshift, which properly dims the sky as the fourth power of the shift factor — applied honestly, the interior would be a black screen with a rumour of a window in it. The exponent here is turned down to a little over one, which keeps the colour shift visible and the brightness watchable.</p>
+
+            <div class="callout">
+                <p>One last thing worth saying plainly. The observer in this exhibit is a fantasy: something that holds itself together through tidal forces that would destroy anything real. For Sagittarius A* that fantasy costs almost nothing at the horizon, where the stretch across a human body is about a ten-thousandth of Earth gravity and you would genuinely feel nothing. A stellar-mass black hole would be a different story entirely: tidal force at the horizon scales as 1/M², so a ten-solar-mass hole pulls on you roughly a hundred billion times harder there. You'd be shredded long before you had anything to look at.</p>
+                <p>And the thing this exhibit no longer does: it doesn't take you anywhere afterwards. There was a version that did, and it was better television. This one ends where the theory ends, which is a stranger and more honest place to be left standing.</p>
             </div>
         </div>
 

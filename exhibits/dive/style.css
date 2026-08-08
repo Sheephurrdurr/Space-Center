@@ -1,8 +1,9 @@
 /*
    /exhibits/dive/
    Samme visuelle sprog som de øvrige exhibits. Afvigelserne er
-   bevidste og få: en ekstra accentfarve til interiør-faserne, og
-   .hidden på knapper i stedet for kun på panelet.
+   bevidste og få: en ekstra accentfarve til interiør-faserne, .hidden
+   på knapper i stedet for kun på panelet, og en sluttekst der ligger
+   oven på lærredet i stedet for under det.
 */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -226,6 +227,17 @@ canvas:active { cursor:grabbing; }
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--ns-cyan);
+    /* H skifter hvert eneste ciffer hver frame. Uden tabular-nums
+       hopper hele tallet i bredden og trækker øjet til det forkerte. */
+    font-variant-numeric: tabular-nums;
+}
+
+/* Den eneste aflæsning på siden der viser en FEJL. Den skifter farve
+   når |H + ½| passerer 1e-6, hvilket sker ved r = 0.764 M — altså
+   godt inde, men før slutningen. Ingen animation: tallet bevæger sig
+   selv, og en puls oveni ville gøre det til pynt. */
+#hamReadout.drifting {
+    color: var(--ring-amber);
 }
 
 /* ── Control buttons ── */
@@ -294,6 +306,84 @@ canvas:active { cursor:grabbing; }
     transition: opacity 0.4s, color 0.6s;
     pointer-events: none;
     white-space: nowrap;
+}
+
+/* ── End plate ────────────────────────────────────────────────────────
+   Ligger OVEN PÅ lærredet, ikke under det. Shaderen brænder ud til hvid
+   og slukker derefter til sort; teksten kommer op på det sorte bagefter.
+   Derfor er der ingen baggrund her — den sorte er selve canvas.
+
+   z-index 15: over canvas og mode-label, under math-panel (20) så
+   panelet stadig kan åbnes henover.                                   */
+.end-plate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 28px 90px;
+    z-index: 15;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
+}
+
+.end-plate.visible { opacity: 1; }
+
+.end-plate-inner {
+    max-width: 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+    border-left: 1px solid var(--border);
+    padding-left: 26px;
+}
+
+.end-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ring-amber);
+}
+
+.end-lead {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3.4vw, 34px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.2;
+    color: var(--text-bright);
+}
+
+.end-plate p {
+    font-size: 14px;
+    line-height: 1.8;
+    font-weight: 300;
+    color: var(--text-mid);
+}
+
+.end-note {
+    font-family: var(--font-mono);
+    font-size: 11px !important;
+    color: var(--text-dim) !important;
+    letter-spacing: 0.04em;
+    padding-top: 4px;
+}
+
+/* ── What-page sub-headings ───────────────────────────────────────────
+   Kapitel 05 og 06 er blevet lange nok til at have brug for et niveau
+   under h2. Reglen står HER og ikke i whatPage.css, fordi style.css
+   indlæses først på what.html — findes .sub-title allerede i det delte
+   ark, vinder det delte, og de øvrige exhibits ser ens ud som før.  */
+.sub-title {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-bright);
+    margin: 34px 0 -4px;
 }
 
 /* ── Scroll hint ── */
@@ -450,10 +540,17 @@ canvas:active { cursor:grabbing; }
     }
 
     .readouts { gap: 20px; }
+    /* Radius og egentid overlever. H ryger — den kræver syv decimaler
+       for at betyde noget, og de er der ikke plads til.
+       :nth-child(n+3) skjuler Speed og H. */
     .readout:nth-child(n+3) { display: none; }
     .controls { gap: 6px; }
     .ctrl-btn { padding: 7px 11px; font-size: 11px; }
     #ecoBtn { display: none; }
+
+    .end-plate { padding: 0 22px 110px; align-items: flex-start; padding-top: 22vh; }
+    .end-plate-inner { padding-left: 18px; gap: 13px; }
+    .end-plate p { font-size: 13px; line-height: 1.7; }
 
     .fact-block { grid-template-columns: 1fr; gap: 12px; }
     .context-footer { flex-direction: column; align-items: flex-start; }
@@ -461,4 +558,5 @@ canvas:active { cursor:grabbing; }
 
 @media (prefers-reduced-motion: reduce) {
     .scroll-line { animation: none; opacity: 0.4; }
+    .end-plate { transition: none; }
 }
