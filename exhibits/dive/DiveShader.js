@@ -43,6 +43,11 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             // Retningen "ud" — dér hvor universet vi forlod ligger.
             uOutDir: { value: new THREE.Vector3(1, 0, 0) },
 
+            // Observatørens bevarede energi A = −u_t. Konstant langs
+            // geodæten, men shaderen kan ikke selv regne den ud — den
+            // kræver firehastigheden. Sættes fra main.js.
+            uAobs: { value: 1.0 },
+
             uRs:        { value: rs },
             uSpin:      { value: spin },
             uTime:      { value: 0.0 },
@@ -51,8 +56,12 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             uColdness:  { value: coldness },
 
             // ── Fortællings-uniforms ──
-            uInside: { value: 0.0 },  // 0 udenfor, 1 helt inde. Vægter KUN tegningen.
-            uDepth:  { value: 0.0 },  // 0 ved horisont → 1 hvor integrationen stopper
+            // uDraw hed uInside og hang på horisontkrydset. Nu hænger den
+            // på den mørke kegles åbningsvinkel, som begynder ved
+            // ergosfæren og vokser glat forbi horisonten uden knæk.
+            // Vægter KUN tegningen.
+            uDraw:  { value: 0.0 },
+            uDepth: { value: 0.0 },  // 0 ved horisont → 1 hvor integrationen stopper
 
             // ── Slutningen ──
             uBlue:  { value: 0.0 },   // forstærkning af den ægte blåforskydning
@@ -84,9 +93,10 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
             uniform vec2  uResolution;
             uniform vec3  uCamPos, uCamFwd, uCamRight, uCamUp;
             uniform vec3  uOutDir;
+            uniform float uAobs;
             uniform float uFov, uRs, uSpin, uTime;
             uniform float uDiskIn, uDiskOut, uColdness;
-            uniform float uInside, uDepth;
+            uniform float uDraw, uDepth;
             uniform float uBlue, uWhite, uDim;
             varying vec2 vUv;
 
@@ -328,13 +338,13 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
              * fulgte MED den ville kollapse til ét punkt. Fysikken skal
              * aberrere. Pynten skal kunne ses.
              */
-            vec3 interiorFX(vec3 x, vec3 dir, vec3 base, float empty) {
+            vec3 interiorFX(vec3 x, vec3 dir, vec3 base,
+                            float coneS, float notSky) {
                 float M = 0.5 * uRs;
                 float a = uSpin * M;
                 vec3 outDir  = normalize(uOutDir);
-                float depth  = clamp(uDepth,  0.0, 1.0);
-                float w      = clamp(uInside, 0.0, 1.0);
-                float mu     = dot(dir, outDir);
+                float depth  = clamp(uDepth, 0.0, 1.0);
+                float w      = clamp(uDraw,  0.0, 1.0);
 
                 vec3 col = base;
 
@@ -345,32 +355,116 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 // i vinduet ud til universet, og både ringen og folderne
                 // sivede henover det.
                 //
-                // empty kommer fra raymarchen i stedet, og den ved det man
-                // faktisk skal bruge: blev der SAMPLET en himmel i den her
-                // retning, eller endte strålen i singulariteten? Kan man se
-                // universet den vej, er ringen ikke i vejen, og så skal den
-                // ikke tegnes. Kanten er skarp, men det er den ægte kant
-                // også — det er dér strålerne holder op med at slippe ud.
+                // Masken kom før fra ét flag: "blev der samplet en himmel
+                // her?". Det slog to helt forskellige slags mørke sammen.
+                //
+                //   coneMask — strålen har NEGATIV energi i uendelig. Der
+                //     findes intet ydre univers i den retning, uanset hvor
+                //     man står. Det er den ægte mørke kegle, og det er dér
+                //     folderne hører hjemme. Den findes fra ergosfæren.
+                //
+                //   killMask — strålen løb ind i uRayStop. Udenfor er det
+                //     bare hullets skygge, og en skygge skal være SORT.
+                //     Dybt inde er det derimod det ukendte, og dér må
+                //     folderne godt brede sig ind over.
+                //
+                // Sammenblandingen var grunden til at tegningen skulle
+                // gates på horisonten: uden den ville folderne have malet
+                // hen over skyggen udefra. Med de to skilt ad kan
+                // keglemasken stå helt uden gate, og horisonten mister sin
+                // sidste rolle i billedet.
                 float lum  = dot(base, vec3(0.299, 0.587, 0.114));
                 float dark = 1.0 - smoothstep(0.015, 0.30, lum);
-                float mask = empty * dark;
+
+                // ── Keglen, blødt ──────────────────────────────────────
+                // coneMask var et ja/nej: pt <= 0. Som maske gav den
+                // folderne en matematisk perfekt cirkel som kant, og en
+                // perfekt cirkel med tekstur indeni og sort udenfor er
+                // ikke en kegle — det er et koøje. Kanten kom fra en if,
+                // ikke fra fysikken.
+                //
+                // coneS er den samme kegle som et kontinuert tal:
+                // 1 på kegleaksen, 0 præcis på randen, negativ udenfor.
+                // To ting bruger den.
+                //
+                //   coneEdge — randen fjedret over ±0.12. Det er 4-6
+                //     grader; nok til at kanten ikke kan aflæses, lidt
+                //     nok til at folderne bliver hvor de hører hjemme.
+                //
+                //   coneCore — tætheden INDE i keglen. Uden den var der
+                //     stadig et spring: fuld tekstur helt ud til fjeren
+                //     og ingenting bagefter. Med den tynder folderne ud
+                //     hele vejen mod randen, og der er ingen kant tilbage.
+                float coneEdge = smoothstep(-0.12, 0.12, coneS);
+                float coneCore = pow(clamp(coneS, 0.0, 1.0), 0.6);
+
+                // ── Den sorte ring, og hvorfor den var der ──────────
+                // Keglens tætheds-taper (coneCore) og skyggen udenfor var
+                // to SEPARATE led der stødte op mod hinanden i stedet for
+                // at overlappe: killMask indeholdt !noSource, så skyggen
+                // kunne per konstruktion aldrig nå ind i keglen, mens
+                // coneCore gik mod nul netop dér. Resultatet var et bælte
+                // langs keglens rand hvor ingen af dem var store — sort,
+                // med lyse folder på begge sider. Det er ringen.
+                //
+                // To ting retter det. notSky er nu KUN "strålen så ikke
+                // himlen", altså sand også inde i keglen. Og taperen
+                // forsvinder i takt med at skyggen tænder: når hele den
+                // ikke-himmel-agtige himmel alligevel er dækket, er der
+                // ingen cirkel at skjule, og så skal der ikke tones ned
+                // mod noget som helst.
+                float shadow = notSky * smoothstep(0.20, 0.65, depth);
+                float coneW  = coneEdge * mix(coneCore, 1.0, shadow);
+                float mask   = max(coneEdge, shadow) * dark;
+                float foldW  = max(coneW,    shadow) * dark;
 
                 // ── Foldet rumtid ──
-                vec3 ax = normalize(cross(outDir, vec3(0.0, 0.0, 1.0)) + vec3(1e-3));
-                vec3 ay = normalize(cross(outDir, ax));
-                vec2  pl  = vec2(dot(dir, ax), dot(dir, ay));
-                float rad = acos(clamp(mu, -1.0, 1.0));
+                // Aksen er keglens egen, altså -outDir. Universet ligger
+                // om outDir; det vi ikke kan se ligger modsat.
+                vec3  axis = -outDir;
+                float mu   = dot(dir, axis);          // 1 i keglens midte
+                vec3 ax = normalize(cross(axis, vec3(0.0, 0.0, 1.0)) + vec3(1e-3));
+                vec3 ay = normalize(cross(axis, ax));
 
-                // Roter selve planet med tiden i stedet for at skubbe til en
-                // vinkel-skalar — det giver "strømningen" uden at genindføre
-                // en wrap-diskontinuitet.
-                float sp = uTime * (0.6 + 1.8 * depth);
-                float cs = cos(sp), sn = sin(sp);
-                vec2  pr = vec2(pl.x * cs - pl.y * sn, pl.x * sn + pl.y * cs);
+                // Den gamle vec2(dot(dir,ax), dot(dir,ay)) er en flad
+                // projektion: dens længde er sin(vinkel), så den mætter
+                // ved 90° og FOLDER tilbage bagefter — to forskellige
+                // retninger fik samme koordinat. Oveni lå acos(mu) som et
+                // rent radialt offset i støjen, og et radialt offset er
+                // per konstruktion koncentriske ringe. De to sammen ER
+                // linsen man kan se i billedet.
+                //
+                // Stereografisk fra modpolen i stedet: konform, monoton,
+                // |st| = tan(vinkel/2), og ingen radial koordinat nogen
+                // steder. Ved keglens rand på 58° er |st| kun 0.55, så
+                // frekvensen i vinkel holder sig i ro hele vejen ud.
+                // Faktoren 9 er ikke pynt. |st| topper på tan(58°/2) =
+                // 0.55 ved den dybeste kegle, så uden den ser fbm under
+                // halvanden celle hen over HELE synsfeltet, og folderne
+                // bliver til én stor klat. Med 9 er der 6-8 celler, og det
+                // er dét der giver struktur uden at aliasere.
+                vec2 st = vec2(dot(dir, ax), dot(dir, ay)) * (9.0 / max(1.0 + mu, 0.35));
 
-                float flow = fbm(pr * 2.6 + vec2(0.0, rad * 3.4))
-                           * fbm(pr * 5.3 + vec2(9.0, rad * 7.0) - uTime * 0.4);
-                float streak = pow(clamp(flow, 0.0, 1.0), 1.6) * (0.25 + 1.3 * depth);
+                // Drift i stedet for rotation. En rotation om kegleaksen
+                // er også en cirkelbevægelse, og øjet læser den som en
+                // iris der drejer. En skæv translation gør samme arbejde
+                // uden at udpege et centrum.
+                vec2 drift = vec2(0.13, -0.08) * uTime * (0.35 + 0.9 * depth);
+
+                // Domain warp: en lav frekvens forskyder opslaget i en høj.
+                // Det er dét der gør skyer til FOLDER — uden den er det
+                // klatter, med den følger strukturen sine egne kanter.
+                // Det er også erstatningen for den radiale koordinat: den
+                // gamle detalje kom næsten udelukkende fra acos(mu), altså
+                // fra ringene. Fjerner man dem uden at give noget igen,
+                // bliver interiøret til grød.
+                vec2 warp = vec2(fbm(st * 0.55 + drift),
+                                 fbm(st * 0.55 + 31.7 - drift)) - 0.5;
+
+                // Skæv skala på de to akser: flader og folder, ikke pletter.
+                float flow = fbm(vec2(st.x * 0.70, st.y * 3.20) + warp * 3.0 + drift)
+                           * fbm(vec2(st.x * 1.61, st.y * 2.40) - warp * 2.1 + 11.0 - drift * 1.4);
+                float streak = pow(clamp(flow, 0.0, 1.0), 1.5) * (0.30 + 1.4 * depth);
 
                 vec3 foldA = vec3(0.28, 0.14, 0.55);   // violet, højt oppe
                 vec3 foldB = vec3(0.20, 0.75, 1.00);   // cyan, dybt nede
@@ -381,7 +475,7 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 // sidste man ser, og det er præcis den forkerte pointe.
                 vec3 foldCol = mix(mix(foldA, foldB, depth),
                                    vec3(0.72, 0.86, 1.00), clamp(uBlue, 0.0, 1.0));
-                col += foldCol * streak * w * mask * (1.0 + 2.2 * uBlue);
+                col += foldCol * streak * w * foldW * (1.0 + 2.2 * uBlue);
 
                 // ── Ringen ──
                 // To spærrer, og de er der begge af en grund.
@@ -481,6 +575,24 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                 // så loftet koster ikke noget andre steder.
                 float gShift = clamp(sc / max(abs(pt), 1e-6), 0.10, 15.0);
 
+                // ── Keglen som et kontinuert tal ──────────────────────
+                // Den underliggende størrelse er glat overalt:
+                //     E_∞(n) = A + n·B,   |B|² = A² − 1 + f
+                // E_∞ løber fra A−|B| på kegleaksen, gennem NUL præcis på
+                // randen, op til A+|B| midt i vinduet ud. Normeret med
+                // (|B|−A) bliver det en koordinat der er 1 i keglens midte
+                // og 0 på randen — uanset hvor dybt vi er. Målt langs
+                // netop denne bane:
+                //     r/Rs 0.900 → kegle 19.3°, |B|−A = 0.057
+                //     r/Rs 0.763 → kegle 30.3°, |B|−A = 0.151
+                //     r/Rs 0.590 → kegle 41.2°, |B|−A = 0.314
+                //     r/Rs 0.300 → kegle 57.9°, |B|−A = 0.841
+                // Normeringen er dét der gør konstanterne i interiorFX
+                // gyldige hele vejen ned i stedet for kun ét sted.
+                float Einf  = pt / max(sc, 1e-12);
+                float Bmag  = sqrt(max(uAobs * uAobs - 1.0 + metricAt(uCamPos).f, 0.0));
+                float coneS = -Einf / max(Bmag - uAobs, 1e-4);
+
                 bool escaped = false, dead = noSource;
                 int steps = 0;
 
@@ -499,7 +611,14 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                     // |p| til at eksplodere. De kom fra det uendeligt
                     // fjerne fortid og er uendeligt rødforskudte, altså
                     // sorte. Uden det her driver H til 1e57 og man får NaN.
-                    if (dot(p, p) > mix(1.0e4, 2.0e3, clamp(uInside, 0.0, 1.0))) { dead = true; break; }
+                    // Grænsen hang på uInside og faldt derfor 1e4 → 2e3
+                    // henover selve horisontkrydset. Den afgør hvilke
+                    // stråler der erklæres døde, altså skyggens kant — og
+                    // det er en ændring i BILLEDET, lige dér hvor der ikke
+                    // må ske noget. Nu hænger den på uDepth og rykker sig
+                    // først et godt stykke inde, hvor strålerne faktisk
+                    // begynder at eksplodere.
+                    if (dot(p, p) > mix(1.0e4, 4.0e3, smoothstep(0.20, 0.80, clamp(uDepth, 0.0, 1.0)))) { dead = true; break; }
 
                     Deriv k1 = deriv(x, p, pt);
 
@@ -559,7 +678,10 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
                     }
                 }
 
-                emission *= mix(1.0, 0.30, clamp(uInside, 0.0, 1.0) * clamp(uDepth, 0.0, 1.0));
+                // Skivens nedtoning hang også på uInside · uDepth, altså
+                // med et produkt der forlod nul præcis ved krydset. uDepth
+                // alene, forsinket, gør det samme uden at markere noget.
+                emission *= mix(1.0, 0.30, smoothstep(0.10, 0.85, clamp(uDepth, 0.0, 1.0)));
 
                 vec3 bg = vec3(0.0);
                 bool sawSky = false;
@@ -612,10 +734,13 @@ export function createDiveMaterial({ starfield, rs, spin, width, height, coldnes
 
                 vec3 col = emission + trans * bg;
 
-                if (uInside > 0.002) {
-                    // "Der kom ingen himmel den vej" — den eneste maske
-                    // der ved hvad der rent faktisk ligger bag pixlen.
-                    col = interiorFX(uCamPos, dirLocal, col, sawSky ? 0.0 : 1.0);
+                if (uDraw > 0.002) {
+                    // De to slags mørke, holdt adskilt. noSource er den
+                    // fysiske kegle; killMask er alt andet der endte sort.
+                    // notSky, ikke killMask: keglen er også "ikke himmel",
+                    // og det er dét der lukker hullet ved dens rand.
+                    col = interiorFX(uCamPos, dirLocal, col, coneS,
+                                     sawSky ? 0.0 : 1.0);
                 }
 
                 if (uDebug > 0.5) {

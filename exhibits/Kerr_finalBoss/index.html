@@ -61,7 +61,8 @@
                 <span class="math-live" id="horizonReadout">—</span>
                 <span class="math-unit">toy-units · <span id="horizonRsReadout">—</span></span>
             </div>
-            <div class="math-note">Spin shrinks the horizon. At a = 0 this is just Schwarzschild (r₊ = Rs). At a = 1 — the theoretical max — it's shrunk to half that, r₊ = M. Try the slider and watch this number drop.</div>
+            <div class="math-note">Spin shrinks the horizon. At a = 0 this is just Schwarzschild (r₊ = Rs). At a = 1 — the theoretical max — 
+                it's shrunk to half that, r₊ = M. Try the slider and watch this number drop.</div>
         </div>
 
         <hr class="math-divider">
@@ -69,7 +70,8 @@
         <div class="math-block">
             <div class="math-label">Disk inner edge — ISCO</div>
             <div class="math-formula">r_isco: 6M (a=0) → M (a=1)</div>
-            <div class="math-note">Below this radius, gas can't hold a stable orbit — it just falls in. So the disk's inner edge tracks the ISCO, and the ISCO shrinks hard with spin. This is how astronomers measure spin on real black holes: they watch where the disk's inner edge sits.</div>
+            <div class="math-note">Below this radius, gas can't hold a stable orbit — it just falls in. So the disk's inner edge tracks the ISCO, 
+                and the ISCO shrinks hard with spin. This is how astronomers measure spin on real black holes: they watch where the disk's inner edge sits.</div>
         </div>
 
         <hr class="math-divider">
@@ -77,7 +79,9 @@
         <div class="math-block">
             <div class="math-label">Relativistic beaming</div>
             <div class="math-formula">g = E / [uᵗ(E − Ω·L_z)]</div>
-            <div class="math-note">One side of the disk is flying toward you at a big fraction of light speed, the other's flying away. g bundles Doppler shift and gravitational redshift into one number, computed from the photon's conserved energy and angular momentum. Brightness scales as g³ — that's why one side is blazing and the other's barely glowing. (Interstellar turned this off for looks. This one leaves it on.)</div>
+            <div class="math-note">One side of the disk is flying toward you at a big fraction of light speed, the other's flying away. g bundles 
+                Doppler shift and gravitational redshift into one number, computed from the photon's conserved energy and angular momentum. Brightness 
+                scales as g³ — that's why one side is blazing and the other's barely glowing. (Interstellar turned this off for looks. This one leaves it on.)</div>
         </div>
 
         <hr class="math-divider">
@@ -89,7 +93,8 @@
                 <span class="math-live">10.0</span>
                 <span class="math-unit">toy-units — constant, regardless of spin</span>
             </div>
-            <div class="math-note">Between the horizon and here, spacetime itself is spinning faster than light - everything has to move, because space is moving. Light can still escape, but only by going with the rotation, not against it.</div>
+            <div class="math-note">Between the horizon and here, spacetime itself is spinning faster than light - everything has to move, because space is moving. 
+                Light can still escape, but only by going with the rotation, not against it.</div>
         </div>
 
         <hr class="math-divider">
@@ -122,7 +127,8 @@
 
         <div class="math-block">
             <div class="math-label">No approximations</div>
-            <div class="math-note">Earlier versions of this used an approximation that only holds far from the black hole. This one doesn't. Every pixel solves the full Kerr metric with Hamilton's equations and RK4. What's left is just numerical noise near a chaotic boundary, not physics being faked.</div>
+            <div class="math-note">Earlier versions of this used an approximation that only holds far from the black hole. This one doesn't. 
+                Every pixel solves the full Kerr metric with Hamilton's equations and RK4. What's left is just numerical noise near a chaotic boundary, not physics being faked.</div>
         </div>
 
         <a href="what.html" style="text-decoration:none; margin-top: 4px;">
@@ -203,26 +209,37 @@
         <div class="context-body">
             <div class="fact-block">
                 <span class="fact-number">a / M</span>
-                <p class="fact-desc">Real black holes spin. When a star collapses, its angular momentum doesn't go anywhere — it just gets crammed into something a few kilometers across, and the spin goes extreme. The parameter a/M runs from 0 (no spin, Schwarzschild) to 1 (the theoretical max). Real ones lean fast: the black hole at the center of M87 is estimated above 0.9. Drag the slider to cover that whole range yourself.</p>
+                <p class="fact-desc">Real black holes spin. When a star collapses, its angular momentum doesn't go anywhere — 
+                    it just gets crammed into something a few kilometers across, and the spin goes extreme. The parameter a/M runs from 0 (no spin, Schwarzschild) 
+                    to 1 (the theoretical max). Real ones lean fast: the black hole at the center of M87 is estimated above 0.9. Drag the slider to cover that whole range yourself.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">ω = 2J/r³</span>
-                <p class="fact-desc">Kerr's 1963 solution showed that a spinning mass drags spacetime around with it, like a whirlpool. This isn't hypothetical — NASA's Gravity Probe B measured Earth's own tiny version of the effect in orbit. Around a black hole, the drag gets violent. In this sim, every photon gets swept sideways by that flow, which is exactly what smears the starlight into a swirl near the shadow.</p>
+                <p class="fact-desc">Kerr's 1963 solution showed that a spinning mass drags spacetime around with it, like a whirlpool. 
+                    This isn't hypothetical — NASA's Gravity Probe B measured Earth's own tiny version of the effect in orbit. Around a black hole, 
+                    the drag gets violent. In this sim, every photon gets swept sideways by that flow, which is exactly what smears the starlight into a swirl near the shadow.</p>
             </div>
             <div class="fact-block">
                 <span class="fact-number">ISCO</span>
-                <p class="fact-desc">The disk's inner edge sits right at the ISCO — anything orbiting closer can't hold a stable orbit and just plunges in. One side is racing toward you near light speed and glows blue-white; the other's retreating and dims toward red. The arc floating above the shadow is the far side of the disk, its light bent clean over the top of the black hole to reach your eye.</p>
+                <p class="fact-desc">The disk's inner edge sits right at the ISCO — anything orbiting closer can't hold a stable orbit and just plunges in. 
+                    One side is racing toward you near light speed and glows blue-white; the other's retreating and dims toward red. The arc floating above the shadow 
+                    is the far side of the disk, its light bent clean over the top of the black hole to reach your eye.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">r₊ shrinks</span>
-                <p class="fact-desc">Spin shrinks the horizon: r₊ = M(1 + √(1 − a²)). At max spin it's half the size of a non-spinning black hole with the same mass. A second boundary shows up outside it called the ergosphere, where nothing can sit still — space itself is moving faster than light in there. Penrose showed in 1969 you can steal energy from this region: throw something in, and it can come back out carrying rotational energy with it.</p>
+                <p class="fact-desc">Spin shrinks the horizon: r₊ = M(1 + √(1 − a²)). At max spin it's half the size of a non-spinning black hole with the same mass. 
+                    A second boundary shows up outside it called the ergosphere, where nothing can sit still — space itself is moving faster than light in there. 
+                    Penrose showed in 1969 you can steal energy from this region: throw something in, and it can come back out carrying rotational energy with it.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">H = 0</span>
-                <p class="fact-desc">This exhibit integrates the real Kerr metric, no shortcuts. Every photon carries a conserved energy and angular momentum, and its path follows Hamilton's equations in Kerr-Schild coordinates — the same setup used by research-grade renderers, and the one built for Interstellar. Nothing here is painted on. The shadow, the swirl, the disk arcs, the brightness asymmetry — all of it falls out of one Hamiltonian, evaluated hundreds of times per pixel, every frame.</p>
+                <p class="fact-desc">This exhibit integrates the real Kerr metric, no shortcuts. Every photon carries a conserved energy and angular momentum, 
+                    and its path follows Hamilton's equations in Kerr-Schild coordinates — the same setup used by research-grade renderers, and the one built for Interstellar. 
+                    Nothing here is painted on. The shadow, the swirl, the disk arcs, the brightness asymmetry — all of it falls out of one Hamiltonian, evaluated hundreds 
+                    of times per pixel, every frame.</p>
             </div>
         </div>
 

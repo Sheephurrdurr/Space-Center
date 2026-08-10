@@ -162,10 +162,33 @@ function buildTrajectory() {
             x: g.pos.x, y: g.pos.y, z: g.pos.z,
             px: g.mom.x, py: g.mom.y, pz: g.mom.z,
             vx: v.x, vy: v.y, vz: v.z,
-            r: g.r, tau: g.tau, t: g.coordTime,
+            r: g.r, tau: g.tau, t: g.coordTime, tBL,
             H: g.hamiltonianCheck(),
         });
     };
+
+    // ── Den fjerne observatørs ur ──
+    // g.coordTime er KERR-SCHILD-tid, og den er horizon-penetrating:
+    // målt går den 546.8 lige før krydset og 616 ved integrationens
+    // ophør. Fuldstændig glat. Den DIVERGERER IKKE, og panelet plejede
+    // at påstå at den gjorde ved at skrive '→ ∞' som en tekststreng.
+    //
+    // Uret der faktisk divergerer er Boyer-Lindquist-tid, altså den
+    // koordinat en observatør uendeligt langt væk selv ville bruge.
+    // De to hænger sammen med én transformation:
+    //
+    //     dt_BL = dt_KS − (2Mr / Δ) dr,      Δ = r² − 2Mr + a²
+    //
+    // Δ har en rod præcis ved r₊, så integralet går logaritmisk mod
+    // uendelig på vej ind. Målt: 354 ved 1.05 Rs, 601 ved 0.80 Rs,
+    // 678 ved 0.7640 Rs og stadig stigende. Det er dét tal panelet
+    // viser nu, og det løber selv løbsk uden at nogen skriver det.
+    //
+    // Indenfor findes Boyer-Lindquist slet ikke — Δ skifter fortegn.
+    // Så vi holder op med at akkumulere dér, og panelet siger hvorfor.
+    let tBL = 0;
+    let rPrev = g.r, tKSPrev = g.coordTime;
+    const AA = SPIN * BH_MASS;
 
     push();                                   // startpunktet
     let last = samples[0];
@@ -175,6 +198,15 @@ function buildTrajectory() {
         // selv ville tage. Ellers gemmer vi ét snapshot af noget der
         // indeholdt hundredvis af substeps.
         g.advance(Math.min(Math.max(1e-5, 0.01 * g.r), 0.75 * g.suggestedStep()));
+
+        // Trapez på (2Mr/Δ)dr, kun så længe begge endepunkter er udenfor.
+        const rNow = g.r;
+        if (rNow > rH * 1.000001 && rPrev > rH * 1.000001) {
+            const rm = 0.5 * (rNow + rPrev);
+            const Delta = rm * rm - 2 * BH_MASS * rm + AA * AA;
+            tBL += (g.coordTime - tKSPrev) - (2 * BH_MASS * rm / Delta) * (rNow - rPrev);
+        }
+        rPrev = rNow; tKSPrev = g.coordTime;
 
         const dx = g.pos.x - last.x, dy = g.pos.y - last.y, dz = g.pos.z - last.z;
         const dp = Math.hypot(g.mom.x - last.px, g.mom.y - last.py, g.mom.z - last.pz);
@@ -228,6 +260,11 @@ material.uniforms.uRayStop.value = traj.rH * 1.005;
 // altså inde i ergosfæren.
 const A_OBS = -traj.pt;   // observatørens bevarede energi, −u_t
 
+// Shaderen skal bruge den samme A til at gøre den mørke kegle til et
+// KONTINUERT tal i stedet for et ja/nej. Den er bevaret langs banen, så
+// den sættes én gang. Se noten ved coneS i DiveShader.
+material.uniforms.uAobs.value = A_OBS;
+
 function darkConeDeg(pos) {
     const a  = SPIN * BH_MASS;
     const r  = ksR(pos.x, pos.y, pos.z, a);
@@ -278,6 +315,9 @@ function sampleAt(v) {
         pos,
         vel: new THREE.Vector3(L('vx'), L('vy'), L('vz')),
         r: L('r'), tau: L('tau'), t: L('t'), H: L('H'),
+        // tBL vokser logaritmisk mod uendelig. Hermite kan overskyde på
+        // så stejl en kurve, så vi klemmer den ind mellem sine to naboer.
+        tBL: Math.max(a.tBL, Math.min(b.tBL, L('tBL'))),
         // Interpoleret par + lokalt løst pt = glat OG gyldigt.
         frame: { pos: { x: pos.x, y: pos.y, z: pos.z }, mom,
                  pt: solvePtAt({ x: pos.x, y: pos.y, z: pos.z }, mom, BH_MASS, SPIN * BH_MASS) },
@@ -310,7 +350,7 @@ function smoothstep(e0, e1, x) {
  */
 function timeline(t) {
     const vH = traj.vHorizon;
-    let v, phase = 'approach', look = 0, blue = 0, white = 0, dim = 1, plate = 0;
+    let v, phase = 'approach', blue = 0, white = 0, dim = 1, plate = 0;
 
     const tI = T_APPROACH + T_CROSS;
     const tW = tI + T_INTERIOR;
@@ -324,13 +364,11 @@ function timeline(t) {
         const u = (t - T_APPROACH) / T_CROSS;
         phase = 'crossing';
         v = vH + u * (1 - vH) * 0.10;
-        look = easeInOut(u);
 
     } else if (t < tW) {
         const u = (t - tI) / T_INTERIOR;
         phase = 'interior';
         v = vH + (0.10 + 0.90 * easeInOut(u)) * (1 - vH);
-        look = 1;
         // Effekten begynder MENS der stadig er bevægelse. Ellers står
         // kameraet stille i otte sekunder mens kun lysstyrken ændrer sig,
         // og så føles det som en fade i stedet for som en begivenhed.
@@ -339,7 +377,7 @@ function timeline(t) {
     } else if (t < tP) {
         const u = (t - tW) / T_WHITE;
         phase = 'cauchy';
-        v = 1; look = 1;
+        v = 1;
         // Eksponent > 1: langsomt i starten, så løber det fra én. Det er
         // formen på mass inflation, ikke en lineær optoning.
         blue  = 0.30 + 0.70 * Math.pow(u, 1.8);
@@ -348,40 +386,65 @@ function timeline(t) {
     } else {
         const u = clamp01((t - tP) / T_PLATE);
         phase = 'end';
-        v = 1; look = 1; blue = 1; white = 1;
+        v = 1; blue = 1; white = 1;
         // Hvid → sort over godt to sekunder. Teksten kommer bagefter,
         // på sort, så den ikke skal kæmpe med udbrændingen.
         dim   = 1 - smoothstep(0.03, 0.30, u);
         plate = smoothstep(0.34, 0.52, u);
     }
 
-    // ── Hvornår må tegningen komme på? ──
-    // Fadet hænger på POSITION, ikke på fasen, så det følger geometrien
-    // og ikke stopuret.
-    //
-    // Det STARTEDE tidligere et halvt bånd FØR horisonten, tilbage da
-    // raymarchen droppede alt inden for rH·1.005 og krydset derfor ville
-    // have faded fra ren sort. Den grund findes ikke længere: strålerne
-    // integreres nu glat hele vejen igennem. Til gengæld gav den tidlige
-    // start en synlig fejl — ved r = 0.765 Rs, altså stadig UDENFOR
-    // horisonten, stod uInside allerede på 0.48, og så tegnede
-    // interiørets folder en streg tværs hen over stjernehimlen.
-    //
-    // Nu begynder fadet præcis ved krydset og er færdigt inden
-    // crossing-fasen slutter.
-    const BAND = 0.03;
-    const inside = smoothstep(vH, vH + BAND, v);
-
-    return { v, inside, blue, white, dim, plate, phase, look };
+    return { v, blue, white, dim, plate, phase };
 }
 
-const PHASE_LABEL = {
-    approach: 'Falling',
-    crossing: 'Crossing the horizon',
-    interior: 'Inside',
-    cauchy:   'Blueshift — integration halted',
-    end:      '',
-};
+// =====================================================================
+//  Det der plejede at ske ved horisonten
+// =====================================================================
+//
+// Hele exhibittets påstand er at der IKKE sker noget ved horisonten.
+// Og alligevel var krydset det mest begivenhedsrige klip i hele
+// animationen. Ikke fordi fysikken skiftede — raymarchen laver præcis
+// det samme på begge sider, der er ingen special-casing nogen steder —
+// men fordi fire FORFATTEDE ting alle sammen hang på vH:
+//
+//     1. 180°-svinget, over 3.5 sekunder, keyet direkte til krydset
+//     2. uInside, der tændte al tegningen
+//     3. mode-label, der annoncerede "Crossing the horizon"
+//     4. |p|²-dødsgrænsen i shaderen, 1e4 → 2e3
+//
+// Løsningen er ikke at fjerne signalet — så ved publikum ikke hvornår
+// de krydsede, og pointen forsvinder. Løsningen er at flytte det fra
+// BILLEDET til INSTRUMENTERNE. Tallene må gerne skrige. Billedet må
+// ikke blinke.
+//
+// Så alt visuelt hænger nu på den mørke kegle i stedet, og keglen er
+// et ægte fysisk tal der ikke ved noget om horisonten. Den findes først
+// når f > 1, altså ved ERGOSFÆREN, som ligger 31% udenfor. Målt langs
+// præcis denne bane:
+//
+//     r/Rs = 1.000  (ergosfære)    kegle =  0.4°
+//     r/Rs = 0.900                 kegle = 19.3°
+//     r/Rs = 0.763  (HORISONT)     kegle = 30.3°   ← intet særligt
+//     r/Rs = 0.600                 kegle = 40.6°
+//     r/Rs = 0.275  (stop)         kegle = 59.4°
+//
+// Glat hele vejen igennem. Der er ingen knæk ved 30.3°, og det er
+// netop pointen: overgangen strækker sig nu over ~14 sekunder og
+// krydset ligger midt i den, hvor ingen lægger mærke til det.
+const CONE_DRAW_LO =  5.0;   // tegningen begynder at tone ind (r ≈ 0.993 Rs)
+const CONE_DRAW_HI = 35.0;   // fuldt tændt (r ≈ 0.70 Rs)
+const CONE_LOOK_LO =  8.0;   // svinget begynder (r ≈ 0.985 Rs, t ≈ 16 s)
+const CONE_LOOK_HI = 45.0;   // svinget færdigt (r ≈ 0.52 Rs, t ≈ 31 s)
+
+/**
+ * Mode-label, uden nogen "du krydsede nu"-annoncering.
+ * "Falling" holder hele vejen gennem horisonten og skifter først når
+ * keglen er godt åben — altså længe efter, og af en anden grund.
+ */
+function phaseLabel(phase, coneDeg) {
+    if (phase === 'cauchy') return 'Blueshift — integration halted';
+    if (phase === 'end')    return '';
+    return coneDeg > 42 ? 'Inside' : 'Falling';
+}
 
 // =====================================================================
 //  Kamera-orientering
@@ -706,11 +769,17 @@ dom.turn.addEventListener('click', turn180);
  * Derfor står det på skærmen. Publikum skal se de sidste cifre gå i
  * gang, lige inden skærmen bliver hvid.
  */
-function updateReadouts(s, phase, speedFrac) {
+function updateReadouts(s, phase, coneDeg, speedFrac) {
     dom.dist.textContent   = (s.r / RS).toFixed(3) + '× Rs';
     dom.proper.textContent = fmtDuration(s.tau * TOY_SECONDS);
     dom.speed.textContent  = (speedFrac * 100).toFixed(1) + '% c';
-    dom.mode.textContent   = PHASE_LABEL[phase];
+    dom.mode.textContent   = phaseLabel(phase, coneDeg);
+
+    // ── Her, og kun her, står der at horisonten blev krydset ──
+    // Radius-aflæsningen skifter farve når den passerer 1.000× Rs.
+    // Det er alt. Ingen tekst, ingen overgang i billedet, ingen
+    // kamerabevægelse. Instrumentet ved det; udsigten gør ikke.
+    dom.dist.classList.toggle('crossed', s.r < traj.rH);
     dom.mode.style.opacity = phase === 'end' ? '0' : '1';
 
     const drift = Math.abs(s.H + 0.5);
@@ -722,9 +791,13 @@ function updateReadouts(s, phase, speedFrac) {
 
     dom.r.textContent     = s.r.toFixed(3);
     dom.alt.textContent   = fmtLength(s.r * TOY_METERS);
-    dom.coord.textContent = phase === 'approach'
-        ? fmtDuration(s.t * TOY_SECONDS)
-        : '→ ∞';
+    // Boyer-Lindquist, ikke Kerr-Schild. Se noten i buildTrajectory().
+    // Den vokser af sig selv mod uendelig på vej ind, og ophører med at
+    // eksistere indenfor — der er ingen fjern observatør tilbage at
+    // referere til.
+    dom.coord.textContent = s.r > traj.rH
+        ? fmtDuration(s.tBL * TOY_SECONDS)
+        : 'diverged';
 
     const tg = tidalG(Math.max(s.r, 0.4));
     dom.tidal.textContent = tg < 0.01 ? tg.toExponential(1) : tg.toFixed(2);
@@ -781,6 +854,8 @@ function applyQuality() {
     dom.eco.innerHTML = `<span>${q.label.charAt(0)}</span> ${q.label.slice(2)}`;
     dom.eco.classList.toggle('active', qIndex > 0);
 }
+
+window.diveMat = material;   // så konsollen kan nå uniformene
 
 dom.eco.addEventListener('click', () => {
     qIndex = (qIndex + 1) % QUALITY.length;   // % gør at den ruller rundt
@@ -849,7 +924,13 @@ function animate() {
     const tl = timeline(looped);
     const s  = sampleAt(tl.v);
 
-    orientCamera(s.pos, s.vel, elapsed, tl.look);
+    // Én måling, tre brugere. Keglen er den eneste ting der bestemmer
+    // hvornår kameraet vender sig og hvornår tegningen kommer på.
+    const coneNow = darkConeDeg(s.pos);
+    const lookBack = smoothstep(CONE_LOOK_LO, CONE_LOOK_HI, coneNow);
+    const draw     = smoothstep(CONE_DRAW_LO, CONE_DRAW_HI, coneNow);
+
+    orientCamera(s.pos, s.vel, elapsed, lookBack);
 
     const u = material.uniforms;
 
@@ -886,7 +967,7 @@ function animate() {
     u.uCamUp.value.copy(_up);
     u.uOutDir.value.copy(_outAxis);
     u.uTime.value   = elapsed;
-    u.uInside.value = tl.inside;
+    u.uDraw.value   = draw;
     u.uBlue.value   = tl.blue;
     u.uWhite.value  = tl.white;
     u.uDim.value    = tl.dim;
@@ -902,16 +983,20 @@ function animate() {
     // døde på skridt nul. Det gav et helt sort billede i det smalle
     // bånd r ∈ (0.7634, 0.7672)·Rs, præcis dér hvor lyset forsvandt
     // og kom igen et øjeblik senere.
+    // Båndet lå før på [1.00, 1.10]·rH, altså færdigt PRÆCIS ved
+    // horisonten. Nu ligger det på [0.55, 1.45]·rH, symmetrisk omkring
+    // den, så skiftet er godt i gang før krydset og først færdigt et
+    // stykke inde. Samme endepunkter, ingen begivenhed i midten.
     const stopHi = traj.rH * 1.005;
     const stopLo = 0.5 * BH_MASS;
-    const wStop  = clamp01((traj.rH * 1.10 - s.r) / (traj.rH * 0.10));
+    const wStop  = clamp01((traj.rH * 1.45 - s.r) / (traj.rH * 0.90));
     u.uRayStop.value = stopHi + (stopLo - stopHi) * (wStop * wStop * (3 - 2 * wStop));
 
     // Dybde: 0 ved horisonten, 1 dér hvor integrationen holder op.
     u.uDepth.value = clamp01((traj.vHorizon === 1) ? 0
         : (tl.v - traj.vHorizon) / (1 - traj.vHorizon));
 
-    updateReadouts(s, tl.phase, Math.min(s.vel.length(), 0.999));
+    updateReadouts(s, tl.phase, coneNow, Math.min(s.vel.length(), 0.999));
 
     // Tekstpladen. Klassetoggle i stedet for inline opacity, så CSS
     // ejer transitionen og prefers-reduced-motion kan slå den fra.

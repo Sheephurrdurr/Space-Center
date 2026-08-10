@@ -55,7 +55,9 @@
         <div class="math-block">
             <div class="math-label">Mass-shell condition</div>
             <div class="math-formula">H = ½ g^μν p_μ p_ν = −½</div>
-            <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces and the observer tracing them. The live value is in the bottom bar, and it is worth watching near the end.</div>
+            <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. 
+                Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces 
+                and the observer tracing them. The live value is in the bottom bar, and it is worth watching near the end.</div>
         </div>
 
         <hr class="math-divider">
@@ -67,7 +69,8 @@
                 <span class="math-live" id="rReadout">—</span>
                 <span class="math-unit">toy-units</span>
             </div>
-            <div class="math-note">Surfaces of constant r are flattened ellipsoids, not spheres. These coordinates stay finite across the horizon, which is why the fall can be integrated straight through it instead of stopping there.</div>
+            <div class="math-note">Surfaces of constant r are flattened ellipsoids, not spheres. 
+                These coordinates stay finite across the horizon, which is why the fall can be integrated straight through it instead of stopping there.</div>
         </div>
 
         <div class="math-block">
@@ -86,7 +89,9 @@
                 <span class="math-live" id="innerReadout">—</span>
                 <span class="math-unit">× r₋</span>
             </div>
-            <div class="math-note">The second horizon, hidden inside the first. Kerr's solution continues through it and out to the ring, but the interior of a hole formed by collapse is thought to be unstable there: everything that ever falls in afterwards arrives on that surface at once, infinitely blueshifted. This number never reaches 1. The fall stops 16% short.</div>
+            <div class="math-note">The second horizon, hidden inside the first. 
+                Kerr's solution continues through it and out to the ring, but the interior of a hole formed by collapse is thought to be unstable there: 
+                everything that ever falls in afterwards arrives on that surface at once, infinitely blueshifted. This number never reaches 1. The fall stops 16% short.</div>
         </div>
 
         <hr class="math-divider">
@@ -96,7 +101,10 @@
             <div class="math-result">
                 <span class="math-live" id="coordReadout">—</span>
             </div>
-            <div class="math-note">Time as measured by someone watching from far away. It diverges at the horizon: from the outside, this fall never finishes. The proper time in the bottom bar is what the falling observer's own clock reads, and it passes perfectly normally.</div>
+            <div class="math-note">Time on the clock of someone watching from far away — Boyer-Lindquist time, reconstructed from the fall rather than asserted. 
+                It genuinely runs away as the horizon approaches: from the outside, this fall never finishes. Note that this is not the clock the integrator uses. 
+                That one is Kerr-Schild time, which stays perfectly finite across the boundary, which is the whole reason the camera can keep going. 
+                Two coordinate clocks, one regular and one divergent, describing the same fall.</div>
         </div>
 
         <hr class="math-divider">
@@ -108,7 +116,8 @@
                 <span class="math-live" id="tidalReadout">—</span>
                 <span class="math-unit">g</span>
             </div>
-            <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only climbs in the final moments.</div>
+            <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its 
+                horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only climbs in the final moments.</div>
         </div>
 
         <hr class="math-divider">
@@ -120,7 +129,9 @@
                 <span class="math-live" id="coneReadout">—</span>
                 <span class="math-unit">degrees</span>
             </div>
-            <div class="math-note">Light from the outside universe carries positive energy measured at infinity. Rays traced backward that come out negative never touched the exterior at all, and this is the cone where the sign flips. It opens from nothing at the ergosphere and never quite reaches 90°, which is why the sky outside it stays wider than the field of view all the way down.</div>
+            <div class="math-note">Light from the outside universe carries positive energy measured at infinity. 
+                Rays traced backward that come out negative never touched the exterior at all, and this is the cone where the sign flips. 
+                It opens from nothing at the ergosphere and never quite reaches 90°, which is why the sky outside it stays wider than the field of view all the way down.</div>
         </div>
 
         <a href="what.html" style="text-decoration:none; margin-top: 4px;">
@@ -145,7 +156,7 @@
     <div class="bottom-bar">
         <div class="readouts">
             <div class="readout">
-                <span class="readout-label">Radius</span>
+                <span class="readout-label">Radius — amber past r₊</span>
                 <span class="readout-value" id="distReadout">—</span>
             </div>
             <div class="readout">
@@ -193,32 +204,49 @@
 
             <div class="fact-block">
                 <span class="fact-number">H = −½</span>
-                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve horizon radii out, integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the light it sees is one number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
+                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve horizon radii out, 
+                    integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the l
+                    ight it sees is one number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">4.3 million M☉</span>
-                <p class="fact-desc">Sagittarius A*, the black hole at the centre of our own galaxy. Chosen because tidal force at the horizon falls off as 1/M², so a hole this big lets you cross the boundary without noticing — the stretch across a human body there is roughly a ten-thousandth of Earth gravity. A stellar-mass hole would have shredded the observer long before it arrived.</p>
+                <p class="fact-desc">Sagittarius A*, the black hole at the centre of our own galaxy. Chosen because tidal force at the horizon falls off as 1/M², 
+                    so a hole this big lets you cross the boundary without noticing — the stretch across a human body there is roughly a ten-thousandth of Earth gravity. 
+                    A stellar-mass hole would have shredded the observer long before it arrived.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">Aberration</span>
-                <p class="fact-desc">By the horizon the camera is moving at about 65% of light speed, and that changes what it sees more than the curvature does. Relativistic aberration sweeps the sky forward into a bunched, brightened cone, and the shadow gets <em>smaller</em> as you approach rather than swallowing the view. Falling in doesn't look like being engulfed. It looks like the universe closing behind you.</p>
+                <p class="fact-desc">By the horizon the camera is moving at about 65% of light speed, and that changes what it sees more than the curvature does. 
+                    Relativistic aberration sweeps the sky forward into a bunched, brightened cone, and the shadow gets <em>smaller</em> as you approach rather 
+                    than swallowing the view. Falling in doesn't look like being engulfed. It looks like the universe closing behind you.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">θ ≈ 54°</span>
-                <p class="fact-desc">The size of the dark cone at a third of a horizon radius, and the thing this exhibit had wrong for a long time. The outside universe does not shrink to a porthole and wink out. A photon's energy measured at infinity is conserved, light from outside always has it positive, and where that quantity changes sign is a cone opening in the direction of fall. It grows toward a hemisphere and stops there. Point the camera sideways this deep in and you are still looking at stars.</p>
+                <p class="fact-desc">The size of the dark cone at a third of a horizon radius, and the thing this exhibit had wrong for a long time. 
+                    The outside universe does not shrink to a porthole and wink out. A photon's energy measured at infinity is conserved, light from outside always has it 
+                    positive, and where that quantity changes sign is a cone opening in the direction of fall. It grows toward a hemisphere and stops there. 
+                    Point the camera sideways this deep in and you are still looking at stars. The cone is also the exhibit's clock now: it opens at the ergosphere, 
+                    reaches 30° at the horizon and 59° at the end, and every visual transition in the second half is keyed to it rather than to the crossing. 
+                    <em>Which is why the crossing itself looks like nothing at all.</em></p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">r₋ = 0.473 M</span>
-                <p class="fact-desc">The second horizon. Kerr's solution continues through it, past the ring, and into another universe — and for thirty years that was taken seriously enough to be worth checking. It didn't survive the check. Everything that falls in after you, and the entire future history of the outside universe, arrives on that surface compressed into one finite moment of your own time. The blueshift diverges, the curvature with it, and the doorway becomes a wall. <em>This exhibit ends before it gets there.</em></p>
+                <p class="fact-desc">The second horizon. Kerr's solution continues through it, past the ring, and into another universe — 
+                    and for thirty years that was taken seriously enough to be worth checking. It didn't survive the check. Everything that falls in after you, and 
+                    the entire future history of the outside universe, arrives on that surface compressed into one finite moment of your own time. The blueshift diverges, 
+                    the curvature with it, and the doorway becomes a wall. <em>This exhibit ends before it gets there.</em></p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">r = 0.55 M</span>
-                <p class="fact-desc">Where the integration stops, and not because of a bug — it's 16% outside the inner horizon, which is to say the code gives up almost exactly where the physics does. The conserved Hamiltonian, rock solid at −½ for the whole journey, starts to drift here. Halve the step size and the drift doesn't halve with it; it settles on a floor. Numerical error doesn't behave that way. The number in the bottom bar is that drift, live.</p>
+                <p class="fact-desc">Where the integration stops, and not because of a bug — it's 16% outside the inner horizon, 
+                    which is to say the code gives up almost exactly where the physics does. The conserved Hamiltonian, rock solid at −½ for the whole journey, 
+                    starts to drift here. Halve the step size and the drift doesn't halve with it; it settles on a floor. Numerical error doesn't behave that way. 
+                    The number in the bottom bar is that drift, live.</p>
             </div>
         </div>
 

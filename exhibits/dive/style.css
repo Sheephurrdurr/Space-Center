@@ -191,9 +191,20 @@ canvas:active { cursor:grabbing; }
     bottom: 0;
     left: 0;
     right: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    /* Tre spor: aflæsninger, knapper, tomrum.
+
+       Knapperne lå før som position:absolute + left:50%, altså UDEN FOR
+       flowet — og så ved aflæsningerne ikke at de er der. På 1900px lå
+       H-aflæsningen præcis bag "Math"-knappen, og H er den ENESTE
+       aflæsning på siden der viser en fejl. Den skal kunne læses.
+
+       Med grid ligger midtersporet stadig midt på skærmen, men det
+       optager plads, og de to andre viger. minmax(0,1fr) i stedet for
+       1fr: ellers vokser første spor forbi sin andel når indholdet er
+       bredt, og så er knapperne ikke centreret længere. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: end;
     padding: 20px 28px;
     background: linear-gradient(to top, rgba(6,8,15,0.9) 0%, transparent 100%);
     z-index: 10;
@@ -207,6 +218,9 @@ canvas:active { cursor:grabbing; }
     display: flex;
     gap: 32px;
     align-items: flex-end;
+    justify-self: start;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .readout {
@@ -240,12 +254,17 @@ canvas:active { cursor:grabbing; }
     color: var(--ring-amber);
 }
 
+/* Horisontkrydset står ÉT sted i hele exhibittet: her. Radius-tallet
+   skifter farve når det passerer 1.000× Rs, og det er alt der markerer
+   det. Ingen tekst, ingen kamerabevægelse, intet skift i billedet.
+   Instrumentet ved det. Udsigten gør ikke. */
+#distReadout.crossed {
+    color: var(--ring-amber);
+}
+
 /* ── Control buttons ── */
 .controls {
-    position: absolute;
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
+    justify-self: center;
     display: flex;
     gap: 8px;
     align-items: center;
@@ -529,6 +548,14 @@ canvas:active { cursor:grabbing; }
 .back-link:hover { color: var(--ns-cyan); }
 
 /* ── Responsive ── */
+/* Mellem 600 og 1100 px er der plads til tre aflæsninger, ikke fire.
+   Speed ryger før H: hastigheden kan gættes, H kan ikke, og det er H
+   publikum skal se løbe løbsk lige inden skærmen bliver hvid. */
+@media (max-width: 1100px) {
+    .readouts { gap: 22px; }
+    .readout:nth-child(3) { display: none; }
+}
+
 @media (max-width: 600px) {
     .byline { top: 16px; left: 16px; }
     .byline a { font-size: 11px; gap: 6px; }
