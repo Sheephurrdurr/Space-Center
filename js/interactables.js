@@ -304,7 +304,36 @@ export function buildMerger(withLensRing = false) {
     return g;
 }
 
-/** 005 — Coming soon exhibit:  */
+/** 005 — Kerr Dive. I reuseed the Kerr exhibit stand */ 
+export function buildDive() {
+    const g = pedestal();
+    const bh = blackSphere(0.75);
+    bh.position.y = 3.1;
+
+    const disk = new THREE.Group();
+    disk.position.y = 3.1;
+    disk.rotation.x = Math.PI / 2.15; // let tiltet, lidt mere dramatisk
+    disk.add(glowRing(1.15, 0.09, WARM, 1.6));
+    disk.add(glowRing(1.55, 0.05, new THREE.Color('#ff7a3c'), 1.1));
+
+    // Hot spot: en torus er rotationssymmetrisk, så uden et asymmetrisk
+    // punkt kan man ikke SE at disken roterer. Klassisk grafik-fælde.
+    const hotSpot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.13, 8, 6),
+        new THREE.MeshStandardMaterial({
+            color: '#fff3d6', emissive: '#ffe9b8', emissiveIntensity: 2.2,
+        }));
+    hotSpot.position.set(1.15, 0, 0);
+    disk.add(hotSpot);
+    g.add(bh, disk);
+
+    // Gem en reference så Interactable.animate kan spinne den
+    g.userData.spin = disk;
+    return g;
+}
+
+/*
+/** 005 — Coming soon exhibit:  
 export function buildComingSoon() {
     const g = pedestal();
     const ghost = new THREE.Mesh(
@@ -317,7 +346,7 @@ export function buildComingSoon() {
     g.userData.spin = ghost; // roterer langsomt, så den ikke virker helt død
     return g;
 }
-
+    */
 // ---------------------------------------------------------------------
 // Opsætning: registrér museets fire exhibits.
 // Kaldes fra main.js — composition root beslutter HVAD der findes,
@@ -356,10 +385,11 @@ export function registerExhibits(system) {
     }, () => buildMerger(true));
 
     const e5 = system.register(pathDirection(4 * step), {
-        number: '',
-        title: 'A Mysterious Object',
-        desc: 'Next exhibit is on its way. Maybe.',
-    }, buildComingSoon);
+        number: 'Exhibit 005',
+        title: 'One Way Trip Into a Black Hole',
+        desc: 'Go on a journey to the inner horizon of a rotating black hole.',
+         url: '/exhibits/dive/index.html',
+    }, () => buildDive(true));
 
     // Animation: spin diske og orbits. Hastigheden er "kunstnerisk" —
     // rigtig fysik bor inde i selve exhibitsene.
