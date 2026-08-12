@@ -216,11 +216,10 @@ export class DiveGeodesic {
             this.step(h);
             remaining -= h;
 
-            // ── Her stopper fysikken, og det er ikke en bug ──
+            // ── Her stopper fysikken kinda med at give svar som giver menin ──
             // Tæt på ringen divergerer krumningen. |p| er allerede
             // over 1000 her, og H begynder at drive fra -1/2 uanset hvor
-            // små skridt man tager — det er ikke integratoren der giver
-            // op, det er singulariteten der er ... er en singularitet.
+            // små skridt man tager. det er ikke integratoren det er singulariteten der er ... er en singularitet.
             //
             // Kerr-Schild-koordinater kan i øvrigt kun repræsentere r >= 0.
             // Den berømte "negativ-r-region" på den anden side af ringen
@@ -250,7 +249,7 @@ export class DiveGeodesic {
         return (m.f * L - Math.sqrt(Math.max(disc, 0))) / (1 + m.f);
     }
 
-    /** dt/dλ = ∂H/∂pt. Den her eksploderer ved horisonten — det er meningen. */
+    /** dt/dλ = ∂H/∂pt. Crashout maxxes at the horizon, cuz singularity. */
     dtdl() {
         const m = metricAt(this.pos.x, this.pos.y, this.pos.z, this.M, this.a);
         const S = m.lx * this.mom.x + m.ly * this.mom.y + m.lz * this.mom.z - this.pt;
@@ -344,14 +343,14 @@ export function solvePtAt(pos, mom, M, a) {
 }
 
 /**
- * Gram-Schmidt: tag tre skæve retninger, træk de dele ud af dem der
+ * Gram-Schmidt: tag tree skæve retninger, træk de dele ud af dem der
  * peger langs noget vi allerede har, og normalisér. Klassisk lineær
  * algebra, eneste særhed er at e0 har længde -1 i stedet for +1.
  */
 export function buildTetrad(pos, mom, pt, M, a,
                             seeds = [[1,0,0], [0,1,0], [0,0,1]]) {
     const dot = (A, B) => dotG(pos, M, a, A, B);
-    const add = (A, B, s) => [A[0]+s*B[0], A[1]+s*B[1], A[2]+s*B[2], A[3]+s*B[3]];
+    const add = (A, B, s) => [A[0]+s*B[0], A[1]+s*B[1], A[2]+s*B[2], A[3]+s*B[3]]; // Totally readable
 
     const e0 = fourVelocity(pos, mom, pt, M, a);
     const basis = [e0];

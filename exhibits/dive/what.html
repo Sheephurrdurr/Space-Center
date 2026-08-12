@@ -68,7 +68,7 @@
                 <p>The Hamiltonian is also a free correctness check, which is the real reason to build it this way. H is supposed to stay at exactly −½ forever. 
                     If it drifts, the integration is wrong. During development the step size was tuned by watching that number, and it's still on screen: it's the fourth 
                     readout in the bottom bar. It holds to six decimal places for the entire journey down through the horizon, and then, in the last stretch, it starts to move. 
-                    Chapter 06 is about why that isn't a bug.</p>
+                    Chapter 07 is about why that isn't a bug.</p>
             </div>
         </div>
 
@@ -109,8 +109,8 @@
             <p>That's the number in the panel now, and it climbs on its own. Two coordinate clocks describing one fall: the one being integrated stays finite, 
                 and the one being displayed runs to infinity. Both are correct, and the difference between them is the whole content of "from the outside, it never finishes."</p>
 
-            <p>Hold on to that distinction, because chapter 05 is about a place where the mathematics does <em>not</em> turn out to be fine underneath, 
-                and telling the two cases apart is most of the work.</p>
+            <p>Hold on to that distinction, because chapter 05 is about a surface where the coordinates behave, the equations stay finite, and the spacetime
+                fails anyway. Telling those two kinds of failure apart is most of the work.</p>
         </div>
 
         <!-- ── 3 ── -->
@@ -261,19 +261,23 @@
                 reason is not about coordinates at all.</p>
 
             <p>Think about what arrives at the inner horizon. Not just you — everything that ever falls into this hole after you do, plus every photon from the 
-                outside universe that ever crosses the outer horizon, for the entire future history of that universe. All of it, arriving on one surface, compressed into a finite amount of your proper time.</p>
+                outside universe that ever crosses the outer horizon, for the entire future history of that universe. All of it, arriving on one surface, 
+                compressed into a finite amount of your proper time.</p>
 
             <div class="analogy">
                 <div class="analogy-icon">📻</div>
                 <div class="analogy-text">Imagine tuning into a radio broadcast that plays the rest of eternity, and the closer you get to a certain moment, 
-                    the faster it runs. Not "sped up" as a figure of speech: infinite content delivered in finite time, which means infinite frequency, which means infinite energy. That's the blueshift at the inner horizon. Every wave that ever comes in stacks up on that surface.</div>
+                    the faster it runs. Not "sped up" as a figure of speech: infinite content delivered in finite time, which means infinite frequency, which 
+                    means infinite energy. That's the blueshift at the inner horizon. Every wave that ever comes in stacks up on that surface.</div>
             </div>
 
             <p>Poisson and Israel worked out in 1990 what that does to the geometry, and the result has a name that says it well: <em>mass inflation</em>. 
-                The effective mass measured just inside the inner horizon grows exponentially. Curvature grows with it. The surface that was supposed to be a smooth doorway turns into a genuine singularity — not a coordinate artefact, an actual one, where the theory stops having anything to say.</p>
+                The effective mass measured just inside the inner horizon grows exponentially. Curvature grows with it. The surface that was supposed to be a 
+                smooth doorway turns into a genuine singularity — not a coordinate artefact, an actual one, where the theory stops having anything to say.</p>
 
             <p>So the two horizons fail in opposite directions. The outer one looked broken and turned out to be fine. The inner one looks fine — the metric 
-                is perfectly well-behaved there in the eternal, undisturbed Kerr solution — and turns out to be broken the moment you let anything else fall in. And things do fall in. That's how black holes are made.</p>
+                is perfectly well-behaved there in the eternal, undisturbed Kerr solution — and turns out to be broken the moment you let anything else fall in. 
+                And things do fall in. That's how black holes are made.</p>
 
             <div class="callout">
                 <p>This is still live research rather than a closed case. The current consensus is "strong cosmic censorship holds, in the sense 
@@ -305,6 +309,80 @@
         <!-- ── 6 ── -->
         <div class="chapter">
             <div class="chapter-number">06</div>
+            <h2 class="chapter-title">The sky doesn't go dark. It runs out of colours.</h2>
+
+            <p>The blueshift diverges. That was the last chapter's conclusion, and it's the reason the passage isn't there. This chapter is about what
+                diverging blueshift actually does to a picture, because the honest answer is much stranger than the one this exhibit used to give.</p>
+
+            <p>For a long time the interior here was <em>drawn</em>. Procedural folds on a stereographic projection, a golden ring, a white curtain over the end.
+                It looked good and it was invented. What finally settled it was a measurement rather than an argument: at a third of a horizon radius, 55% of the
+                observer's sky is genuine integrated starfield, 24% is the dark cone, 21% is rays too redshifted to carry anything, and <em>zero percent</em> runs
+                out of step budget. The ray tracer never gave up. The drawing was painted over the half of the frame that is black for two good physical reasons.</p>
+
+            <h3 class="sub-title">Blueshift moves the whole spectrum, not the colour</h3>
+
+            <p>Here's the thing that's easy to state and hard to picture. Blueshift by a factor g doesn't tint light blue. It multiplies every frequency by g.
+                An eye responds to roughly 400 to 700 nanometres and nothing else, so what it is actually looking at is the source's spectrum between 400/g and 700/g.
+                Three consequences follow, and none of them is a design decision.</p>
+
+            <p><strong>The stars go out long before the sky gets dark.</strong> At g around three, visible light has moved into the ultraviolet. The stars haven't
+                dimmed — they've left the eye's bandwidth from the top. At the same moment, infrared is being pushed up into the visible from below, so a different
+                set of sources switches on, in a different colour, with a different pattern on the sky.</p>
+
+            <p><strong>Structure disappears before brightness does.</strong> The far-infrared sky is dust glow rather than point sources: smoother, more diffuse,
+                fewer edges. And by the time the microwave background is the thing standing in the visible band, there is no pattern at all. The CMB is uniform to
+                one part in a hundred thousand. Not dim. Not dark. <em>Featureless</em>, and extremely bright.</p>
+
+            <p><strong>And the end of the sequence is daylight.</strong> A blackbody stays a blackbody under Doppler shift — it just gets hotter. The CMB sits at
+                2.725 K. Bring it into the visible and you have multiplied by roughly 1900, which puts it at about 5180 K. That is the colour of sunlight. The screen
+                going white at the end of this exhibit is not a fade. It is the cosmic microwave background, blueshifted into the range your eyes happen to work in,
+                arriving with no structure because it never had any.</p>
+
+            <p>Because g is largest right at the rim of the dark cone — that's where a photon's energy at infinity passes through zero — the whole sequence
+                doesn't happen everywhere at once. It sweeps outward as concentric zones, each one a different part of the source spectrum standing in the visible,
+                with the rim always furthest ahead. The order is set by the geometry, not by a timeline.</p>
+
+            <h3 class="sub-title">The same sky, over and over, thinner each time</h3>
+
+            <p>There's a second thing in the interior image that has to be preserved rather than drawn. A ray that wraps once around the hole before escaping
+                gives the primary image of the sky. Two wraps gives the secondary. Three, the tertiary — an infinite stack of them, packed tighter and tighter
+                toward the shadow's edge.</p>
+
+            <p>The instinct is to make the higher ones fainter. That instinct is wrong, and the reason is one of the tidier results in relativity: specific
+                intensity divided by frequency cubed is invariant along a light ray. The secondary image of the Milky Way has <em>exactly</em> the same surface
+                brightness as the primary. It isn't dimmer. It's compressed.</p>
+
+            <p>Measured on this trajectory, the angular magnification in that band runs up to 680. A quarter of a degree of viewing direction can map to
+                150° of sky. So the multiple images are already in the render, and always were — they're just squeezed far below one pixel, where sampling them
+                at a single point turns them into noise, and noise reads as nothing.</p>
+
+            <p>The fix isn't a drawing, it's arithmetic. The shader keeps a running total of how far each ray's direction has turned, which tells it how many
+                images deep that pixel is, and samples the sky texture across the right area instead of at one point. That threshold had to be measured too:
+                the baseline shifts a lot with depth — half the rays exceed 0.24 turns at 1.05 Rs and 0.84 turns at 0.30 Rs, because even a "direct" ray bends
+                hard down there — so a fixed cutoff would have blurred two thirds of the sky at the bottom, which is precisely the washout it exists to prevent.</p>
+
+            <h3 class="sub-title">Where this is still approximation</h3>
+
+            <p>Two places, and they're worth separating because only one of them is a compromise.</p>
+
+            <p>The first: there is one optical sky texture here and no infrared, microwave or radio sky to look up. So the <em>mechanism</em> is right — when each
+                band stands in the visible, how much structure survives, what colour it carries — and the <em>content</em> is approximate. The real infrared sky is
+                not a washed-out version of the optical one. That's a smaller lie than procedural folds, but it is one.</p>
+
+            <p>The second: exposure. At the very end the true brightness runs away by a factor of order a hundred thousand, and an eye pointed at that would
+                simply see white with no information in it. The uniform part of that gain is divided back out so the sequence stays readable, which is what
+                adaptation does anyway. Contrast <em>within</em> the frame is untouched — that comes from the real variation of g across the sky, and the cone's
+                rim is still the brightest place in the image because that is where g genuinely diverges.</p>
+
+            <p>What's gone entirely is the golden ring. It sat across a quarter of the screen and implied it was a light source. It isn't one: this fall never
+                reaches it, and a singularity has no surface, no temperature and nothing to emit with. There is not one photon in this exhibit that came from the
+                ring. The code can still draw it as a thin marked contour — the way an imaging system outlines a structure that doesn't glow on its own — but
+                that's an annotation, and it's off by default.</p>
+        </div>
+
+        <!-- ── 7 ── -->
+        <div class="chapter">
+            <div class="chapter-number">07</div>
             <h2 class="chapter-title">Where the code gives up, and why that's the interesting part</h2>
 
             <p>The integration stops at <span class="num">r = 0.55 M</span>. That number was found rather than chosen — it's where the RK4 stepper 
@@ -364,8 +442,10 @@
                 frame rather than applied on top of it. The accretion disk's Doppler beaming and gravitational redshift, folded into a single factor. 
                 The horizon positions, the ISCO, the ring's radius. The Hamiltonian drift in the readout.</p>
 
-            <p><em>Drawn.</em> The streaming violet and cyan filaments in the interior, which fill the part of the sky where the physics 
-                correctly returns nothing. The ring's glow. The colours throughout. The final white-out and the fade.</p>
+            <p><em>Drawn.</em> Very little, now. The interior filaments and the ring's glow are gone — they used to fill the part of the sky 
+                where the physics correctly returns nothing, and the honest answer there was to return nothing. What's left is the colour mapping from 
+                shift factor to screen colour, the last few frames of white, and the fade. The ring contour still exists in the code as an optional 
+                annotation and ships switched off.</p>
 
             <p><em>Adjusted.</em> Time, throughout: the real fall takes about twenty minutes of proper time and this shows it in under a minute,
                 unevenly, slowing down for the parts worth looking at. And the redshift, which properly dims the sky as the fourth power of the shift factor 
@@ -380,6 +460,364 @@
                     You'd be shredded long before you had anything to look at.</p>
                 <p>And the thing this exhibit no longer does: it doesn't take you anywhere afterwards. There was a version that did, and it was better television. 
                     This one ends where the theory ends, which is a stranger and more honest place to be left standing.</p>
+            </div>
+        </div>
+
+        <div class="chapter">
+            <div class="chapter-number">08</div>
+            <h2 class="chapter-title">Two bugs that were invisible in the code and obvious on the screen</h2>
+
+            <p>Both of these were reported the same way: <em>it stutters, and it cooks the GPU</em>. Neither turned out to be where you'd look first, 
+                so they're worth writing down.</p>
+
+            <h3 class="sub-title">The fall kept stopping and starting</h3>
+
+            <p>Somewhere around the horizon the camera would slow almost to a halt, jerk, and pick back up again. The obvious suspects — dropped frames, 
+                garbage collection, the trajectory table — were all wrong. The trajectory is fine: probed over 1962 samples, the radius is strictly 
+                decreasing, zero outward steps, so playback never has anything to stall on.</p>
+
+            <p>The cause was the pacing curve. The fall used to be spliced together from three separately eased segments — approach, crossing, interior — 
+                and each one matched its neighbour in <em>value</em>. Position was continuous, nothing looked wrong in review. But the derivative did not match, 
+                and the derivative is the thing your eye actually sees:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">dv/dt across the seams</div>
+                <div class="formula-explain">
+                    <span>t = 21.5 s</span> — 0.00276 &nbsp;approach easing out towards zero<br>
+                    <span>t = 22.0 s</span> — 0.00946 &nbsp;crossing begins at constant speed &nbsp;← jump<br>
+                    <span>t = 26.0 s</span> — 0.00304 &nbsp;interior easing begins at zero &nbsp;← 3× drop<br>
+                    <span>t = 27.5 s</span> — 0.01216 &nbsp;and recovers
+                </div>
+            </div>
+
+            <p>Two velocity discontinuities, both sitting inside the horizon-crossing window — which is precisely the stretch this exhibit spends its whole 
+                argument insisting is uneventful.</p>
+
+            <p>The fix is structural rather than a tuned constant. Instead of splicing eased positions together, define a <em>speed</em> profile that is smooth 
+                and strictly positive, then integrate it to get position. Continuity of both is then guaranteed by construction. The profile eases up over 
+                the first 14% of the fall, holds flat, and eases down to rest over the last 20% — built from smootherstep, so speed is C² and progress is C³. 
+                Measured across the new curve, dv/dt is a flat <span class="num">0.0302</span> through the entire crossing region, with no seam left to find.</p>
+
+            <p>The flat middle is also the more honest choice. Progress is linear in log r, which is roughly linear in <em>how much bigger the hole looks now</em>, 
+                so a constant rate is close to a constant rate of visible change. The old curve slowed down at the horizon, which is exactly the wrong place 
+                for an exhibit whose entire claim is that the horizon is not a place.</p>
+
+            <h3 class="sub-title">Twenty-eight metric evaluations per step, where four would do</h3>
+
+            <p>The other complaint was heat. A high-end card was sitting at 68 °C rendering a black hole, which is not a reasonable price for this.</p>
+
+            <p>Two things were wrong. The smaller one first: there was no frame cap. On a 165 or 240 Hz display an uncapped loop renders three or four times 
+                the frames anyone can see, at full power draw, for the whole duration. Capping at 60 is invisible and removes most of the excess directly.</p>
+
+            <p>The larger one was in the integrator. Hamilton's equations need ∂H/∂x, and that was being computed as a central difference — six evaluations 
+                of H per derivative, four derivatives per RK4 step. Twenty-eight evaluations of the metric per step, each with a square root inside it, 
+                for up to 900 steps per pixel. It was the single most expensive thing in the shader by a wide margin.</p>
+
+            <p>It didn't need to be. H is quadratic in momentum and everything spatial sits in two places, so the gradient closes in form:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">−∂H/∂x = ½ S² ∇f + f S ∇(l·p)</div>
+                <div class="formula-explain">
+                    <span>S = l·p − p_t</span><br>
+                    <span>∇r = (r³x, r³y, r z (r²+a²)) / D</span>, &nbsp;from differentiating r⁴ − (ρ²−a²)r² − a²z² = 0<br>
+                    <span>D = r⁴ + a²z²</span>, the same denominator f already uses
+                </div>
+            </div>
+
+            <p>Both gradients reduce to ∇r plus bookkeeping, so one metric evaluation now serves an entire derivative: four per step instead of twenty-eight.</p>
+
+            <p>Checked before it went anywhere near the shader. Against a refined difference the closed form agrees to about one part in 10⁵ — which is the 
+                difference's own truncation error, not ours. Then the real test: trace 1500 photons per camera position through both versions and compare where 
+                they end up. Identical outcomes in every case, worst direction disagreement <span class="num">0.0125°</span>, and the peak Hamiltonian error along 
+                the ray came out <em>lower</em> with the closed form. So it is faster and slightly more correct, which is a nicer result than it usually is.</p>
+
+            <h3 class="sub-title">The ending was still being asserted</h3>
+
+            <p>This one only showed up because the whole ray setup got ported to the CPU to check something else. With the camera parked where the 
+                trajectory leaves it, you can compute the shift factor for every direction on the sky without a GPU — and then just read off which 
+                spectral band each pixel lands in as the finale runs.</p>
+
+            <p>It did not land where the previous chapter says it should. The median pixel topped out at <span class="num">g = 197</span>: far-infrared, 
+                deep amber. The microwave background needs g ≈ 2000. Only 39% of the frame ever reached the daylight band, which means the white ending 
+                was still coming from the safety wash — the asserted ending this whole rewrite exists to remove, still there, just better disguised.</p>
+
+            <p>The cause was a units mistake, in a sense. The cascade is <em>logarithmic</em> in g — g ≈ 2 is blue, 10 near-infrared, 100 far-infrared, 
+                2000 microwave — but the amplification ramp was linear. A linear ramp across a logarithmic quantity spends its entire range inside the 
+                top decade and never traverses the rest:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">linear 1 + 320·b &nbsp;vs&nbsp; exponential 10<sup>3.5b</sup></div>
+                <div class="formula-explain">
+                    <span>b = 0.1</span> — g = 20 near-IR &nbsp;·&nbsp; g = 1.4 optical<br>
+                    <span>b = 0.3</span> — g = 60 far-IR &nbsp;·&nbsp; g = 6.9 near-IR<br>
+                    <span>b = 0.5</span> — g = 99 far-IR &nbsp;·&nbsp; g = 34 far-IR<br>
+                    <span>b = 0.85</span> — g = 168 far-IR &nbsp;·&nbsp; g = 580 microwave<br>
+                    <span>b = 1.0</span> — g = 197 far-IR &nbsp;·&nbsp; g = 1942 microwave
+                </div>
+            </div>
+
+            <p>The second problem was brightness, and it had been hidden behind the first. The shader divides part of the amplification back out so the 
+                finale brightens gradually instead of saturating in one frame — but with the exponent it was using, and a sky that has been prefiltered 
+                down to its mean value, the median pixel came out of the tonemapper at 0.67 on a scale where white is about 1.7. Dim amber. Traced through 
+                the tonemapper properly, the exponent that saturates on its own is 1.25, not 1.6.</p>
+
+            <p>With both fixed the finale walks the whole cascade — optical, blue, near-IR, far-IR, daylight — over its eight seconds, and reaches white 
+                without the wash. The ordering is unchanged and still set by the geometry: the rim of the dark cone, where the shift factor is twelve times 
+                the median, saturates roughly halfway through and the burn-out spreads outward from there.</p>
+
+            <h3 class="sub-title">And nobody could see any of it</h3>
+
+            <p>The same probe answered a question that had been sitting unresolved: whether the cascade was working at all. It could not be checked from a 
+                screenshot, because pointing the camera in the fall direction shows the dark cone, which is black whether the cascade runs or not.</p>
+
+            <p>It turned out to be worse than that. At the end of the fall the shadow covers everything ahead — sweeping the camera and tracing the 
+                screen, the fraction with any source at all goes 0% at yaw 0, 3% at 45°, 47% at 90°, and only reaches 100% past 150°. So a visitor who 
+                never turns around watches the entire ending on an empty screen.</p>
+
+            <p>That is not wrong physics. Nothing does reach you from ahead, and the exhibit should not pretend otherwise by swinging the camera 
+                around on its own — that behaviour was removed for good reasons and is not coming back. The signal goes where every other signal in this 
+                exhibit goes: to the instruments. The Look back button lights up when there is genuinely nothing ahead, and the visitor decides.</p>
+
+            <p>Detecting "nothing ahead" is harder than it sounds, and two cheaper tests failed before the expensive one worked. Testing the dark cone 
+                is the wrong quantity — the cone is where light cannot exist, but the shadow, rays that carry positive energy and still fall in, is much 
+                wider, and it is the shadow you see. Testing against a measured shadow half-angle failed too, agreeing with a traced sweep 19 times out of 
+                28, because the Kerr shadow is not axisymmetric: frame dragging makes it D-shaped, so no single half-angle describes it. Tabulated, the 
+                angle to the outward axis does not separate the two cases at all — at the end of the fall, looking straight ahead is dark at 140° from it 
+                while turning 60° gives you sky at 150°.</p>
+
+            <p>So it is measured by tracing: fifteen rays on a coarse grid, three times a second. Against a full traced sweep over five depths, eight 
+                yaw angles and two pitch angles, the shipped version agrees 40 times out of 40, at 1.4 ms per evaluation — about half a percent of one 
+                core. The cost is a second copy of the integrator, in JavaScript, that has to stay in step with the GLSL one. That is a real liability, 
+                and it is why the two cheaper tests were tried first.</p>
+
+            <div class="callout">
+                <p>Worth naming the part that was hiding. The old difference used a fixed step of 0.01 in position, which is fine out at r = 30 M and 
+                    increasingly not fine as you fall — at the closest approach the geometry varies enough across that step that the estimate was off by 4.4%. 
+                    It never showed up as a visible artefact, because it degraded gradually and everywhere at once. The speedup was the reason to do this work; 
+                    the accuracy was the part that turned out to matter.</p>
+            </div>
+        </div>
+
+        <!-- ── 9 ── -->
+        <div class="chapter">
+            <div class="chapter-number">09</div>
+            <h2 class="chapter-title">The bugs you only get on somebody else's GPU</h2>
+
+            <p>This exhibit was written on one machine and is meant to run on a room full of them. That gap has its own class of bug: things that
+                are correct on the desktop you tested and quietly wrong on a phone, a laptop with an integrated GPU, or an Apple chip. This chapter
+                is a review pass looking specifically for those, plus one suggestion that turned out to be wrong and is worth writing down anyway.</p>
+
+            <h3 class="sub-title">A grey line down the sky, from a function that takes the wrong argument</h3>
+
+            <p>The sky is sampled at an explicit level of detail, because a pixel that has wound twice around the hole covers hundreds of times more
+                sky than it did in flat space and a point sample there is simply the wrong integral — chapter 06. That was being done with
+                <span class="num">texture2D(sky, uv, lod)</span>, and the third argument of that function is not a level. It is a
+                <em>bias</em>, added on top of whatever the hardware worked out from how much <span class="num">uv</span> changes between
+                neighbouring pixels.</p>
+
+            <p>Usually that is a small correction. At one place it is not. The sky is an equirectangular map, so
+                <span class="num">u = atan2(z, x)/2π + 0.5</span>, and that wraps from 1 back to 0 at the anti-meridian. Two adjacent pixels
+                straddling it differ by nearly a whole texture width, the hardware concludes the pixel covers the entire sky, and asks for
+                <span class="num">log₂(6000) ≈ 12.5</span> — the top of the mip chain, which is the average colour of everything. One pixel wide,
+                the full height of wherever that seam lands, a flat grey column.</p>
+
+            <p>The fix is the function that means what it says. <span class="num">textureLod()</span> takes an absolute level, and it exists in
+                GLSL ES 3.0, so the shader moved to WebGL2's shading language to get it. The number the shader computes is now the number the
+                sampler uses.</p>
+
+            <p>That does throw away something real, though. The hardware's estimate is bad at the seam but it is the only part of the footprint
+                that is <em>measured</em> per pixel rather than inferred from winding number, so it comes back — taken from how much the escape
+                <em>direction</em> changes between neighbouring pixels instead of how much the texture coordinate does. Directions have no seam.</p>
+
+            <h3 class="sub-title">A random number that isn't random on half the hardware</h3>
+
+            <p>Step lengths are dithered by about 5% per pixel so the integrator's own stepping does not print a pattern into the image. The
+                dither came from <span class="num">fract(sin(dot(p, k)) · 43758.5453)</span>, which is the hash everybody uses and which is not
+                portable. It works by taking the digits <em>below</em> the accuracy that <span class="num">sin</span> is required to have, and how
+                many of those there are, and what they look like, is up to the implementation. Apple's GPUs and several mobile parts are the
+                usual places it goes wrong.</p>
+
+            <p>What that produces here is milder than it would be in a shading term — the failure is neighbouring pixels getting <em>the same</em>
+                dither, so the dither stops working rather than drawing something of its own. Which is exactly the kind of failure you never see
+                on the machine you develop on. It is a PCG hash on the integer pixel coordinate now: same instructions, same answer, every GPU.</p>
+
+            <h3 class="sub-title">Seven hundred arithmetic operations in the worst possible place</h3>
+
+            <p>The accretion disk's turbulence was procedural: value noise, five octaves, four hash lookups per octave, and two cross-faded copies
+                so it never visibly loops. That is 40 hash evaluations, about 770 arithmetic operations, every time a ray crosses the equatorial
+                plane — and it was sitting <em>inside</em> the raymarching loop, which is the most expensive real estate in the shader. A ray that
+                winds around the hole crosses two or three times.</p>
+
+            <p>None of it needs to be computed at runtime. Value noise on an integer lattice is tileable if you take the hash modulo the lattice
+                period, so the four octaves are baked at startup into the four channels of one 512×512 texture at 8, 16, 32 and 64 cells across
+                the tile. They share a texture coordinate, so one fetch returns all four and the whole thing collapses to a fetch and a dot
+                product.</p>
+
+            <p>Two things had to change to make it tileable, and both were measured rather than eyeballed. Octaves have to be an integer number
+                of cells, so the frequency ratio went from 2.1 to 2.0 and the octaves are decorrelated by seed instead. The fifth octave, carrying
+                amplitude 1/32, is gone. Sampled 200,000 times over the disk's actual domain:</p>
+
+            <div class="formula-block">
+                <div class="formula-main">procedural vs baked, over r ∈ [ISCO, 5.5 R<sub>s</sub>]</div>
+                <div class="formula-explain">
+                    <span>procedural</span> — mean 0.4825, sd 0.1234<br>
+                    <span>baked</span> — mean 0.4837, sd 0.1204<br>
+                    <span>shipped</span> — one multiply-add closes the gap exactly
+                </div>
+            </div>
+
+            <p>The other thing worth checking is whether the tile shows. A repeating texture read along a circle will print its period into the
+                image if the circle closes on the tile. Measuring the angular autocorrelation of the disk pattern at four radii, looking for that
+                peak: the baked version peaks between 0.17 and 0.38, the procedural one between 0.21 and 0.32. Same range, so what is being
+                measured is finite-sample noise in both cases and not a repeat. A ring of radius ~9 in noise space does not close on an 8-unit
+                torus.</p>
+
+            <p>There is a bonus in it. Procedural noise has no filtering at all, which is why the outer disk shimmers under motion. A texture has
+                a mip chain, so the disk can now be sampled at a level that matches how much of the screen a turbulence cell actually covers —
+                estimated from the distance the ray has travelled. It has to be an explicit level for the same reason as the sky, and a more
+                serious one: an implicit level inside divergent control flow is undefined behaviour, and by the time a ray reaches the disk the
+                four pixels of a quad are on different iterations of the loop.</p>
+
+            <h3 class="sub-title">One number where being wrong means a black screen</h3>
+
+            <p>The metric carries <span class="num">D = r⁴ + a²z²</span>, which at the escape radius is <span class="num">6.6 × 10⁸</span>. The
+                largest finite value in <span class="num">mediump</span> is 65504. A fragment shader that fell back to medium precision would not
+                look slightly worse; it would produce NaN for every ray more than about 16 units out, with no error anywhere, and you would spend
+                an afternoon looking at the integrator. Every WebGL2 implementation is required to offer high precision in fragment shaders, so
+                this should never happen — the check is there because of what it would look like if it did.</p>
+
+            <h3 class="sub-title">The suggestion that didn't survive the arithmetic</h3>
+
+            <p>The most attractive proposal in the review was to replace the fixed-order RK4 integrator with an adaptive, error-controlled one —
+                RKF45 or similar — on the reasoning that letting the step follow the curvature would cut the average step count by half or more.
+                It is the right instinct and it does not work here, for three reasons that only show up when you count.</p>
+
+            <p>The first is that the step is <em>already</em> adaptive. It is proportional to radius, clamped, and tightened by a factor of four
+                through the band around the photon sphere where rays wind — that tightening is measured, not guessed; at K = 2 a leak of rays
+                escaping from inside the shadow disappears, and K = 3 leaves margin. What it is not is error-controlled, and error control is
+                the expensive part rather than the free part.</p>
+
+            <p>The second is stage count. RK4 takes four derivative evaluations per step, and since the closed-form gradient landed each of those
+                is one metric evaluation. An embedded 4/5 pair takes six. That is 50% more work per step before any error estimate is computed,
+                so the step count would have to fall by a third just to break even — and rejected steps are paid for in full.</p>
+
+            <p>The third is the one that turns the argument around. The review's own diagnosis was register pressure: too many live values per
+                thread means fewer threads in flight. An embedded pair holds six stage vectors live instead of four, plus the error norm and the
+                retry state. It makes the thing it was proposed to fix worse.</p>
+
+            <p>The diagnosis underneath was still right. Threads do run in groups, and one ray grazing the photon sphere that needs 819 steps does
+                hold up the other 63 in its group even though they resolved at 50. But that cost is in the geometry, not the integrator: those
+                steps are genuinely needed, and no integration scheme makes that ray cheap. What is actually available is a ceiling — and the
+                ceiling is now compiled per quality preset, so the eco modes build a 420 or 280 iteration loop rather than a 900 iteration one
+                they will never finish.</p>
+
+            <div class="callout">
+                <p>Worth being straight about what has and has not been established here. The seam, the precision floor and the undefined-behaviour
+                    texture fetch are correctness bugs, and they are fixed. The noise statistics and the autocorrelation are measured. The
+                    instruction count is arithmetic. But none of it has been timed on the hardware it is meant to help — that needs a phone and a
+                    frame counter, not a spreadsheet, and until then the honest claim is that the shader now does much less work, not that it
+                    runs faster by some particular amount.</p>
+            </div>
+        </div>
+
+        <!-- ── 10 ── -->
+        <div class="chapter">
+            <div class="chapter-number">10</div>
+            <h2 class="chapter-title">The failures that have nothing to do with the physics</h2>
+
+            <p>Everything above is about getting the picture right. This chapter is about the picture not being there at all: the handful of ways
+                a page that runs correctly on a desk can end up showing a black rectangle in a room, and what the code does about each of them.
+                It also records a review finding that was described accurately and diagnosed wrongly, because that turned out to be the more
+                useful thing to write down.</p>
+
+            <h3 class="sub-title">The leak that needed somewhere to leak into</h3>
+
+            <p>A code review flagged this file for a textbook Three.js memory leak. Nothing calls <span class="num">.dispose()</span> on the
+                geometry, the material or the two textures. Nothing calls <span class="num">removeEventListener</span>. There is a debug
+                reference parked on <span class="num">window</span>. GPU memory is not managed by the JavaScript garbage collector, so a
+                6000×3000 sky texture with its full mip chain stays resident until something explicitly releases it, and that is around
+                96 MB sitting in video memory with a live reference chain leading back to it.</p>
+
+            <p>Every sentence of that is a true description of the code. It also did not leak anything, and the reason is worth stating plainly
+                because it is the sort of thing a general rule cannot know. A leak needs something to accumulate <em>against</em>. This exhibit
+                is a document: <span class="num">index.html</span> loads the module once, with a plain script tag, and the only way out of the
+                page is a navigation. A navigation destroys the context, the canvas, the module, the listeners and the 96 MB together. There is
+                no unmount, no route change, no second instance, so there is never a second copy to sit beside the first. The advice is right for
+                a component in a single-page application and this is not one.</p>
+
+            <p>The teardown went in anyway, for a different reason, and it is worth separating the two because they lead to different code. A
+                browser allows a limited number of live WebGL contexts per process — around sixteen in Chrome — and quietly kills the oldest
+                when a new one asks for a slot. Pages held in the back/forward cache keep theirs. A visitor walking through five exhibits and then
+                pressing back twice is precisely the traffic that spends that budget, and the symptom is not a slow leak, it is a context-lost
+                event on the page somebody is currently looking at. Releasing the context on a real unload keeps the count honest. Releasing it on
+                a back/forward-cache suspend would break the back button, so the handler checks which of the two it is.</p>
+
+            <h3 class="sub-title">Context loss, which is the one that actually happens</h3>
+
+            <p>A driver reset, a laptop switching between integrated and discrete graphics, a phone throttling, a machine waking from sleep, or
+                the context budget above: the browser takes the GPU context away from a page that is otherwise running perfectly. Without a
+                handler the canvas goes black and never comes back. There is no error in the console and the rest of the page keeps working, so
+                on a kiosk it reads as the exhibit having finished, and nobody notices until closing time.</p>
+
+            <p>One line is load-bearing. The <span class="num">webglcontextlost</span> event has to be cancelled with
+                <span class="num">preventDefault()</span>, and if it is not, the browser treats the notification as advisory and never fires a
+                restore event at all. Three.js does that itself and re-initialises its GL state on restore, re-uploading textures and geometry
+                lazily, so most of the recovery is free. What it cannot know about is the wall-clock timer driving the fall. That has been running
+                the whole time the screen was dead, and if the accumulated delta is handed to the timeline in one piece, a fifteen-second driver
+                reset arrives as a fifteen-second jump down the trajectory. The clock is drained every frame while the context is gone.</p>
+
+            <h3 class="sub-title">A white screen from a missing file</h3>
+
+            <p>If the sky texture fails to load, Three binds its one-pixel white placeholder in its place. That is a sensible default for a
+                material and a bad one here: every ray that escapes to the sky returns maximum energy in all three channels, the exposure has
+                nothing to work with, and the exhibit becomes a white rectangle. No error, and nothing in the image suggesting the cause is a
+                404 rather than something in the shader.</p>
+
+            <p>There is a fallback sky now, generated in about ten milliseconds if the load fails: twelve thousand points on a dark background,
+                placed uniform in <span class="num">cos θ</span> rather than uniform in texture coordinate, since equirectangular mapping
+                stretches hardest at the poles and equal spacing in <span class="num">v</span> would pile stars up exactly where each texel covers
+                the least sky. It is not the NASA map and it says so on screen. The lensing, the aberration and the spectral cascade all still
+                read against it, which is the part that matters.</p>
+
+            <h3 class="sub-title">One constant that was being asserted instead of measured</h3>
+
+            <p>The prefiltering in chapter 06 needs to know how wide the sky texture is, because <span class="num">log₂</span> of that width is
+                the top of the mip chain and the ceiling on what the shader may ask for. That number was written into a uniform by hand as
+                <span class="num">6000</span>, four lines away from a filename ending in <span class="num">_4k</span>. One of those two was
+                wrong and nothing in the code could tell you which.</p>
+
+            <div class="formula-block">
+                <div class="formula-main">ceiling = log₂(width)</div>
+                <div class="formula-explain">
+                    <span>if 6000</span> — 12.55<br>
+                    <span>if 4096</span> — 12.00<br>
+                    <span>difference</span> — half a mip level, at the end of the cascade
+                </div>
+            </div>
+
+            <p>Half a level does not sound like much and it lands in the worst place: the final decades of the blueshift, where the whole point is
+                that the sky goes flat because the source genuinely is flat rather than because the sampler ran out of chain. It is read off the
+                decoded image now, in the load callback. Whatever is actually on disk is the ceiling, and there is nothing left to keep in
+                sync.</p>
+
+            <h3 class="sub-title">Two things a room needs that a desk does not</h3>
+
+            <p>The fall ends on a text plate and used to stay there. That is right for the web, where someone is reading six paragraphs and
+                restarting under them at paragraph four is worse than leaving it up indefinitely. It is wrong for a gallery, where the same
+                behaviour means an afternoon of showing a wall of text to an empty room. The loop is a URL flag rather than a build, and the
+                timeout runs from the last time anybody touched anything rather than from when the plate appeared, so it cannot interrupt a
+                visitor who is still there.</p>
+
+            <p>The smaller one: restarting reset the clock but not the heading. The camera kept whatever direction the previous visitor had left
+                it pointing, and since the interesting half of the ending is behind you, a good fraction of second runs began facing backwards out
+                of a hole still sixty Schwarzschild radii away. It resets both the target and the smoothed value, so it snaps rather than swinging
+                through 180 degrees while the fall is already under way.</p>
+
+            <div class="callout">
+                <p>None of this is physics and all of it is the difference between an exhibit and a demo. The useful lesson is in the first
+                    section: the review was right about every observable fact and wrong about the conclusion, because it recognised a pattern
+                    without checking whether the pattern's precondition held. The fix that came out of it is real, and it is a fix for a different
+                    problem than the one that was reported.</p>
             </div>
         </div>
 

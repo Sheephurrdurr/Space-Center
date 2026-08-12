@@ -556,7 +556,41 @@ canvas:active { cursor:grabbing; }
     .readout:nth-child(3) { display: none; }
 }
 
+/* ── Runtime notice ───────────────────────────────────────────────────
+   One line, above the bottom bar, for the two runtime failures a visitor
+   can actually be told something useful about. pointer-events: none so it
+   can never intercept a drag on the canvas underneath. */
+.notice {
+    position: absolute;
+    left: 50%;
+    bottom: 92px;
+    transform: translateX(-50%);
+    max-width: min(520px, calc(100vw - 44px));
+    padding: 9px 16px;
+    z-index: 30;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    color: var(--text-mid);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+}
+.notice.visible { opacity: 1; }
+.notice.warn {
+    border-color: rgba(240, 169, 77, 0.35);
+    color: var(--ring-amber);
+}
+
 @media (max-width: 600px) {
+    .notice { bottom: 118px; font-size: 10px; padding: 8px 12px; }
+
     .byline { top: 16px; left: 16px; }
     .byline a { font-size: 11px; gap: 6px; }
 
@@ -586,4 +620,5 @@ canvas:active { cursor:grabbing; }
 @media (prefers-reduced-motion: reduce) {
     .scroll-line { animation: none; opacity: 0.4; }
     .end-plate { transition: none; }
+    .notice { transition: none; }
 }

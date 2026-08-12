@@ -134,6 +134,19 @@
                 It opens from nothing at the ergosphere and never quite reaches 90°, which is why the sky outside it stays wider than the field of view all the way down.</div>
         </div>
 
+        <hr class="math-divider">
+
+        <div class="math-block">
+            <div class="math-label">Render budget</div>
+            <div class="math-result">
+                <span class="math-live" id="fpsReadout">—</span>
+            </div>
+            <div class="math-note">Frame rate and internal resolution scale. The exhibit is capped at 60 fps on purpose: it integrates up to 900 RK4 steps per pixel, 
+                and on a high-refresh display an uncapped loop does three or four times the work nobody can see, at full power draw, for the whole fall. 
+                If the resolution scale drops below 100%, the GPU asked for it — the ray budget stays intact and the pixel count gives way instead, which is the 
+                cheaper thing to lose.</div>
+        </div>
+
         <a href="what.html" style="text-decoration:none; margin-top: 4px;">
             <button class="ctrl-btn" style="width:100%; justify-content:center;">
                 What?
@@ -145,12 +158,18 @@
     <div class="end-plate" id="endPlate">
         <div class="end-plate-inner">
             <span class="end-eyebrow">r = 0.55 M · integration halted</span>
-            <p class="end-lead">This is where the mathematics stops working.</p>
-            <p>Not the code. Just below here is the inner horizon, and general relativity predicts its own breakdown there — the theory hands back infinities instead of answers.</p>
-            <p>Getting past this needs a theory of quantum gravity, and nobody has written one yet.</p>
-            <p class="end-note">Still waiting on that grand unified field theory.</p>
+            <p class="end-lead">The mathematics is fine here. The spacetime isn't.</p>
+            <p>Kerr's solution is perfectly well defined at the inner horizon just below — no term divides by zero, nothing is undefined. What fails is subtler and worse.</p>
+            <p>That surface is a Cauchy horizon. Everything falling in after you, plus the entire future history of the outside universe, arrives on it compressed into a finite amount of your proper time — infinitely blueshifted. Poisson and Israel worked out what that does in 1990 and called it mass inflation: the effective mass diverges exponentially, and a surface that was merely a coordinate boundary becomes a genuine curvature singularity.</p>
+            <p>So it isn't a door. The solution on the far side — the ring, the negative-r region, the other universes — is a solution to a problem that this black hole never poses.</p>
+            <p class="end-note">The equations don't break. They just stop describing anything that survives.</p>
         </div>
     </div>
+
+    <!-- Runtime notice. Two things can go wrong while the page is alive
+         and running: the WebGL context is taken away, or an asset never
+         arrived. Both used to be silent. -->
+    <div class="notice" id="notice" role="status" aria-live="polite"></div>
 
     <!-- Bottom bar -->
     <div class="bottom-bar">
@@ -204,7 +223,7 @@
 
             <div class="fact-block">
                 <span class="fact-number">H = −½</span>
-                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve horizon radii out, 
+                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve gravitational radii out, 
                     integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the l
                     ight it sees is one number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
             </div>
@@ -271,3 +290,4 @@
 <script type="module" src="/exhibits/dive/main.js"></script>
 </body>
 </html>
+<!-- /exhibits/dive/ -->
