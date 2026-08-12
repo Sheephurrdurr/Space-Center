@@ -358,14 +358,14 @@ export function registerExhibits(system) {
 
     const e1 = system.register(pathDirection(0 * step), {
         number: 'Exhibit 001',
-        title: 'Static, Non Rotating<br>Black Hole',
-        desc: 'A 5 solar mass black hole rendered via real-time ray marching through curved spacetime. ',
-        url: '/exhibits/blackhole/index.html',
-    }, buildSchwarzschild);
+        title: 'The REAL nerd exhibit: <br/> One Way Trip Into a Black Hole',
+        desc: 'Go on a journey to the inner horizon of a rotating black hole.',
+         url: '/exhibits/dive/index.html',
+    }, () => buildDive(true));
 
     const e2 = system.register(pathDirection(1 * step), {
         number: 'Exhibit 002',
-        title: 'The Cool Exhibit<br>Rotating Black Hole',
+        title: 'A Rotating Black Hole',
         desc: 'Kerr metric, RK4 Hamiltonian geodesics. Unhinged math and physics come together to create stunning visuals.',
         url: '/exhibits/Kerr_finalBoss/index.html',
     }, buildKerr);
@@ -386,10 +386,10 @@ export function registerExhibits(system) {
 
     const e5 = system.register(pathDirection(4 * step), {
         number: 'Exhibit 005',
-        title: 'One Way Trip Into a Black Hole',
-        desc: 'Go on a journey to the inner horizon of a rotating black hole.',
-         url: '/exhibits/dive/index.html',
-    }, () => buildDive(true));
+        title: 'Static, Non Rotating<br>Black Hole',
+        desc: 'A 5 solar mass black hole rendered via real-time ray marching through curved spacetime. ',
+        url: '/exhibits/blackhole/index.html',
+    }, buildSchwarzschild);
 
     // Animation: spin diske og orbits. Hastigheden er "kunstnerisk" —
     // rigtig fysik bor inde i selve exhibitsene.
