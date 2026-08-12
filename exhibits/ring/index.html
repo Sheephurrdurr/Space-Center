@@ -1,0 +1,83 @@
+<!-- /exhibits/ring/ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="The Naked Ring — Space Center">
+    <meta property="og:description" content="A room with an overextremal Kerr singularity on the altar. No horizon, nothing hidden — and a boundary you cannot cross because standing still stops being possible.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/exhibits/ring/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="The Naked Ring — Space Center">
+    <meta name="twitter:description" content="A room with an overextremal Kerr singularity on the altar.">
+    <meta name="twitter:image" content="/exhibits/ring/og-image.jpg">
+    <title>The Naked Ring — Space Center</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <link href="/shared/base.css" rel="stylesheet">
+    <link href="/exhibits/ring/style.css" rel="stylesheet">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/three.module.js",
+            "three/addons/": "/vendor/three/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+<section class="hero">
+    <canvas id="c"></canvas>
+
+    <div class="byline">
+        <a href="/">
+            <span class="byline-name">Gylling</span>
+            <span class="byline-sep">·</span>
+            <span class="byline-label">Space Center</span>
+        </a>
+    </div>
+
+    <div class="mode-label" id="modeLabel">Standing</div>
+
+    <!-- Movement hint, fades on first input -->
+    <div class="hint" id="hint">
+        <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+        to walk · drag to look
+    </div>
+
+    <!-- Live readouts -->
+    <div class="readouts">
+        <div class="readout">
+            <div class="readout-label">Frame dragging <span class="sym">f</span></div>
+            <div class="readout-value" id="fReadout">—</div>
+            <div class="readout-note">1 is the ergosphere</div>
+        </div>
+        <div class="readout">
+            <div class="readout-label">Time dilation <span class="sym">u<sup>t</sup></span></div>
+            <div class="readout-value" id="utReadout">—</div>
+            <div class="readout-note">your clock vs. far away</div>
+        </div>
+        <div class="readout">
+            <div class="readout-label">Distance to the ring</div>
+            <div class="readout-value" id="ringReadout">—</div>
+            <div class="readout-note">from <span id="rhoReadout">—</span> off axis</div>
+        </div>
+    </div>
+
+    <div class="ergo-warn" id="ergoWarn" hidden>
+        You cannot go closer. Inside this radius there is no such thing as standing still.
+    </div>
+
+    <div class="notice" id="notice" hidden></div>
+</section>
+
+<script type="module" src="/exhibits/ring/main.js"></script>
+</body>
+</html>
