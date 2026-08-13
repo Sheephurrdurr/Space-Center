@@ -18,6 +18,14 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 | **NS–BH Merger: Gravitational Waves** | A neutron star spiraling into a black hole, with orbital decay driven by the real Peters & Mathews (1964) quadrupole formula. |
 | **NS–BH Merger: Gravitational Lensing** | The same inspiral, this time seen through a ray-marched lens — watch the neutron star distort and vanish behind the event horizon. |
 
+## Gallery
+
+![Dive Exhibit](assets/images/exhibitScreenshots/dive.JPG)
+![Merger: Gravitational Waves](assets/images/exhibitScreenshots/gw_merger.JPG)
+![Merger: Lensing](assets/images/exhibitScreenshots/lensing_merger.JPG)
+![Static Black Hole](assets/images/exhibitScreenshots/staticBH.JPG)
+![Rotating Black Hole](assets/images/exhibitScreenshots/theKerr.JPG)
+
 ## Why it exists
 
 This started as a small Three.js learning project, akin to; "can I make this sphere orbit this other sphere in THREE.js?". 
