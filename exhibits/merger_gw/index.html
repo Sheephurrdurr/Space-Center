@@ -27,7 +27,7 @@
         }
     }
     </script>
-    
+
     <script type="module" src="/exhibits/merger_gw/main.js"></script>
 </head>
 <body>
@@ -43,78 +43,82 @@
             <span class="byline-label">Space Center</span>
         </div>
 
-           <!-- Math overlay -->
-            <div class="math-panel hidden" id="mathPanel">
-                <div class="math-header">
-                    <span class="math-eyebrow">Peters & Mathews, 1964</span>
-                    <div class="math-title">Gravitational Wave Orbital Decay</div>
-                    <button class="math-close" aria-label="Luk panel">×</button>
+        <!-- Math overlay -->
+        <div class="math-panel hidden" id="mathPanel">
+            <div class="math-header">
+                <span class="math-eyebrow">Peters &amp; Mathews, 1964</span>
+                <div class="math-title">Gravitational Wave Orbital Decay</div>
+                <button class="math-close" aria-label="Luk panel">×</button>
+            </div>
+
+            <div class="math-block">
+                <div class="math-formula">
+                    <span class="math-sym">da/dt</span>
+                    <span class="math-eq">=</span>
+                    <span class="math-sym">−(64/5)</span>
+                    <span class="math-eq">×</span>
+                    <span class="math-sym">G³m₁m₂(m₁+m₂)</span>
+                    <span class="math-eq">/</span>
+                    <span class="math-sym">c⁵a³</span>
                 </div>
+                <div class="math-note">Symbolic — G=c=1 in geometric units</div>
+            </div>
 
-                    <div class="math-block">
-                        <div class="math-formula">
-                            <span class="math-sym">da/dt</span>
-                            <span class="math-eq">=</span>
-                            <span class="math-sym">−(64/5)</span>
-                            <span class="math-eq">×</span>
-                            <span class="math-sym">G³m₁m₂(m₁+m₂)</span>
-                            <span class="math-eq">/</span>
-                            <span class="math-sym">c⁵a³</span>
-                        </div>
-                        <div class="math-note">Symbolic — G=c=1 in geometric units</div>
-                    </div>
-
-                    <div class="math-block">
-                        <div class="math-label">With live values:</div>
-                        <div class="math-substituted" id="mathSubstituted">—</div>
-                        <div class="math-result">
-                            <span class="math-label">= </span>
-                            <span class="math-live" id="mathDadt">—</span>
-                            <span class="math-unit"> toy-units/s</span>
-                        </div>
-                    </div>
-
-                <div class="math-block">
-                    <div class="math-label">Time to merger (Using Peters closed form):</div>
-                    <div class="math-formula">
-                        <span class="math-sym">t</span>
-                        <span class="math-eq">=</span>
-                        <span class="math-sym">(a⁴ − aₘ⁴)</span>
-                        <span class="math-eq">/</span>
-                        <span class="math-sym">4K</span>
-                        <span class="math-note-inline">, K = (64/5)m₁m₂(m₁+m₂)</span>
-                    </div>
-                    <div class="math-result">
-                        <span class="math-label">= </span>
-                        <span class="math-live" id="mathTmerge">—</span>
-                        <span class="math-unit"> ms remaining</span>
-                    </div>
-                </div>
-
-                <div class="math-block">
-                    <div class="math-label">Gravitational Wave frequency (Using dominant quadrupole mode):</div>
-                    <div class="math-formula">
-                        <span class="math-sym">f_GW</span>
-                        <span class="math-eq">=</span>
-                        <span class="math-sym">2 × f_orbital</span>
-                        <span class="math-eq">=</span>
-                        <span class="math-sym">ω/π</span>
-                    </div>
-
-                    <div class="math-result">
-                        <span class="math-label">= </span>
-                        <span class="math-live" id="mathFgw">—</span>
-                        <span class="math-unit"> Hz</span>
-                    </div>
-
-                    <div class="math-block" style="padding-top: 8px; border-top: 1px solid var(--border);">
-                        <a href="what.html" class="panel-btn" style="text-decoration: none; align-self: flex-start;">
-                            <span class="btn-icon">What?</span>
-                            
-                        </a>
-                    </div>
+            <div class="math-block">
+                <div class="math-label">With live values:</div>
+                <div class="math-substituted" id="mathSubstituted">—</div>
+                <div class="math-result">
+                    <span class="math-label">= </span>
+                    <span class="math-live" id="mathDadt">—</span>
+                    <span class="math-unit"> toy-units/s</span>
                 </div>
             </div>
+
+            <div class="math-block">
+                <div class="math-label">Time to ISCO (Peters closed form):</div>
+                <div class="math-formula">
+                    <span class="math-sym">t</span>
+                    <span class="math-eq">=</span>
+                    <span class="math-sym">(a⁴ − a_isco⁴)</span>
+                    <span class="math-eq">/</span>
+                    <span class="math-sym">4K</span>
+                    <span class="math-note-inline">, K = (64/5)m₁m₂(m₁+m₂)</span>
+                </div>
+                <div class="math-result">
+                    <span class="math-label">= </span>
+                    <span class="math-live" id="mathTmerge">—</span>
+                    <span class="math-unit"> ms remaining</span>
+                </div>
+                <div class="math-note">Valid down to a = 6M only. Below the innermost stable
+                    circular orbit the motion is a plunge geodesic, and this formula stops
+                    describing it.</div>
+            </div>
+
+            <div class="math-block">
+                <div class="math-label">Gravitational wave frequency (dominant quadrupole mode):</div>
+                <div class="math-formula">
+                    <span class="math-sym">f_GW</span>
+                    <span class="math-eq">=</span>
+                    <span class="math-sym">2 × f_orbital</span>
+                    <span class="math-eq">=</span>
+                    <span class="math-sym">ω/π</span>
+                </div>
+
+                <div class="math-result">
+                    <span class="math-label">= </span>
+                    <span class="math-live" id="mathFgw">—</span>
+                    <span class="math-unit"> Hz</span>
+                </div>
+                <div class="math-note">After merger this switches to the l = m = 2 quasi-normal
+                    mode of the remnant — the hole's own vibration, not the orbit's.</div>
+
+                <div class="math-block" style="padding-top: 8px; border-top: 1px solid var(--border);">
+                    <a href="what.html" class="panel-btn" style="text-decoration: none; align-self: flex-start;">
+                        <span class="btn-icon">What?</span>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <!-- Instrument panel -->
         <div class="instrument-panel">
@@ -128,19 +132,20 @@
                     <span class="readout-value mono" id="sepReadout">—</span>
                 </div>
                 <div class="readout-group">
-                    <span class="readout-label">Gravitaional Wave FREQ</span>
+                    <span class="readout-label">GW FREQUENCY</span>
                     <span class="readout-value mono" id="freqReadout">—</span>
                 </div>
                 <div class="readout-group">
+                    <span class="readout-label">TIDAL STRETCH</span>
+                    <span class="readout-value mono" id="tidalReadout">—</span>
+                </div>
+                <div class="readout-group">
                     <span class="readout-label">TIME COMPRESSION</span>
-                    <span class="readout-value mono">~3000×</span>
+                    <span class="readout-value mono" id="compressionReadout">—</span>
                 </div>
             </div>
 
-         
-
             <div class="panel-right">
-                <!-- Math toggle knap -->
                 <button class="panel-btn" id="mathBtn">
                     <span class="btn-icon">∑</span>
                     <span class="btn-label">Math</span>
@@ -175,21 +180,45 @@
             <div class="context-body">
                 <div class="fact-block">
                     <span class="fact-number">~3 ms</span>
-                    <p class="fact-desc">This merger really takes about three milliseconds. What you're watching stretched out over 10 seconds is the 
-                        literal final instant of something that's been spiraling in for over a billion years.</p>
+                    <p class="fact-desc">This merger really takes about three milliseconds. What you're
+                        watching stretched out over roughly fourteen seconds is the literal final instant
+                        of something that has been spiraling in for over a billion years. The compression
+                        factor in the panel is live, because it isn't constant — the film slows down as
+                        the physics speeds up, or the last act would go by in a single blurred frame.</p>
                 </div>
 
                 <div class="fact-block">
                     <span class="fact-number">1.4 + 5 M☉</span>
-                    <p class="fact-desc">The neutron star packs 1.4 solar masses into a sphere about 24 km wide. The black hole is 5 solar masses, 
-                        with an event horizon roughly the same size as the star it's about to eat. That mass range sits in what's called the "lower mass gap" — 
-                        astrophysicists are still arguing about what actually lives there.</p>
+                    <p class="fact-desc">The neutron star packs 1.4 solar masses into a sphere about 24 km
+                        wide. The black hole is 5 solar masses, with an event horizon roughly the same size
+                        as the star it's about to eat. That mass range sits in what's called the "lower mass
+                        gap" — astrophysicists are still arguing about what actually lives there.</p>
                 </div>
 
                 <div class="fact-block">
                     <span class="fact-number">Peters '64</span>
-                    <p class="fact-desc">The inspiral you're watching runs on the Peters & Mathews quadrupole formula — the same equation LIGO uses to predict 
-                        when real mergers will happen. The gravitational wave frequency rippling outward is exactly double the orbital frequency.</p>
+                    <p class="fact-desc">The inspiral runs on the Peters &amp; Mathews quadrupole formula —
+                        the same equation LIGO uses to predict when real mergers will happen. The
+                        gravitational wave frequency rippling outward is exactly double the orbital
+                        frequency, right up until there is no orbit left.</p>
+                </div>
+
+                <div class="fact-block">
+                    <span class="fact-number">6M</span>
+                    <p class="fact-desc">At a separation of six times the total mass the inspiral ends. There
+                        are no stable orbits below the innermost stable circular orbit, so the star stops
+                        orbiting and starts falling — one and three quarter final revolutions along a
+                        geodesic, while the hole's tidal field stretches it from 5% to nearly 50%
+                        elongation and its light reddens on the way out of the well.</p>
+                </div>
+
+                <div class="fact-block">
+                    <span class="fact-number">No flash</span>
+                    <p class="fact-desc">Nothing lights up at the end, and that's the honest answer rather
+                        than a missing effect. The tidal radius for this pair works out to 12.4 against a
+                        contact radius of 18.1, so the star reaches the horizon intact: no debris, no
+                        ejecta, no kilonova. What you see instead is the horizon growing by 23% as it
+                        swallows the star, and spacetime ringing at the remnant's own frequency.</p>
                 </div>
             </div>
 
@@ -202,13 +231,12 @@
                     <span class="tech-divider">·</span>
                     <span class="tech-item">Post-processing render pipeline</span>
                     <span class="tech-divider">·</span>
-                    <span class="tech-item">Newtonian gravitational wave physics</span>
+                    <span class="tech-item">Peters quadrupole decay + Schwarzschild plunge geodesic</span>
                 </div>
 
                 <div style="display: flex; gap: 16px; align-items: center;">
-                   
                     <a class="back-link" href="/">← Back to Space Center</a>
-                     <a class="panel-btn" href="/what.html" style="text-decoration: none;">
+                    <a class="panel-btn" href="what.html" style="text-decoration: none;">
                         <span class="btn-label">What's going on here?</span>
                     </a>
                 </div>
