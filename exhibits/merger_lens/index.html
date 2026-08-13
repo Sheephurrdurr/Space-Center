@@ -72,8 +72,10 @@
         <hr class="math-divider">
 
         <div class="math-block">
-            <div class="math-label">Time to merger</div>
-            <div class="math-formula">t = (a⁴ − aₘ⁴) / 4K,  K = (64/5)m₁m₂(m₁+m₂)</div>
+            <div class="math-label">Time to ISCO</div>
+            <div class="math-formula">t = (a⁴ − a_isco⁴) / 4K,  K = (64/5)m₁m₂(m₁+m₂)</div>
+            <div class="math-note">Valid down to a = 6M. Below the innermost stable circular
+                orbit the motion is a plunge geodesic and this formula stops describing it.</div>
             <div class="math-result">
                 <span class="math-live" id="mathTmerge">—</span>
                 <span class="math-unit">ms remaining</span>
@@ -92,7 +94,7 @@
         </div>
 
         <div style="padding-top: 8px; border-top: 1px solid var(--border);">
-            <a href="/what.html" style="text-decoration: none;">
+            <a href="what.html" style="text-decoration: none;">
                 <button class="panel-btn" style="width: 100%; justify-content: center;">
                     Full explanation →
                 </button>
@@ -116,8 +118,16 @@
                 <span class="readout-value mono" id="freqReadout">—</span>
             </div>
             <div class="readout-group">
+                <span class="readout-label">Tidal Stretch</span>
+                <span class="readout-value mono" id="tidalReadout">—</span>
+            </div>
+            <div class="readout-group">
+                <span class="readout-label">Orbital Speed</span>
+                <span class="readout-value mono" id="betaReadout">—</span>
+            </div>
+            <div class="readout-group">
                 <span class="readout-label">Slow Motion</span>
-                <span class="readout-value mono" id="slowmoReadout">-</span>
+                <span class="readout-value mono" id="slowmoReadout">—</span>
             </div>
         </div>
 
@@ -155,6 +165,15 @@
         <div class="context-body">
 
             <div class="fact-block">
+                <span class="fact-number">6M</span>
+                <p class="fact-desc">At six times the total mass the inspiral ends: there are no stable orbits below the
+                    innermost stable circular orbit, so the star stops orbiting and starts falling. One and three quarter
+                    final revolutions along a plunge geodesic, while the hole's tidal field stretches it from 5% to nearly
+                    50% elongation — the star you see is an ellipsoid, pointed at the hole, and the ray marcher intersects
+                    it as one. Then the horizon swallows it and grows by 23%.</p>
+            </div>
+
+            <div class="fact-block">
                 <span class="fact-number">Same event</span>
                 <p class="fact-desc">Same neutron star and black hole as exhibit 001 — same masses, same Peters-formula decay, same merger. 
                     What's different is how the light gets computed. Here every pixel traces an actual photon path through the Schwarzschild metric. 
@@ -163,23 +182,34 @@
 
             <div class="fact-block">
                 <span class="fact-number">Per pixel</span>
-                <p class="fact-desc">Every pixel runs up to 300 iterations of the geodesic equation — the photon bends toward the black hole based on its 
-                    angular momentum and how close it gets, to the fifth power. The distorted starfield behind it all is real: NASA's Deep Star Maps 2020, 1.7 billion stars 
-                    from Hipparcos-2, Tycho-2, and Gaia DR2, projected onto a sphere.</p>
+                <p class="fact-desc">Every pixel integrates the geodesic equation until its photon escapes, lands on the
+                    star, or crosses the horizon. The step size holds the angular progress around the hole constant rather
+                    than the distance travelled, which is what an orbit actually needs: rays winding close to the photon
+                    ring get the resolution they require and distant rays stop paying for it. Typical cost is 55 steps,
+                    worst case 228, against a budget of 256. The distorted starfield behind it all is real — NASA's Deep
+                    Star Maps 2020, 1.7 billion stars from Hipparcos-2, Tycho-2 and Gaia DR2, projected onto a sphere.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">The shadow</span>
-                <p class="fact-desc">The black disk isn't the event horizon — it's bigger. Any photon that gets within b_crit = √27 × M never escapes, 
-                    and that gets checked with actual math before the ray marching even starts, so the shadow's edge is mathematically exact, not eyeballed. 
-                    The bright arc around it is the photon ring: light that nearly made a full orbit before escaping toward you, carrying a squished image of the entire sky.</p>
+                <p class="fact-desc">The black disk isn't the event horizon — it's bigger. Any photon passing within
+                    b_crit = √27 × M never escapes. Earlier versions of this exhibit tested that analytically before
+                    marching, which sounds more rigorous than it is: the flat-space impact parameter measured from a
+                    camera sixteen Schwarzschild radii out sits about 1.2% inside where the integration actually
+                    captures, so the shortcut and the ray marcher disagreed at the edge. Now capture is decided by the
+                    same integration that draws everything else, and the fragments straddling the boundary are
+                    supersampled. The bright arc around it is the photon ring: light that nearly completed an orbit
+                    before escaping toward you, carrying a squeezed image of the entire sky.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">Disappearance</span>
-                <p class="fact-desc">When the neutron star crosses behind the shadow, it vanishes — not because it's hidden, but because there's genuinely no path for 
-                    light to reach your eye from its surface without crossing the shadow boundary. When it reappears, its light took a slightly longer route around the 
-                    black hole to get there. At these distances, a real system would also flash a faint Einstein ring right as the star lines up exactly behind the black hole.</p>
+                <p class="fact-desc">When the neutron star crosses behind the shadow it doesn't simply disappear. Light
+                    from its surface wraps around the hole and arrives as arcs on both sides, closing into a near-complete
+                    Einstein ring at the moment of alignment — not added as an effect, just what the integrated paths do.
+                    Watch which side of the ring is brighter, too: the star orbits at roughly a third of the speed of
+                    light, so the limb coming toward you is beamed and blueshifted while the receding one is dimmed and
+                    reddened, a contrast of about fourteen to one.</p>
             </div>
 
         </div>
