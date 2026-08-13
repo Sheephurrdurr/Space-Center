@@ -1,5 +1,5 @@
 # Space Center
-![Space Center](screenshots/landing_page.jpg)
+![Space Center](assets/images/exhibitScreenshots/landing_page.jpg)
 An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
 **[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
