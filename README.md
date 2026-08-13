@@ -1,5 +1,5 @@
 # Space Center
-
+![Space Center](screenshots/landing_page.jpg)
 An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
 **[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
@@ -12,16 +12,18 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 
 | Exhibit | What it does |
 |---|---|
-| **Schwarzschild Black Hole** | Real-time ray marching through curved spacetime — every pixel traces a photon along the Schwarzschild geodesic equation. |
-| **Kerr Black Hole** | A *rotating* black hole. Full Kerr metric, no approximations — RK4-integrated Hamiltonian geodesics, frame dragging, a Doppler-beamed accretion disk, and the characteristic displaced D-shaped shadow. |
+| **Dive Into a Rotating Black Hole** | Follow the journey of a particle through curved spacetime and into a black hole. | 
+| **Schwarzschild Black Hole** | Real-time ray marching, every pixel traces a photon along the Schwarzschild geodesic equation. |
+| **Kerr Black Hole** | A *rotating* black hole. Full Kerr metric, RK4-integrated Hamiltonian geodesics, frame dragging, a Doppler-beamed accretion disk, and the characteristic displaced D-shaped shadow. |
 | **NS–BH Merger: Gravitational Waves** | A neutron star spiraling into a black hole, with orbital decay driven by the real Peters & Mathews (1964) quadrupole formula. |
 | **NS–BH Merger: Gravitational Lensing** | The same inspiral, this time seen through a ray-marched lens — watch the neutron star distort and vanish behind the event horizon. |
 
-A fifth exhibit slot sits empty, waiting for a probe to fly into a black hole. That's a problem for future me.
-
 ## Why it exists
 
-This started as a small Three.js learning project. "can I make this sphere orbit this other sphere in THREE.js?", turned into this whole thing. Damn you, curiosity. And Claude. 
+This started as a small Three.js learning project, akin to; "can I make this sphere orbit this other sphere in THREE.js?". 
+And then later evolved into wanting to see some complicated physics and mathematics in action... and eventually: naked singularity on a pedestal (coming soon).
+
+Started from the bottom now we **tracing photons through curved spacetime, using the most cursed equations you'll see- at least today**
 
 ## Tech
 
