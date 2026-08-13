@@ -1572,6 +1572,27 @@ on(document, 'visibilitychange', () => {
     if (visible) { clock.getDelta(); needsRender = true; }
 });
 
+// Same problem, different cause: a full page with the exhibit above the
+// fold and prose below it never hides the tab, so visibilitychange never
+// fires — the canvas just keeps raytracing at full resolution under
+// somebody who has scrolled on to read. That is heat and fan noise on a
+// laptop and, on a weak/integrated GPU, exactly the kind of sustained load
+// that takes the tab down. IntersectionObserver is the only reliable
+// signal for "off-screen but tab still visible".
+let onScreen = true;
+const intersectionObserver = new IntersectionObserver(
+    ([entry]) => {
+        onScreen = entry.isIntersecting;
+        // Mirrors the visibilitychange handler above: drop the delta that
+        // built up while off-screen so returning doesn't hand the timeline
+        // one huge dt, and force one repaint so the frame on screen again
+        // isn't a stale one from before it scrolled away.
+        if (onScreen) { clock.getDelta(); needsRender = true; }
+    },
+    { threshold: 0 }   // fire as soon as even 1px is on/off screen
+);
+intersectionObserver.observe(canvas);
+
 // =====================================================================
 //  Loop
 // =====================================================================
@@ -1603,7 +1624,7 @@ let idleSince = performance.now();
 function animate() {
     if (!running) { rafId = 0; return; }
     rafId = requestAnimationFrame(animate);
-    if (!visible) return;
+    if (!visible || !onScreen) return;
 
     // The context is gone and Three is refusing to draw. Keep draining the
     // clock: it is a wall-clock clock and it does not know that, so a
@@ -1866,6 +1887,8 @@ export function disposeDive() {
     // than depending on which it is today.
     if (typeof resizeHandle === 'function') resizeHandle();
     else if (resizeHandle && typeof resizeHandle.disconnect === 'function') resizeHandle.disconnect();
+
+    intersectionObserver.disconnect();
 
     // traverse rather than a hand-written list: the scene has one mesh
     // today and this stays correct if it ever has two.

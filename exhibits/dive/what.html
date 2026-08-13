@@ -20,7 +20,7 @@
         <div class="what-hero">
             <span class="what-eyebrow">The physics, somewhat explained</span>
             <h1 class="what-title">So, what are you actually looking at?</h1>
-            <p class="what-subtitle">A fall into Sagittarius A*, all the way through the horizon and down to where the equations stop working. 
+            <p class="what-subtitle">A fall into a black hole, modelled after Sagittarius A*, all the way through the horizon and down to where the equations stop working. 
                 Some of what you see is computed. Some of it is drawn. This page is about which is which, and why the line falls where it does 
                 — including why this exhibit stops instead of taking you through to another universe.</p>
         </div>
@@ -30,15 +30,15 @@
             <div class="chapter-number">01</div>
             <h2 class="chapter-title">The camera has mass</h2>
 
-            <p>In the other exhibits here, the camera is a thing that hovers. It sits at a fixed distance, does not fall, 
-                and generally behaves like a tripod that has ignored gravity its whole life. That's fine when the point is to look at a black hole. 
-                It stops being fine when the point is to go into one.</p>
+            <p>In the other exhibits, the camera is a thing that hovers. It sits at a fixed distance, does not fall, 
+                and generally behaves like a tripod ... that also happens to disregard gravity. That's fine when the point is to look at a black hole. 
+                It stops being fine when the point is to get in there.</p>
 
-            <p>So this one works differently. The camera's position isn't animated. It's just a particle with mass, released twelve horizon-radii out with 
+            <p>So this exhibit works differently. The camera is modelled after a particle with mass, released twelve horizon-radii out with 
                 slightly less angular momentum than a stable orbit needs, and then integrated through the Kerr metric until it can't be integrated anymore. 
-                Everything the camera does, it does because the geometry pushed it there.</p>
+                All that to say; the math and physics decide the journey.</p>
 
-            <p>The nice part is how little extra machinery that took. The shader already integrates photon paths using a Hamiltonian:</p>
+            <p>Math time. The shader integrates photon paths using a Hamiltonian:</p>
 
             <div class="formula-block">
                 <div class="formula-main">H = ½ g^μν p_μ p_ν</div>
@@ -55,14 +55,14 @@
 
             <p>One more thing falls out of having a camera with mass, and it turns out to be the thing that makes the second half of this exhibit possible at all. 
                 A falling observer carries four directions with them: one pointing along their own future, and three pointing right, up, and forward. 
-                Together they form what's called an orthonormal tetrad, four rigid rulers carried through a space that is anything but rigid. Building it is 
+                Together they form what's called an <span class="special">orthonormal tetrad</span>, four rigid rulers carried through a space that is anything but rigid. 
+                <br/>Building it is 
                 ordinary linear algebra, Gram-Schmidt on four vectors, with the single oddity that the time direction has length minus one instead of plus one. 
                 The exhibit rebuilds it every frame from the camera's own momentum, and checks it: ten dot products that should come out as minus one, one, one, one 
                 and zeros everywhere else. They hold to eleven decimal places all the way down.</p>
 
             <p>Why it matters is that the tetrad is what turns a pixel into a photon. A pixel is a direction in someone's eye, and "someone's eye" is exactly 
-                what a tetrad is. Without one you have to guess at a correction factor for aberration and bolt it on afterwards. With one, aberration isn't a correction 
-                at all. It's just what the arithmetic does.</p>
+                what a tetrad is. Without one you have to guess at a correction factor for aberration and bolt it on afterwards. With one, aberration naturally arises from the arithmetic.</p>
 
             <div class="callout">
                 <p>The Hamiltonian is also a free correctness check, which is the real reason to build it this way. H is supposed to stay at exactly −½ forever. 

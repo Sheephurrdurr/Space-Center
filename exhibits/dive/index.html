@@ -56,8 +56,8 @@
             <div class="math-label">Mass-shell condition</div>
             <div class="math-formula">H = ½ g^μν p_μ p_ν = −½</div>
             <div class="math-note">Light travels on paths where H = 0. Anything with mass travels on paths where H = −½. 
-                Same Hamiltonian, same integrator, one different number — that's the entire difference between the photons this shader traces 
-                and the observer tracing them. The live value is in the bottom bar, and it is worth watching near the end.</div>
+                Same Hamiltonian, same integrator, just that one different number — that's the entire difference between the photons this shader traces 
+                and the observer tracing them. Ez. The live value is in the bottom bar, and it is worth watching near the end.</div>
         </div>
 
         <hr class="math-divider">
@@ -69,8 +69,8 @@
                 <span class="math-live" id="rReadout">—</span>
                 <span class="math-unit">toy-units</span>
             </div>
-            <div class="math-note">Surfaces of constant r are flattened ellipsoids, not spheres. 
-                These coordinates stay finite across the horizon, which is why the fall can be integrated straight through it instead of stopping there.</div>
+            <div class="math-note">Surfaces of constant r are flattened ellipsoids (squished sphere), not "round" spheres. 
+                These coordinates stay finite across the horizon, which is why the fall can be integrated straight through it instead of stopping there. Yay' math!</div>
         </div>
 
         <div class="math-block">
@@ -91,7 +91,7 @@
             </div>
             <div class="math-note">The second horizon, hidden inside the first. 
                 Kerr's solution continues through it and out to the ring, but the interior of a hole formed by collapse is thought to be unstable there: 
-                everything that ever falls in afterwards arrives on that surface at once, infinitely blueshifted. This number never reaches 1. The fall stops 16% short.</div>
+                signals from arbitrarily late external times get compressed into a finite stretch of your own proper time, blueshifted without bound. This number never reaches 1. The fall stops 16% short. Screw those asymptotes</div>
         </div>
 
         <hr class="math-divider">
@@ -101,10 +101,10 @@
             <div class="math-result">
                 <span class="math-live" id="coordReadout">—</span>
             </div>
-            <div class="math-note">Time on the clock of someone watching from far away — Boyer-Lindquist time, reconstructed from the fall rather than asserted. 
-                It genuinely runs away as the horizon approaches: from the outside, this fall never finishes. Note that this is not the clock the integrator uses. 
+            <div class="math-note">Time on the clock of someone watching from far away — that's Boyer-Lindquist time, reconstructed from the fall. 
+                It genuinely runs away as you get closer to the inner horizon: from the outside, this fall never finishes. Note that this is not the clock the integrator uses. 
                 That one is Kerr-Schild time, which stays perfectly finite across the boundary, which is the whole reason the camera can keep going. 
-                Two coordinate clocks, one regular and one divergent, describing the same fall.</div>
+                Two different coordinate clocks, one regular and one divergent, describing the same fall. That's time dilation.</div>
         </div>
 
         <hr class="math-divider">
@@ -117,7 +117,7 @@
                 <span class="math-unit">g</span>
             </div>
             <div class="math-note">Tidal force at the horizon scales as 1/M². Sagittarius A* is so large that crossing its 
-                horizon pulls on you about ten thousand times more gently than standing on Earth does. The number only climbs in the final moments.</div>
+                horizon pulls on you very gently. Bro's just nice like that. The number only gets dramatic in the final moments.</div>
         </div>
 
         <hr class="math-divider">
@@ -129,7 +129,7 @@
                 <span class="math-live" id="coneReadout">—</span>
                 <span class="math-unit">degrees</span>
             </div>
-            <div class="math-note">Light from the outside universe carries positive energy measured at infinity. 
+            <div class="math-note">Light from the outside universe carries positive energy measured at ... infinity. 
                 Rays traced backward that come out negative never touched the exterior at all, and this is the cone where the sign flips. 
                 It opens from nothing at the ergosphere and never quite reaches 90°, which is why the sky outside it stays wider than the field of view all the way down.</div>
         </div>
@@ -158,9 +158,10 @@
     <div class="end-plate" id="endPlate">
         <div class="end-plate-inner">
             <span class="end-eyebrow">r = 0.55 M · integration halted</span>
-            <p class="end-lead">The mathematics is fine here. The spacetime isn't.</p>
-            <p>Kerr's solution is perfectly well defined at the inner horizon just below — no term divides by zero, nothing is undefined. What fails is subtler and worse.</p>
-            <p>That surface is a Cauchy horizon. Everything falling in after you, plus the entire future history of the outside universe, arrives on it compressed into a finite amount of your proper time — infinitely blueshifted. Poisson and Israel worked out what that does in 1990 and called it mass inflation: the effective mass diverges exponentially, and a surface that was merely a coordinate boundary becomes a genuine curvature singularity.</p>
+            <p class="end-lead">Excessively confusing, right? Also, what are we doing here?</p>
+            <p>Spacetime is crashing out. The idealized version of Kerr's solution is perfectly well defined at the inner horizon — no term divides by zero, nothing is undefined. What fails is more subtle and a lot more interesting.</p>
+            <p>The destination is a Cauchy horizon. Everything falling in after you, plus the entire future history of the outside universe, arrives on it compressed into a finite amount of your proper time — infinitely blueshifted. 
+                Poisson and Israel worked out what that does in 1990 and called it mass inflation: the effective mass diverges exponentially, and a surface that was merely a coordinate boundary becomes a genuine curvature singularity.</p>
             <p>So it isn't a door. The solution on the far side — the ring, the negative-r region, the other universes — is a solution to a problem that this black hole never poses.</p>
             <p class="end-note">The equations don't break. They just stop describing anything that survives.</p>
         </div>
@@ -168,7 +169,7 @@
 
     <!-- Runtime notice. Two things can go wrong while the page is alive
          and running: the WebGL context is taken away, or an asset never
-         arrived. Both used to be silent. -->
+         arrived. -->
     <div class="notice" id="notice" role="status" aria-live="polite"></div>
 
     <!-- Bottom bar -->
@@ -215,31 +216,47 @@
     <div class="context-inner">
 
         <div class="context-header">
-            <span class="context-eyebrow">Exhibit 005 — One-way trip</span>
-            <h2 class="context-title">Nothing happens when you<br>cross the point of no return.</h2>
+            <span class="context-eyebrow">Exhibit 005 — One-way trip into a black hole</span>
+            <h2 class="context-title">Behold; something our monkey eyes were never meant to behold</h2>
         </div>
 
         <div class="context-body">
 
             <div class="fact-block">
+                <span class="fact-number">Starter Zone</span>
+                <p class="fact-desc">
+                    This exhibit is built on some truly <span class="special">unhinged</span> math and physics equations. I can't claim to even understand half of it, so let's keep this one simple. <br/> <br/>
+                    "What the flip was that?" - A one way trip into a rotating black hole. Or at least as far as the physics give answers that we can use. <br/>
+                    <br/>The warping and distortion you see is mainly due to two things: The observer's insanely high speed and the <span class="special">frame dragging</span>, 
+                    caused by the black hole's rotation. <br/> As your speed starts to get closer to the speed of light (the fastest anything can go), funky things start to happen visually.
+                    <br/>The frame dragging is basically the black holes immense mass and rotation, dragging space around with it.
+
+
+                </p>
+            </div>
+
+            <div class="fact-block">
                 <span class="fact-number">H = −½</span>
-                <p class="fact-desc">The camera isn't following a hand-drawn path. It's a particle with mass, dropped in from twelve gravitational radii out, 
-                    integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the l
-                    ight it sees is one number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
+                <p class="fact-desc">Follow the journey of a particle, dropped from 12 gravitational radii out,
+                    integrated through the Kerr metric with the same Hamiltonian machinery the shader uses on photons. The only difference between the observer and the 
+                    light he/she sees is 1 number on the right-hand side. Whatever the camera does, it does because the geometry made it.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">4.3 million M☉</span>
-                <p class="fact-desc">Sagittarius A*, the black hole at the centre of our own galaxy. Chosen because tidal force at the horizon falls off as 1/M², 
-                    so a hole this big lets you cross the boundary without noticing — the stretch across a human body there is roughly a ten-thousandth of Earth gravity. 
-                    A stellar-mass hole would have shredded the observer long before it arrived.</p>
+                <p class="fact-desc">Sagittarius A*, the supermassive black hole at the centre of our own galaxy.<br/> Chosen because tidal force at the horizon falls off as 1/M², 
+                    so a hole this big lets you cross the boundary without noticing... or worse.<br/> On your way into a black hole, the size of Sgr. A*, 
+                    the stretch across a human body there is roughly a ten-thousandth of Earth gravity. 
+                    A stellar-mass hole, on the other hand, would have shredded the observer long before it arrived.<br/> Disrespected by the universe, by being made into atomic pasta.
+                    <br/> But that only happpens later in this journey. <br/> So let's cross that bridge when we get to it.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">Aberration</span>
-                <p class="fact-desc">By the horizon the camera is moving at about 65% of light speed, and that changes what it sees more than the curvature does. 
-                    Relativistic aberration sweeps the sky forward into a bunched, brightened cone, and the shadow gets <em>smaller</em> as you approach rather 
-                    than swallowing the view. Falling in doesn't look like being engulfed. It looks like the universe closing behind you.</p>
+                <p class="fact-desc">By the horizon the camera's coordinate velocity in Kerr-Schild coordinates — dx/dt, clamped near the boundary to keep the effect visible rather than let it artificially vanish, a deliberate visual choice rather than a claim about any locally measured speed — sits around 65% of light speed, and that changes what it sees more than the curvature caused by the black hole does. 
+                    Relativistic aberration (one hell of a term) sweeps the sky forward into a bunched, brightened cone, and the shadow gets <em>smaller</em> as you approach rather 
+                    than swallowing the view. Falling in doesn't look like being engulfed. It looks like the universe closing behind you. But sadly the journey won't take 
+                    you that far, as to experience it close completely. As you might've seen.</p>
             </div>
 
             <div class="fact-block">
@@ -249,15 +266,15 @@
                     positive, and where that quantity changes sign is a cone opening in the direction of fall. It grows toward a hemisphere and stops there. 
                     Point the camera sideways this deep in and you are still looking at stars. The cone is also the exhibit's clock now: it opens at the ergosphere, 
                     reaches 30° at the horizon and 59° at the end, and every visual transition in the second half is keyed to it rather than to the crossing. 
-                    <em>Which is why the crossing itself looks like nothing at all.</em></p>
+                    <em>Which is why the crossing itself looks like nothing at all.</em>- Except for the dumb slowing of the pace. That's just me being bad at this.</p>
             </div>
 
             <div class="fact-block">
                 <span class="fact-number">r₋ = 0.473 M</span>
-                <p class="fact-desc">The second horizon. Kerr's solution continues through it, past the ring, and into another universe — 
+                <p class="fact-desc">The second horizon. The GOAT; Kerr's solution continues through it, past the ring, and into another universe — 
                     and for thirty years that was taken seriously enough to be worth checking. It didn't survive the check. Everything that falls in after you, and 
-                    the entire future history of the outside universe, arrives on that surface compressed into one finite moment of your own time. The blueshift diverges, 
-                    the curvature with it, and the doorway becomes a wall. <em>This exhibit ends before it gets there.</em></p>
+                    the entire future history of the outside universe, arrives on that surface compressed into a finite stretch of your own proper time — the blueshift has no upper bound. That's what drives mass inflation: the effective mass diverges exponentially, 
+                    and curvature blows up with it. The doorway becomes a wall. <em>This exhibit ends before it gets there.</em></p>
             </div>
 
             <div class="fact-block">

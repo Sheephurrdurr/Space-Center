@@ -129,6 +129,9 @@ const material = new THREE.ShaderMaterial({
         struct Metric {
             float f;
             vec3  l;
+            float r;   // Kerr-Schild-radius — genbruges af den analytiske gradient
+            float D;   // r⁴ + a²z²
+            float W;   // r² + a²
         };
 
         Metric metricAt(vec3 x) {
@@ -138,10 +141,13 @@ const material = new THREE.ShaderMaterial({
             float r2 = r * r;
 
             Metric m;
-            m.f = 2.0 * M * r2 * r / (r2 * r2 + a * a * x.z * x.z);
+            m.r = r;
+            m.D = r2 * r2 + a * a * x.z * x.z;
+            m.W = r2 + a * a;
+            m.f = 2.0 * M * r2 * r / m.D;
             m.l = vec3(
-                (r * x.x + a * x.y) / (r2 + a * a),
-                (r * x.y - a * x.x) / (r2 + a * a),
+                (r * x.x + a * x.y) / m.W,
+                (r * x.y - a * x.x) / m.W,
                 x.z / r
             );
             return m;
@@ -151,6 +157,8 @@ const material = new THREE.ShaderMaterial({
         // H = 1/2 * g^{mu nu} p_mu p_nu. For lys er H = 0 altid.
         // pt er tids-komponenten af momentum — konstant, fordi
         // metrikken ikke afhænger af tid (energibevarelse!).
+        // Ikke længere på hot path (dpdl er nu lukket form) — kun til
+        // diagnostik, f.eks. tjek af Hamiltonian-bevarelse fra JS-konsollen.
         float hamiltonian(vec3 x, vec3 p, float pt) {
             Metric m = metricAt(x);
             float  S = dot(m.l, p) - pt;
@@ -164,18 +172,38 @@ const material = new THREE.ShaderMaterial({
             return p - m.f * S * m.l;
         }
 
-        // dp/dlambda = -dH/dx — numerisk central differens.
-        // Bogstaveligt talt: mål H i to nabopunkter, tag hældningen.
-        vec3 dpdl(vec3 x, vec3 p, float pt) {
-            const float eps = 0.01;
-            vec3 g;
-            g.x = hamiltonian(x + vec3(eps, 0.0, 0.0), p, pt)
-                - hamiltonian(x - vec3(eps, 0.0, 0.0), p, pt);
-            g.y = hamiltonian(x + vec3(0.0, eps, 0.0), p, pt)
-                - hamiltonian(x - vec3(0.0, eps, 0.0), p, pt);
-            g.z = hamiltonian(x + vec3(0.0, 0.0, eps), p, pt)
-                - hamiltonian(x - vec3(0.0, 0.0, eps), p, pt);
-            return -g / (2.0 * eps);
+        // dp/dlambda = -dH/dx — lukket form, samme udledning som i Dive.
+        // Var 6 hamiltonian()-kald pr. evaluering (28 metric-opslag pr.
+        // RK4-step); det her er 0 ekstra opslag, fordi metricAt() allerede
+        // er kørt én gang i derivAt() og genbruges. Det var den enkeltstørste
+        // GPU-udgift i shaderen.
+        //
+        // Med H = ½(−p_t² + p·p − f S²), S = l·p − p_t, afhænger kun f og l
+        // af x, så −∂H/∂x = ½S² ∇f + f S ∇(l·p). Begge gradienter reducerer
+        // til ∇r plus bogholderi (differentier r⁴ − (ρ²−a²)r² − a²z² = 0):
+        //   ∇r = (r³x, r³y, r z (r²+a²)) / D
+        vec3 dpdl(vec3 x, Metric m, vec3 p, float pt) {
+            float M  = 0.5 * uRs;
+            float a  = uSpin * M;
+            float r  = m.r;
+            float r2 = r * r, r3 = r2 * r;
+            float az = a * x.z;
+            float iD = 1.0 / m.D;
+
+            vec3 gr = vec3(r3 * x.x, r3 * x.y, r * x.z * m.W) * iD;
+
+            float gf = 2.0 * M * r2 * (3.0 * az * az - r2 * r2) * iD * iD;
+            vec3  gF = gf * gr - vec3(0.0, 0.0, 4.0 * M * a * a * x.z * r3 * iD * iD);
+
+            float Q = p.x * x.x + p.y * x.y;
+            float L = p.x * x.y - p.y * x.x;
+            float C = Q / m.W - 2.0 * r * (r * Q + a * L) / (m.W * m.W) - p.z * x.z / r2;
+            vec3  gL = C * gr + vec3((p.x * r - p.y * a) / m.W,
+                                      (p.x * a + p.y * r) / m.W,
+                                       p.z / r);
+
+            float S = dot(m.l, p) - pt;
+            return 0.5 * S * S * gF + m.f * S * gL;
         }
 
         // ── Samlet afledning af tilstanden (x, p) ──────────────────
@@ -187,11 +215,16 @@ const material = new THREE.ShaderMaterial({
             vec3 dp;
         };
 
-        Deriv deriv(vec3 x, vec3 p, float pt) {
+        // Ét metricAt()-kald deles mellem dx og dp — var to.
+        Deriv derivAt(vec3 x, Metric m, vec3 p, float pt) {
             Deriv d;
-            d.dx = dxdl(x, p, pt);
-            d.dp = dpdl(x, p, pt);
+            d.dx = p - m.f * (dot(m.l, p) - pt) * m.l;
+            d.dp = dpdl(x, m, p, pt);
             return d;
+        }
+
+        Deriv deriv(vec3 x, vec3 p, float pt) {
+            return derivAt(x, metricAt(x), p, pt);
         }
 
         // ── Startbetingelse ────────────────────────────────────────
@@ -599,8 +632,39 @@ const clock  = new THREE.Clock();
 const camPos = new THREE.Vector3();
 let simTime  = 0;
 
+// ── Stop med at brænde frames når ingen kigger ──
+// requestAnimationFrame stopper allerede selv på en skjult fane i de fleste
+// browsere — men IKKE når canvaset bare er scrollet ud af syne på en lang
+// side, og det er præcis den situation der lod shaderen rendere i baggrunden
+// for fuld skrue. visibilitychange fanger fane-skift, IntersectionObserver
+// fanger scroll. Begge dræner clock'en ÉN gang ved tilbagevenden i stedet
+// for slet ikke, så den akkumulerede pause-periode ikke teleporterer kameraet.
+let visible  = !document.hidden;
+let onScreen = true;
+
+document.addEventListener('visibilitychange', () => {
+    visible = !document.hidden;
+    if (visible) clock.getDelta();
+});
+
+new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    if (onScreen) clock.getDelta();
+}, { threshold: 0 }).observe(canvas);
+
+// ── Frame cap ──
+// Uden loft rendrer denne (tunge, 400-step RK4-per-pixel) shader ved
+// skærmens native refresh rate — 120/144/240 Hz brænder proportionalt mere
+// GPU for et billede der ikke ser hurtigere ud. 60 er loftet; simulationen
+// nedenfor rykker stadig frem på HVER tick, kun selve render()-kaldet
+// throttles, så bevægelsen forbliver jævn uanset loft.
+const FRAME_BUDGET = 1 / 60;
+let frameAcc = 0;
+
 function animate() {
     requestAnimationFrame(animate);
+    if (!visible || !onScreen) return;
+
     const dt = clock.getDelta();   // kaldes OGSÅ under pause — ellers
     if (paused) return;            // teleporterer kameraet ved resume
     simTime += dt;
@@ -627,6 +691,10 @@ function animate() {
     }
 
     camRadius += (targetRadius - camRadius) * 0.04;
+
+    frameAcc += dt;
+    if (frameAcc < FRAME_BUDGET * 0.92) return;   // 0.92: never skip a frame we could've made
+    frameAcc = 0;
 
     camPos.set(
         Math.cos(camPhi) * Math.cos(camTheta) * camRadius,

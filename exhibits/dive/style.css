@@ -185,6 +185,12 @@ canvas:active { cursor:grabbing; }
     border-top: 1px solid var(--border);
 }
 
+  .special {
+            font-family: var(--font-mono);
+            color: var(--ns-cyan);
+            font-size: 0.8em;
+        }
+
 /* ── Bottom bar ── */
 .bottom-bar {
     position: absolute;
