@@ -21,7 +21,7 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 ## Gallery
 
 ![Dive Exhibit](assets/images/exhibitScreenshots/dive.JPG)
-![Merger: Gravitational Waves](assets/images/exhibitScreenshots/gw_merger.JPG)
+![Merger: Gravitational Waves](assets/images/exhibitScreenshots/GW_merger.JPG)
 ![Merger: Lensing](assets/images/exhibitScreenshots/lensing_merger.JPG)
 ![Static Black Hole](assets/images/exhibitScreenshots/staticBH.JPG)
 ![Rotating Black Hole](assets/images/exhibitScreenshots/theKerr.JPG)
