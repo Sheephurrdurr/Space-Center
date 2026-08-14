@@ -118,16 +118,53 @@
             <div class="chapter-number">04</div>
             <h2 class="chapter-title">What's real, and what's artistic</h2>
 
-            <p><em>The ring's brightness.</em> Photons that nearly orbit pick up real magnification from the bending geometry — that part is physical. 
-                The exact intensity curve is tuned by hand rather than derived from a full radiative transfer calculation, so treat the brightness as illustrative, 
-                not a precise brightness prediction.</p>
+            <p><em>The ring's brightness.</em> This used to be a hand-tuned curve — brightness assigned from the
+                deflection angle, with no mechanism behind it. It has been removed, because there is a real mechanism
+                and it turns out to be a sampling question rather than a lighting one. Surface brightness is conserved
+                under lensing: what actually happens near the ring is that the map squeezes an enormous solid angle of
+                sky into a thin annulus, so a great many stars land inside one pixel and point-sampling the starfield
+                picks one of them at random.</p>
 
-            <p><em>The noise near the edge.</em> Right at the photon sphere, neighboring rays become chaotically sensitive, to a point where a tiny difference 
-                in starting angle sends two adjacent pixels to wildly different parts of the sky. Some of the graininess you see there is that real chaos, and some is 
-                numerical: finite step counts trying to resolve an infinitely sensitive boundary. Still being tuned.</p>
+            <p>The first attempt at fixing that was wrong in an instructive way. It traced a second ray one pixel away,
+                measured how far apart the two landed, and read the star map at the mip level that stretch implied.
+                The mean brightness came out right — within about 1% of a brute-force reference — and the picture was
+                still ruined: a grey wash where the arcs should be. The reason is that the footprint is violently
+                <em>anisotropic</em>. Measured at eighteen Schwarzschild radii, at 1.02 critical impact parameters the
+                map stretches 517× radially and 6× tangentially, a ratio of 84 to 1. A mip level blurs both axes
+                equally, so sizing it from the long axis smears away exactly the thin sharp arcs that are the point.
+                Further out it is worse than useless: at three critical impact parameters the map <em>compresses</em>
+                tangentially, by a factor of seven, and a blur was being applied to sky that should be pin sharp.</p>
 
-            <p><em>The 300 steps.</em> That number isn't physics, it's a budget. More steps means smoother rings and less noise near the photon sphere, but every pixel 
-                already runs this loop up to 300 times, every frame, on your GPU. 300 was picked as the point where more steps stopped visibly helping and started visibly costing frame rate.</p>
+            <p>The working version takes the mip level from the <em>short</em> axis and walks up to sixteen taps along
+                the long one — which is what hardware anisotropic filtering does, for the same reason. The short axis
+                needs no extra ray: the lens is circularly symmetric, so azimuth is preserved and tangential
+                separations scale as sin θ, which gives the tangential stretch from the two angles for free. Checked
+                against a traced tangential neighbour it agrees to four digits everywhere except the innermost ring,
+                where it is still within 8%. Where the anisotropy exceeds sixteen the shortfall goes into extra blur,
+                so the solid angle covered still matches the footprint and no light is invented or lost.</p>
+
+            <p>The upshot is that the ring's brightness is now measured off the ray map rather than fitted to taste,
+                and the arcs are the sky's real structure rather than a smear standing in for it.</p>
+
+            <p><em>The noise near the edge.</em> Right at the photon sphere neighbouring rays really are chaotically
+                sensitive — a tiny difference in starting angle sends two adjacent pixels to wildly different parts of
+                the sky, and no amount of care removes that, because it is the physics. But most of the graininess that
+                used to be visible here was not that. The integrator scaled each ray's step size by a hash of its own
+                direction, between 0.95 and 1.05, added at some point to break up circular banding. Because the factor
+                was constant along a ray rather than varying along it, it was not a dither: it gave every ray a
+                systematically different integration error. Measured just outside the ring it spread the recovered sky
+                direction by 3.05°, which is far more than the chaos it was blamed on. It has been deleted, and the
+                banding it was hiding was fixed properly instead, by stepping in equal angles around the hole rather
+                than equal distances.</p>
+
+            <p><em>The 256 steps.</em> That number isn't physics, it's a budget — but it is now a budget with slack in
+                it rather than one being overrun. Since dφ/dλ = h/r², setting the step to Δφ·r²/h advances the photon
+                the same angle around the hole every iteration, which is what a central-force problem actually needs:
+                rays winding close to the ring get the resolution they require and distant rays stop paying for it. The
+                worst case measured is 135 steps, against 238 under the old distance-proportional stepping — so the
+                loop is both more accurate and shorter. If a ray ever did exhaust the budget it would be one still
+                winding deep inside, about to be captured, and it is drawn black rather than falling back on a stale
+                sample of undeflected sky.</p>
 
             <p><em>What's left out entirely.</em> Real black holes technically radiate — Hawking radiation. For this one it doesn't matter even slightly: 
                 at 5 solar masses the temperature works out to a few dozen nanokelvin, and it would take vastly longer than the current age of the universe to evaporate 
@@ -135,8 +172,22 @@
 
             <p><em>The mass.</em> 5 solar masses was picked because it's a plausible stellar-mass black hole and it renders at a comfortable scale.</p>
 
-            <p>Everything else; the shadow boundary, the photon ring's position, the lensing of the background starfield, it all falls directly out of the 
-                geodesic equation above, with no shortcuts.</p>
+            <p><em>The shadow boundary.</em> This page used to claim the boundary fell out of the geodesic equation
+                with no shortcuts. It didn't: the shader tested each ray's flat-space impact parameter against
+                b_crit = √27·M before marching, and returned black if it was smaller. That test is exact only for a
+                camera at infinity. Measured against the integration, the shortcut put the edge 1.4% inside the true
+                boundary at fifteen Schwarzschild radii and 6.8% inside it at six and a half — which is precisely the
+                distance the close-up mode flies you to. The shortcut is gone. Capture is decided by the same
+                integration that draws everything else, so the two cannot disagree, and the fragments straddling the
+                edge are supersampled so it does not alias into a staircase.</p>
+
+            <p><em>How far a photon is followed.</em> The old loop stopped tracking a photon once it was six
+                Schwarzschild radii out and heading away. That is not far enough to be done bending: for a ray at three
+                critical impact parameters it discarded 10.8° of deflection, about half the total. Photons are now
+                followed to forty Schwarzschild radii, which brings the error below 0.03°.</p>
+
+            <p>Everything else — the photon ring's position, the lensing of the background starfield, the shape of the
+                shadow — falls directly out of the geodesic equation above.</p>
         </div>
 
         <div style="padding-top: 48px; border-top: 1px solid var(--border);">
