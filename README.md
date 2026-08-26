@@ -1,5 +1,6 @@
 # Space Center
 ![Space Center](assets/images/exhibitScreenshots/landing_page.JPG)
+TURBO VIBE CODED
 An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
 **[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
@@ -8,7 +9,7 @@ An interactive 3D center of astrophysics, built as a walkable planet in the brow
 
 ## What's in here
 
-Roll a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
+Roll a small rover-droid around a low-poly planet to discover five physically simulated exhibits:
 
 | Exhibit | What it does |
 |---|---|
@@ -29,7 +30,7 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 ## Why it exists
 
 This started as a small Three.js learning project, akin to; "can I make this sphere orbit this other sphere in THREE.js?". 
-And then later evolved into wanting to see some complicated physics and mathematics in action... and eventually: naked singularity on a pedestal (coming soon).
+And then, due to access to ai, later evolved into wanting to see some complicated physics and mathematics in action... and eventually: naked singularity on a pedestal (coming soon).
 
 Started from the bottom now we **tracing photons through curved spacetime, using the most cursed equations you'll see- at least today**
 
@@ -68,8 +69,8 @@ Touch controls (virtual joystick + tap-to-jump), responsive HUD, and aspect-awar
 
 ## Status
 
-Actively growing. Current backlog includes: a probe falling into a black hole (physically, not just artistically), audio, and continued mobile performance tuning on the heavier exhibits.
+Actively growing. Current backlog includes: audio and ... uuhh, Claude did most of the stuff by now.
 
 ---
 
-Built with more curiosity than sleep.
+Built with Claude, along with more curiosity than sleep.
