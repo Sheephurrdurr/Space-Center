@@ -1,6 +1,7 @@
 # Space Center
 ![Space Center](assets/images/exhibitScreenshots/landing_page.JPG)
 TURBO VIBE CODED
+
 An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
 **[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
