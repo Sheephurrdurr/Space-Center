@@ -28,7 +28,7 @@ Roll a small rover-droid around a low-poly planet to discover five physically si
 ![Merger: Lensing](assets/images/exhibitScreenshots/lensing_merger.JPG)
 ![Static Black Hole](assets/images/exhibitScreenshots/staticBH.JPG)
 ![Rotating Black Hole](assets/images/exhibitScreenshots/theKerr.JPG)
-![Rotating Black Hole](assets/images/exhibitScreenshots/singularityScreenshot.JPG)
+![Naked Ring Singularity](assets/images/exhibitScreenshots/singularityScreenshot.JPG)
 
 ## Why it exists
 
