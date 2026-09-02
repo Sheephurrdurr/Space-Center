@@ -1,5 +1,7 @@
 # Space Center
 ![Space Center](assets/images/exhibitScreenshots/landing_page.JPG)
+TURBO VIBE CODED
+
 An interactive 3D center of astrophysics, built as a walkable planet in the browser.
 
 **[→ Visit the Center](https://rad-kelpie-15e90c.netlify.app/)**
@@ -8,7 +10,7 @@ An interactive 3D center of astrophysics, built as a walkable planet in the brow
 
 ## What's in here
 
-Roll a small rover-droid around a low-poly planet to discover four physically simulated exhibits:
+Roll a small rover-droid around a low-poly planet to discover five physically simulated exhibits:
 
 | Exhibit | What it does |
 |---|---|
@@ -17,6 +19,7 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 | **Kerr Black Hole** | A *rotating* black hole. Full Kerr metric, RK4-integrated Hamiltonian geodesics, frame dragging, a Doppler-beamed accretion disk, and the characteristic displaced D-shaped shadow. |
 | **NS–BH Merger: Gravitational Waves** | A neutron star spiraling into a black hole, with orbital decay driven by the real Peters & Mathews (1964) quadrupole formula. |
 | **NS–BH Merger: Gravitational Lensing** | The same inspiral, this time seen through a ray-marched lens — watch the neutron star distort and vanish behind the event horizon. |
+| **Naked Ring Singularity On A Pedestal** | A tiny black hole, but a > M so there's no event horizon, which allows us to look directly at the singularity. |
 
 ## Gallery
 
@@ -25,11 +28,12 @@ Roll a small rover-droid around a low-poly planet to discover four physically si
 ![Merger: Lensing](assets/images/exhibitScreenshots/lensing_merger.JPG)
 ![Static Black Hole](assets/images/exhibitScreenshots/staticBH.JPG)
 ![Rotating Black Hole](assets/images/exhibitScreenshots/theKerr.JPG)
+![Naked Ring Singularity](assets/images/exhibitScreenshots/singularityScreenshot.JPG)
 
 ## Why it exists
 
 This started as a small Three.js learning project, akin to; "can I make this sphere orbit this other sphere in THREE.js?". 
-And then later evolved into wanting to see some complicated physics and mathematics in action... and eventually: naked singularity on a pedestal (coming soon).
+And then, due to access to ai, later evolved into wanting to see some complicated physics and mathematics in action... and eventually: naked singularity on a pedestal (coming soon).
 
 Started from the bottom now we **tracing photons through curved spacetime, using the most cursed equations you'll see- at least today**
 
@@ -68,8 +72,8 @@ Touch controls (virtual joystick + tap-to-jump), responsive HUD, and aspect-awar
 
 ## Status
 
-Actively growing. Current backlog includes: a probe falling into a black hole (physically, not just artistically), audio, and continued mobile performance tuning on the heavier exhibits.
+Actively growing. Current backlog includes: audio and ... uuhh, Claude did most of the stuff by now.
 
 ---
 
-Built with more curiosity than sleep.
+Built with Claude, along with more curiosity than sleep.
