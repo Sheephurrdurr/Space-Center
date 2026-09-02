@@ -33,6 +33,16 @@ const _pathB = new THREE.Vector3();
 projectOnTangent(SPAWN_DIR, PATH_NORMAL, _pathA).normalize();
 _pathB.crossVectors(PATH_NORMAL, _pathA).normalize();
 
+// --- Exhibit-vinklerne: ÉN kilde -------------------------------------
+// Både registreringen og sti-markørerne skal kende disse vinkler. Stod
+// tallet to steder, ville en ny exhibit kræve to rettelser — og glemte
+// man den ene, ville markørerne holde op med at vige for monumenterne.
+// Derfor: udled begge dele herfra.
+export const EXHIBIT_COUNT = 6;
+export const EXHIBIT_GAP = Math.PI * 2 / EXHIBIT_COUNT;   // 60°
+export const EXHIBIT_ANGLES = Array.from(
+    { length: EXHIBIT_COUNT }, (_, i) => i * EXHIBIT_GAP);
+
 /** Retning fra planetens centrum til punktet på stien ved vinkel `angle`. */
 export function pathDirection(angle, target = new THREE.Vector3()) {
     return target.copy(_pathA).multiplyScalar(Math.cos(angle))
@@ -332,64 +342,102 @@ export function buildDive() {
     return g;
 }
 
-/*
-/** 005 — Coming soon exhibit:  
-export function buildComingSoon() {
+/** 006 — Ring singularity: naken. Ingen sort kugle — det er hele pointen.
+ *  a > M giver r± = M ± √(M²−a²) ingen reelle rødder, altså ingen horisont
+ *  at gemme sig bag. Så monumentet er ringen selv, og hullet i den, hvor
+ *  det andet ark af rumtiden ligger. */
+export function buildRing() {
     const g = pedestal();
-    const ghost = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.7, 1),
-        new THREE.MeshStandardMaterial({
-            color: '#7a7492', wireframe: true, transparent: true, opacity: 0.4,
+    const COLD = new THREE.Color('#cfe4ff');
+
+    const rig = new THREE.Group();
+    rig.position.y = 3.15;
+    rig.rotation.x = Math.PI / 2.6;   // tiltet, så man kan SE at det er en ring
+
+    // Selve ringen. Bevidst tynd: singulariteten har ingen udstrækning,
+    // torusens tykkelse er ren læsbarhed.
+    rig.add(glowRing(1.15, 0.035, COLD, 2.4));
+
+    // Hullet: det r < 0 ark, set gennem åbningen. Additiv, dobbeltsidet,
+    // depthWrite=false så den ikke klipper ringen bagfra.
+    const sheet = new THREE.Mesh(
+        new THREE.CircleGeometry(1.13, 40),
+        new THREE.MeshBasicMaterial({
+            color: '#3b2f6e', transparent: true, opacity: 0.55,
+            blending: THREE.AdditiveBlending, depthWrite: false,
+            side: THREE.DoubleSide,
         }));
-    ghost.position.y = 3.0;
-    g.add(ghost);
-    g.userData.spin = ghost; // roterer langsomt, så den ikke virker helt død
+    rig.add(sheet);
+
+    // Frame dragging: to korte buer der løber rundt om ringen. En torus er
+    // rotationssymmetrisk, så uden noget asymmetrisk kan man ikke se rotation
+    // — samme fælde som hotSpot løser på Kerr-monumentet.
+    const drag = new THREE.Group();
+    for (const phase of [0, Math.PI]) {
+        const arc = new THREE.Mesh(
+            new THREE.TorusGeometry(1.34, 0.02, 6, 24, Math.PI / 3),
+            new THREE.MeshBasicMaterial({
+                color: COLD, transparent: true, opacity: 0.6,
+                blending: THREE.AdditiveBlending, depthWrite: false,
+            }));
+        arc.rotation.z = phase;
+        drag.add(arc);
+    }
+    rig.add(drag);
+
+    g.add(rig);
+    g.userData.spin = drag;   // kun buerne roterer, ikke ringen
     return g;
 }
-    */
 // ---------------------------------------------------------------------
 // Opsætning: registrér museets fire exhibits.
 // Kaldes fra main.js — composition root beslutter HVAD der findes,
 // systemet håndterer HVORDAN det opfører sig.
 // ---------------------------------------------------------------------
 export function registerExhibits(system) {
-    const V = THREE.Vector3;
-    const step = Math.PI * 2 / 5; // 72° mellem exhibits
+    const at = (i) => pathDirection(EXHIBIT_ANGLES[i]);
 
-    const e1 = system.register(pathDirection(0 * step), {
+    const e1 = system.register(at(0), {
         number: 'Exhibit 001',
         title: 'The REAL nerd exhibit: <br/> One Way Trip Into a Black Hole',
         desc: 'Go on a journey to the inner horizon of a rotating black hole.',
          url: '/exhibits/dive/index.html',
     }, () => buildDive(true));
 
-    const e2 = system.register(pathDirection(1 * step), {
+    const e2 = system.register(at(1), {
         number: 'Exhibit 002',
         title: 'A Rotating Black Hole',
         desc: 'Kerr metric, RK4 Hamiltonian geodesics. Unhinged math and physics come together to create stunning visuals.',
         url: '/exhibits/Kerr_finalBoss/index.html',
     }, buildKerr);
 
-    const e3 = system.register(pathDirection(2 * step), {
+    const e3 = system.register(at(2), {
         number: 'Exhibit 003',
         title: 'Two Of the Densest Objects Collide:<br>Gravitational Waves',
         desc: 'A neutron star and a black hole in their final moments. Throw Peters & Mathews orbital decay after the compiler and watch them ripple through spacetime.',
         url: '/exhibits/merger_gw/index.html',
     }, () => buildMerger(false));
 
-    const e4 = system.register(pathDirection(3 * step), {
+    const e4 = system.register(at(3), {
         number: 'Exhibit 004',
         title: 'Two Of The Densest Object Collide:<br>Gravitational Lensing',
         desc: 'A neutron star and a black hole in their final moments. But with more "blackhole distrupts spacetime"',
         url: '/exhibits/merger_lens/index.html',
     }, () => buildMerger(true));
 
-    const e5 = system.register(pathDirection(4 * step), {
+    const e5 = system.register(at(4), {
         number: 'Exhibit 005',
         title: 'Static, Non Rotating<br>Black Hole',
         desc: 'A 5 solar mass black hole rendered via real-time ray marching through curved spacetime. ',
         url: '/exhibits/blackhole/index.html',
     }, buildSchwarzschild);
+
+    const e6 = system.register(at(5), {
+        number: 'Exhibit 006',
+        title: 'A Naked Singularity:<br>Through the Ring',
+        desc: 'Peer into the singularity (middle) of a tiiiny black hole, only centimeters across, without the black or the hole. It is just a naked ring singularity, plopped on a pedestal | Work in progress.',
+        url: '/exhibits/ring/index.html',
+    }, buildRing);
 
     // Animation: spin diske og orbits. Hastigheden er "kunstnerisk" —
     // rigtig fysik bor inde i selve exhibitsene.
@@ -397,6 +445,7 @@ export function registerExhibits(system) {
     e3.animate = makeSpinner(e3, 'y', 2.2);
     e4.animate = makeSpinner(e4, 'y', 2.2);
     e5.animate = makeSpinner(e5, 'y', 0.4);
+    e6.animate = makeSpinner(e6, 'z', 0.9);
 }
 
 /**
@@ -426,14 +475,16 @@ export function buildPathMarkers(scene) {
         color: '#3a5f5a', emissive: ACCENT, emissiveIntensity: 0.5,
         flatShading: true,
     });
-    const STEP = Math.PI * 2 / 60;          // en sten per 6°
-    const EXHIBIT_GAP = Math.PI * 2 / 5;    // exhibit-vinklerne
+    const STEP = Math.PI * 2 / 60;   // en sten per 6°
+    const CLEAR = THREE.MathUtils.degToRad(10); // frizone om hvert monument
     const dir = new THREE.Vector3();
 
     for (let a = 0; a < Math.PI * 2 - 1e-6; a += STEP) {
-        // Spring over tæt på exhibits — de skal ikke drukne i småsten
-        const nearestExhibit = Math.round(a / EXHIBIT_GAP) * EXHIBIT_GAP;
-        if (Math.abs(a - nearestExhibit) < THREE.MathUtils.degToRad(10)) continue;
+        // Spring over tæt på exhibits — de skal ikke drukne i småsten.
+        // Tjekker mod EXHIBIT_ANGLES i stedet for at runde af: afrunding
+        // forudsætter jævn fordeling hele vejen rundt, og det holder kun
+        // så længe ingen nogensinde flytter en exhibit.
+        if (EXHIBIT_ANGLES.some((e) => angleDelta(a, e) < CLEAR)) continue;
 
         pathDirection(a, dir);
         const m = new THREE.Mesh(geo, markerMat);
@@ -443,6 +494,15 @@ export function buildPathMarkers(scene) {
         markers.add(m);
     }
     scene.add(markers);
+}
+
+/** Korteste vinkelafstand mellem to vinkler, hele vejen rundt.
+ *  Uden wrap ville stenene lige FØR θ=0 ikke vige for Exhibit 001,
+ *  fordi |6.18 − 0| er stort selvom de to punkter står side om side. */
+function angleDelta(a, b) {
+    const TAU = Math.PI * 2;
+    const d = Math.abs(a - b) % TAU;
+    return Math.min(d, TAU - d);
 }
 
 /** Nav-menu: toggle-knap + liste over alle registrerede exhibits.
